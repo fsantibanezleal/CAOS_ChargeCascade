@@ -1,0 +1,11 @@
+mill_id,mill_type,diameter_m,length_m,fill,phi_c,ball_top_mm,charge_density
+K-BALL,ball,4.0,6.0,0.35,0.75,80,4.8
+K-SAG,sag,10.0,5.0,0.28,0.78,125,3.0
+K-ROD,rod,3.5,5.5,0.38,0.65,90,5.5
+S-CASCADE,ball,4.0,6.0,0.35,0.55,80,4.8
+S-CATARACT,ball,4.0,6.0,0.35,0.78,80,4.8
+S-CENTRIFUGE,ball,4.0,6.0,0.35,1.02,80,4.8
+D-LOWFILL,ball,4.0,6.0,0.20,0.75,80,4.8
+D-HIGHFILL,ball,4.0,6.0,0.42,0.75,80,4.8
+C-CRITICAL,ball,4.0,6.0,0.35,1.00,80,4.8
+C-EMPTY,ball,4.0,6.0,0.0,0.75,80,4.8
