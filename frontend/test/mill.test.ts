@@ -51,11 +51,16 @@ test('Hogg-Fuerstenau power peaks near J = 0.47', () => {
   assert.ok(Math.abs(bestJ - 0.4695) < 0.02, `power peaks at J=${bestJ.toFixed(3)} ~ 0.47`);
 });
 
-test('power scales as D^3.5 and vanishes at J = 0', () => {
+test('power scales as D^2.5 (first principles P=torque*omega) and vanishes at J = 0', () => {
   const p4 = hoggFuerstenauKw(4, 6, 4.8, 0.75, 0.35, 35);
   const p8 = hoggFuerstenauKw(8, 6, 4.8, 0.75, 0.35, 35);
-  assert.ok(Math.abs(p8 / p4 - Math.pow(2, 3.5)) < 1e-6, 'P proportional to D^3.5');
+  assert.ok(Math.abs(p8 / p4 - Math.pow(2, 2.5)) < 1e-6, 'P proportional to D^2.5');
   assert.equal(hoggFuerstenauKw(4, 6, 4.8, 0.75, 0, 35), 0, 'no charge -> no power');
+});
+
+test('power magnitude is industrially realistic (the 4x6 m reference ball mill ~1.3 MW)', () => {
+  const p = hoggFuerstenauKw(4, 6, 4.8, 0.75, 0.35, 35);
+  assert.ok(p > 800 && p < 1800, `4x6 m ball mill power ${p.toFixed(0)} kW should be ~1.0-1.5 MW, not 10x off`);
 });
 
 test('power is monotone increasing in phiC (raw Hogg-Fuerstenau)', () => {
