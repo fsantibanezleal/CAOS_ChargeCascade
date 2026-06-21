@@ -13,8 +13,19 @@ ort.env.wasm.numThreads = 1;
 const base = () => import.meta.env.BASE_URL || '/';
 const sessions: Record<string, Promise<ort.InferenceSession | null>> = {};
 
+// ONE global serialization chain for ALL onnxruntime-web work (session creation AND inference). The WASM EP runs
+// single-threaded and ships TWO models here (the power surrogate + the OOD autoencoder) that the App queries together
+// on every control change; without a global lock their concurrent create()/run() calls race the single WASM runtime
+// and throw "Session already started" / "Session mismatch". Serialising every op end-to-end removes the race.
+let ortChain: Promise<unknown> = Promise.resolve();
+function serial<T>(fn: () => Promise<T>): Promise<T> {
+  const next = ortChain.then(fn, fn);
+  ortChain = next.catch(() => {});
+  return next;
+}
+
 function get(file: string): Promise<ort.InferenceSession | null> {
-  return (sessions[file] ??= (async () => {
+  return (sessions[file] ??= serial(async () => {
     try {
       const head = await fetch(`${base()}${file}`, { method: 'HEAD' });
       if (!head.ok) return null;
@@ -22,17 +33,13 @@ function get(file: string): Promise<ort.InferenceSession | null> {
     } catch {
       return null;
     }
-  })());
+  }));
 }
 
 export const surrogateAvailable = async () => (await get('power-surrogate.onnx')) != null;
 
-const runChain: Record<string, Promise<unknown>> = {};
-async function runSerial(file: string, s: ort.InferenceSession, feeds: Record<string, ort.Tensor>) {
-  const prev = runChain[file] ?? Promise.resolve();
-  let release!: () => void;
-  runChain[file] = new Promise<void>((r) => { release = r; });
-  try { await prev.catch(() => {}); return await s.run(feeds); } finally { release(); }
+async function runSerial(_file: string, s: ort.InferenceSession, feeds: Record<string, ort.Tensor>) {
+  return serial(() => s.run(feeds));
 }
 
 export { MILL_FEATURES };
@@ -46,16 +53,11 @@ export async function runSurrogate(op: Operating): Promise<{ powerKw: number; fr
   return { powerKw: y[0], fracCentrifuging: y[1] };
 }
 
-/** OOD autoencoder: returns the reconstruction MSE (the anomaly score). null if untrained. */
+/** OOD autoencoder: returns the standardized-space reconstruction MSE (the anomaly score, computed inside the ONNX).
+ * Low (~<1) in-envelope, high (>2) for over-speed / near-centrifuging / extreme geometry. null if untrained. */
 export async function runOod(op: Operating): Promise<number | null> {
   const s = await get('scenario-ood.onnx');
   if (!s) return null;
-  const x = featureVec(op);
-  const out = await runSerial('scenario-ood.onnx', s, { x: new ort.Tensor('float32', x, [1, N_FEATURES]) });
-  const xr = out.xr.data as Float32Array;
-  // the export returns the standardized reconstruction; the App compares it to the standardized input. Without the
-  // committed scaler here we report the raw reconstruction-vs-input MSE (monotone in the true anomaly score).
-  let mse = 0;
-  for (let i = 0; i < x.length; i++) mse += (xr[i] - x[i]) * (xr[i] - x[i]);
-  return mse / x.length;
+  const out = await runSerial('scenario-ood.onnx', s, { x: new ort.Tensor('float32', featureVec(op), [1, N_FEATURES]) });
+  return (out.xr.data as Float32Array)[0];
 }

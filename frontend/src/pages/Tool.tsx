@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, type MillType, type Operating } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
+import { loadLearned } from '../lib/artifacts.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
 import { TrajectoryDiagram } from '../viz/TrajectoryDiagram.tsx';
 import { RegimeMap } from '../viz/RegimeMap.tsx';
@@ -22,6 +23,9 @@ export default function Tool() {
   const [surr, setSurr] = useState<{ powerKw: number; fracCentrifuging: number } | null>(null);
   const [surrPending, setSurrPending] = useState(true);
   const [ood, setOod] = useState<number | null>(null);
+  const [oodThr, setOodThr] = useState<number | null>(null);
+
+  useEffect(() => { loadLearned().then((l) => setOodThr(l.ood?.thr ?? null)).catch(() => setOodThr(null)); }, []);
 
   useEffect(() => {
     let cancel = false;
@@ -177,7 +181,22 @@ export default function Tool() {
               <p>{es ? 'Entrénalo con `--retrain`. Mientras tanto, las banderas de validez del motor (abajo) son el guardia honesto.' : 'Train it with `--retrain`. Meanwhile the engine validity flags (below) are the honest guard.'}</p>
             </div>
           ) : (
-            <div className="pf-kpis"><Kpi label={es ? 'puntaje de anomalía' : 'anomaly score'} value={ood.toFixed(3)} /></div>
+            <>
+              <div className="pf-kpis">
+                <Kpi label={es ? 'puntaje de anomalía' : 'anomaly score'} value={ood.toFixed(2)} />
+                {oodThr != null && <Kpi label={es ? 'umbral (p95 in-dist)' : 'threshold (in-dist p95)'} value={oodThr.toFixed(2)} />}
+                {oodThr != null && (
+                  <Kpi label={es ? 'veredicto' : 'verdict'} value={ood > oodThr ? (es ? 'fuera de envolvente' : 'off-envelope') : (es ? 'en envolvente' : 'in-envelope')} />
+                )}
+              </div>
+              {oodThr != null && (
+                <div className={`cc-regime-pill ${ood > oodThr ? 'cc-regime-centrifuging' : 'cc-regime-cascading'}`}>
+                  {ood > oodThr
+                    ? (es ? 'el punto está fuera del envolvente entrenado — el surrogate está extrapolando' : 'the point is outside the trained envelope — the surrogate is extrapolating')
+                    : (es ? 'el punto está dentro del envolvente entrenado' : 'the point is inside the trained envelope')}
+                </div>
+              )}
+            </>
           )}
           {r.flags.length > 0 && <p className="pf-note" style={{ color: 'var(--color-warn)' }}>{r.flags.join(' · ')}</p>}
         </div>

@@ -1,0 +1,14 @@
+{
+  "schema": "chargecascade.learned/v1",
+  "surrogate": {
+    "power_err": 0.0516,
+    "cent_err": 0,
+    "nEval": 500
+  },
+  "ood": {
+    "auc": 0.922,
+    "nEval": 1000,
+    "thr": 1.0922
+  },
+  "honesty": "Synthetic but physically-realistic mill operating points across a typical SAG/ball/rod envelope; the labels ARE the EXACT analytic engine (Hogg-Fuerstenau/Morrell power, Davis centrifuging), at the standard 35-deg lifter geometry. The surrogate's DOWNSTREAM skill (its predicted power vs the exact engine on held-out points) is measured by eval_mill.mjs. The OOD autoencoder flags operating points outside the envelope (over-speed, near-centrifuging, extreme geometry). The exact engine is the authority; reported whichever way the numbers land. No fabricated win."
+}

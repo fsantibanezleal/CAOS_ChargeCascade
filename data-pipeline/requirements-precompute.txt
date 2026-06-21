@@ -1,0 +1,12 @@
+# PRECOMPUTE / heavy lane (local-only, NEVER deployed) — the .venv-precompute that trains the two learned models
+# (power surrogate + scenario OOD-AE) and exports them to ONNX. Pinned to the verified CPU install (Python 3.12).
+# The default lane (data-pipeline/requirements.txt) stays numpy-only so CI + the replay pipeline never need torch.
+#
+#   python -m venv .venv-precompute
+#   .venv-precompute/Scripts/python -m pip install -r data-pipeline/requirements-precompute.txt \
+#       --extra-index-url https://download.pytorch.org/whl/cpu
+#   python -m cclab.pipeline all --retrain      # re-bake + train + eval + rebuild the replay artifacts
+numpy==2.1.3
+torch==2.12.1
+onnx==1.22.0
+onnxscript==0.7.0

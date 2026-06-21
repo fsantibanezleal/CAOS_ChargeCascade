@@ -19,7 +19,7 @@ export interface CaseResultsFile {
 export interface LearnedFile {
   schema: string;
   surrogate: { power_err: number; nEval: number };
-  ood: { auc: number; nEval: number };
+  ood: { auc: number; nEval: number; thr?: number };
   honesty: string;
 }
 
