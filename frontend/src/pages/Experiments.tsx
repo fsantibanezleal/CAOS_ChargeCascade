@@ -27,9 +27,9 @@ export default function Experiments() {
   }, []);
 
   return (
-    <article className="pf-doc">
+    <article className="page-body prose">
       <h1>{es ? 'Experimentos' : 'Experiments'}</h1>
-      <p className="pf-lead">{es
+      <p className="lede">{es
         ? 'Los 10 casos, horneados por el motor. Cada fila lleva la velocidad crítica, φc, el régimen, la potencia neta, el % centrifugando y la masa de carga.'
         : 'The 10 cases, baked by the engine. Each row carries the critical speed, φc, the regime, the net power, the % centrifuging and the charge mass.'}</p>
 
