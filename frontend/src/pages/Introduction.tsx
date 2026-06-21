@@ -3,9 +3,9 @@ import { Callout, Cite, ReferenceList, useShellLang } from '@fasl-work/caos-app-
 export default function Introduction() {
   const es = useShellLang() === 'es';
   return (
-    <article className="pf-doc">
+    <article className="page-body prose">
       <h1>{es ? 'Introducción' : 'Introduction'}</h1>
-      <p className="pf-lead">{es
+      <p className="lede">{es
         ? 'ChargeCascade muestra cómo se mueve la carga de un molino de tambor (SAG / bolas / barras) y cuánta potencia dibuja — y deja ver, en 3D, la transición cascading → cataracting → centrifuging.'
         : 'ChargeCascade shows how a tumbling mill (SAG / ball / rod) charge moves and how much power it draws — and lets you watch, in 3D, the cascading → cataracting → centrifuging transition.'}</p>
 
