@@ -3,9 +3,9 @@ import { Callout, Cite, Equation, InlineMath, ReferenceList, Tabs, useShellLang 
 export default function Methodology() {
   const es = useShellLang() === 'es';
   return (
-    <article className="pf-doc">
+    <article className="page-body prose">
       <h1>{es ? 'Metodología' : 'Methodology'}</h1>
-      <p className="pf-lead">{es
+      <p className="lede">{es
         ? 'Velocidad crítica → la partida de Davis de partícula única + el vuelo parabólico → los regímenes → la potencia (Hogg-Fuerstenau / Morrell / Bond).'
         : 'Critical speed → the Davis single-particle departure + the parabolic flight → the regimes → the power (Hogg-Fuerstenau / Morrell / Bond).'}</p>
 

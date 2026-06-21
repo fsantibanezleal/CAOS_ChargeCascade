@@ -10,9 +10,9 @@ export default function Benchmark() {
   useEffect(() => { loadLearned().then(setLearned).catch(() => setLearned(null)); }, []);
 
   return (
-    <article className="pf-doc">
+    <article className="page-body prose">
       <h1>Benchmark</h1>
-      <p className="pf-lead">{es
+      <p className="lede">{es
         ? 'La evaluación de los modelos aprendidos contra el motor analítico EXACTO (la autoridad). El surrogate gana su lugar por la velocidad, no por una victoria fabricada.'
         : 'The evaluation of the learned models against the EXACT analytic engine (the authority). The surrogate earns its place on speed, not a fabricated win.'}</p>
 
