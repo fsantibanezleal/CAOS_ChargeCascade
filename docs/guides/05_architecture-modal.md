@@ -2,58 +2,46 @@
 
 Every CAOS/Faena web app **MUST** ship an in-app **Architecture / "How it works"** modal, opened by an
 always-visible **ⓘ button in the header**. It is the fast visual proof the app is a *real, complete system* — not a
-demo. The chrome (button + modal) is provided by the shared shell; each product supplies only its diagrams + copy.
+demo. The chrome (button + modal) comes from the shared shell; ChargeCascade supplies only its diagrams + copy.
 
 Binding decision: [`conventions/architecture/0-archetype/ADR-0058-in-app-architecture-modal.md`](../../../conventions/architecture/0-archetype/ADR-0058-in-app-architecture-modal.md)
-(in CAOS_MANAGE). Reference implementations: Veta and Circuita.
+(in CAOS_MANAGE). This is the retrofit standard for every CAOS web app.
 
-## What you inherit from the template
+## What ChargeCascade inherits from the archetype
 
-- **Chrome** — `@fasl-work/caos-app-shell` (≥ **0.1.2**) exposes the ⓘ button + the `ArchitectureModal`. The
-  `ShellConfig` gained an `architecture` field; when it is present the button appears, when absent it is hidden.
-- **Five themed placeholder SVGs** in [`frontend/public/svg/tech/`](../../frontend/public/svg/tech/):
+- **Chrome** — `@fasl-work/caos-app-shell` (pinned `^0.1.2` in `frontend/package.json`) exposes the ⓘ button + the
+  `ArchitectureModal`. The shell config gained an `architecture` field; present ⇒ the button appears.
+- **Five themed SVGs** in [`frontend/public/svg/tech/`](../../frontend/public/svg/tech/):
   `01-the-app.svg`, `02-lanes.svg`, `03-web-flow.svg`, `04-the-science.svg`, `05-data-contracts.svg`. Every colour is
   a shell CSS-variable token (`--color-surface`, `--color-border`, `--color-accent`, `--color-fg`, `--color-good`,
-  `--color-warn`, …) so the diagram repaints with the active light/dark theme.
-- **A paste-ready config** — [`frontend/src/architecture.ts.txt`](../../frontend/src/architecture.ts.txt) with the
-  five ADR-0058 tabs already wired to the SVGs and bilingual ES/EN bodies.
+  `--color-warn`, …) so each diagram repaints with the active light/dark theme.
 
-## How to wire it (per product)
+## How it's wired in ChargeCascade
 
-1. **Copy** `frontend/src/architecture.ts.txt` → `frontend/src/architecture.ts`.
-2. **Specialise** the product-specific tabs:
-   - Replace `public/svg/tech/01-the-app.svg` with a diagram of THIS product's domain (problem → input → method →
-     value) and edit the `app` tab's `body_en` / `body_es`.
-   - Replace `public/svg/tech/04-the-science.svg` with THIS product's real algorithm + equations and edit the
-     `science` tab body.
-   - Tabs `lanes`, `web-flow`, `design` are archetype-generic — the shipped SVGs + copy are reusable as-is. Keep
-     them; tweak only if your product deviates from the archetype.
-   - Add domain tabs if useful (never *fewer* than the five).
-3. **Pass it to the shell** in `frontend/src/main.tsx`:
+The config lives in [`frontend/src/architecture.ts`](../../frontend/src/architecture.ts) (`ArchitectureConfig`,
+imported from `@fasl-work/caos-app-shell`) and is passed to the shell:
 
-   ```ts
-   import { architecture } from './architecture';
+```ts
+import { architecture } from './architecture';
 
-   const shellConfig = {
-     product: { name: 'YourProduct', mark: <YourIcon size={18} /> },
-     routes: [/* … */],
-     links: { github: '…' },
-     version: '0.06.000',
-     architecture,            // ← turns the ⓘ button on
-   };
-   ```
+// the shell config, with architecture present → the ⓘ button turns on
+<AppShell config={{ ...config, architecture }}>
+```
 
-4. **Pin the shell** to `^0.1.2` in `frontend/package.json` (the version that ships the modal).
+Each tab pairs one SVG from `frontend/public/svg/tech/` with a **bilingual ES/EN** body (`body_en` / `body_es`).
 
-## The five mandatory tabs (ADR-0058 minimum)
+## The five tabs (specialised for ChargeCascade)
 
-| id | tab | generic? | what it must show |
-|----|-----|----------|-------------------|
-| `app` | The app | **product** | the domain problem → input → method → value; why it is real, not a demo |
-| `lanes` | Lanes — web / offline / compute | generic | what runs **live in the web** vs **offline/compute** (bake + train) vs **replay** |
-| `web-flow` | Web-app flow | generic | App recomputes live; the 6 pages; contract mirror; copy-data overlay; deploy |
-| `science` | The science | **product** | the real algorithm step by step, with the genuine equations |
-| `design` | Data contracts / design | generic | the two contracts (ingestion + artifact) + the lane gate + cases-by-category |
+| id | tab | SVG | what it shows |
+|----|-----|-----|----------------|
+| `app` | The app / La app | `01-the-app.svg` | the domain: set D / fill / ball / φc on a SAG·ball·rod mill and watch cascading → cataracting → centrifuging in 3D with live power. The mill engine (`frontend/src/mill/`) recomputes on every control. The 3D charge is a **kinematic animation of the analytic engine — not a DEM solve** (a real DEM trace is the documented offline upgrade). `C-CRITICAL` (φc = 1) and `C-EMPTY` (J = 0) are exact analytic controls. |
+| `lanes` | Lanes — web / offline / compute | `02-lanes.svg` | **web** = the TS engine + Three.js 3D + onnxruntime-web (no server); **offline/compute** = the Python pipeline bakes the cases via `tsx` and `--retrain` (torch) trains the two models → ONNX; **replay** = the committed `data/derived` artifacts overlaid into the SPA, with the typed `contract.types.ts` mirror failing the build on drift. |
+| `web-flow` | Web-app flow / Flujo de la web | `03-web-flow.svg` | the App recomputes live: the case selector or your own mill + the D / fill / ball / φc / mill-type controls feed the TS engine + the onnxruntime-web models, which feed the workbench (3D mill, trajectory diagram, regime map, power curve, charge cross-section, What-if). |
+| `science` | The science / La ciencia | `04-the-science.svg` | the real algorithm + equations: critical speed `42.3/√(D−d)`, the Davis single-particle departure + parabolic cataract trajectories, and the Hogg-Fuerstenau / Morrell power. |
+| `design` | Data contracts / Contratos de datos | `05-data-contracts.svg` | the two contracts (CONTRACT 1 ingestion `io/contract.py`; CONTRACT 2 artifact manifest/trace) + the lane gate + the 10 cases-by-category. |
+
+`app` and `science` are the **product-specific** tabs (ChargeCascade's domain + its real algorithm); `lanes`,
+`web-flow`, `design` are archetype-generic and reused as-is.
 
 ## Verify before deploy
 

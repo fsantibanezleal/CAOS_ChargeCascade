@@ -1,39 +1,31 @@
-"""Typed objects passed between pipeline stages — the inter-stage contract. Plain dataclasses (Pyodide-safe)."""
+"""Typed objects passed between pipeline stages — the inter-stage contract. Plain dataclasses (no heavy deps)."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class SIRParams:
-    """One validated operating point (EXAMPLE domain: an SIR epidemic)."""
-    case_id: str
-    beta: float        # 1/day, effective contact rate
-    gamma: float       # 1/day, recovery rate
-    N: float           # population
-    I0: float          # initial infected
-    days: int = 160    # horizon
+# the case CATEGORIES (mirrors frontend/src/mill/cases.ts)
+CATEGORIES = (
+    "mill type (the machine)",
+    "speed sweep (the regime transition)",
+    "fill / charge regime",
+    "control (analytic anchor)",
+)
 
 
 @dataclass(frozen=True)
-class FeatureRow:
-    """Derived features for the surrogate (feature_extraction stage)."""
-    case_id: str
-    r0: float          # beta / gamma (basic reproduction number)
-    beta: float
-    gamma: float
-    n_scaled: float    # log10(N)
-    i0_frac: float     # I0 / N
+class MillDescriptor:
+    """One validated tumbling-mill operating point (CONTRACT 1 output). A mill is a rotating cylinder; the charge
+    (grinding media + ore) is lifted and falls, breaking the ore. The charge motion (cascading / cataracting /
+    centrifuging) and the power draw follow from the geometry (diameter, length), the fill J, the fraction of critical
+    speed phiC and the media size. For the cases the result is regenerated from this descriptor by the TypeScript
+    engine (frontend/src/mill/)."""
 
-
-@dataclass(frozen=True)
-class SIRResult:
-    """The engine output for one case (infer stage) — the raw, undecimated trajectory + scalars."""
-    case_id: str
-    t: list[float]
-    S: list[float]
-    I: list[float]
-    R: list[float]
-    peak_I: float
-    t_peak: float
-    attack_rate: float
+    mill_id: str
+    mill_type: str         # rod | ball | sag | ag
+    diameter_m: float
+    length_m: float
+    fill: float            # J
+    phi_c: float           # fraction of critical speed
+    ball_top_mm: float
+    charge_density: float  # t/m^3
+    flags: tuple[str, ...] = ()
