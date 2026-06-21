@@ -175,6 +175,20 @@ def train_ood(X: np.ndarray, mu_x: np.ndarray, sd_x: np.ndarray, in_eval: np.nda
     return {"model": AEExport(net), "auc": round(auc, 4), "nEval": int(len(scores)), "thr": round(thr, 4)}
 
 
+def _strip_metadata(path: Path) -> None:
+    """Remove machine-specific provenance the dynamo exporter bakes in — the node `pkg.torch.onnx.stack_trace`
+    metadata_props carry ABSOLUTE source paths (D:\\_Repos\\...), which both leak the local path and make the bytes
+    non-portable. Stripping them (+ the doc_strings) keeps the committed ONNX clean and reproducible across machines."""
+    import onnx
+    m = onnx.load(str(path))
+    m.doc_string = ""
+    m.graph.doc_string = ""
+    for node in m.graph.node:
+        del node.metadata_props[:]
+        node.doc_string = ""
+    onnx.save(m, str(path))
+
+
 def export_onnx(model: nn.Module, n_in: int, in_name: str, out_name: str, path: Path) -> None:
     model.eval()
     dummy = torch.zeros(1, n_in)
@@ -183,6 +197,7 @@ def export_onnx(model: nn.Module, n_in: int, in_name: str, out_name: str, path: 
     torch.onnx.export(model, dummy, str(path), input_names=[in_name], output_names=[out_name],
                       dynamic_axes={in_name: {0: "batch"}, out_name: {0: "batch"}},
                       opset_version=17, external_data=False)
+    _strip_metadata(path)
 
 
 def main() -> None:
