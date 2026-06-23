@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
-import { CASES, caseById, evaluate, type MillType, type Operating } from '../mill/index.ts';
+import { CASES, caseById, evaluate, MILL_PRESETS, type MillType, type Operating } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
 import { loadLearned } from '../lib/artifacts.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
@@ -223,12 +223,15 @@ export default function Tool() {
           <div className="pf-cap pf-muted">{theCase.realOrSynthetic} · {theCase.expectedBand}</div>
         </div>
         <div className="pf-card">
-          <div className="pf-card-t">{es ? 'Molino (en vivo)' : 'Mill (live)'}</div>
+          <div className="pf-card-t">{es ? 'Tipo de molino (preset)' : 'Mill type (preset)'}</div>
           <div className="pf-chips">
             {MILLS.map((m) => (
-              <button key={m} className={`chip ${op.millType === m ? 'on' : ''}`} onClick={() => setOp((o) => ({ ...o, millType: m }))}>{m}</button>
+              // selecting a type loads that machine's characteristic geometry/media/density (MILL_PRESETS) — so Nc,
+              // regime, power and the 3D charge all change; the sliders below then fine-tune from the preset.
+              <button key={m} className={`chip ${op.millType === m ? 'on' : ''}`} onClick={() => setOp((o) => ({ ...o, millType: m, ...MILL_PRESETS[m] }))}>{m}</button>
             ))}
           </div>
+          <div className="pf-cap pf-muted">{es ? 'carga el preset de geometría/medios de esa máquina (los deslizadores afinan)' : 'loads that machine’s geometry/media preset (sliders fine-tune)'}</div>
           <label className="pf-ctl">{es ? 'fracción crítica φc' : 'fraction critical φc'}: {op.phiC.toFixed(2)}
             <input className="range" type="range" min={0.3} max={1.1} step={0.01} value={op.phiC} onChange={(e) => set('phiC', +e.target.value)} />
           </label>

@@ -10,5 +10,5 @@ export type { ChargeGeometry } from './charge.ts';
 export { classifyRegime, CASCADE_CATARACT_PHIC, CATARACT_CENTRIFUGE_PHIC } from './regime.ts';
 export { hoggFuerstenauKw, morrellFormKw, bondWKwhT, chargeMassT } from './power.ts';
 export { evaluate } from './engine.ts';
-export { CASES, caseById, CAT_TYPE, CAT_SPEED, CAT_FILL, CAT_CONTROL } from './cases.ts';
+export { CASES, caseById, CAT_TYPE, CAT_SPEED, CAT_FILL, CAT_CONTROL, MILL_PRESETS } from './cases.ts';
 export type { CCCase } from './cases.ts';
