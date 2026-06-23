@@ -208,7 +208,7 @@ export default function Tool() {
             {surrPending ? (
               <div className="cc-pending">
                 <strong>{es ? 'Surrogate: pendiente de entrenamiento' : 'Surrogate: pending training'}</strong>
-                <p>{es ? 'Corre `python -m cclab.pipeline all --retrain` para entrenar el surrogate de potencia (torch → ONNX). El motor analítico EXACTO corre en vivo mientras tanto.' : 'Run `python -m cclab.pipeline all --retrain` to train the power surrogate (torch → ONNX). The EXACT analytic engine runs live meanwhile.'}</p>
+                <p>{es ? 'Re-genera el surrogate de potencia con el paso de re-entrenamiento del precómputo (torch → ONNX). El motor analítico EXACTO corre en vivo mientras tanto.' : 'Regenerate the power surrogate with the precompute retrain step (torch → ONNX). The EXACT analytic engine runs live meanwhile.'}</p>
               </div>
             ) : (
               <>

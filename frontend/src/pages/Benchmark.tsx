@@ -35,7 +35,7 @@ export default function Benchmark() {
           <LearnedTransparency learned={learned} es={es} />
         </>
       ) : (
-        <p className="cc-note">{es ? 'Modelos aprendidos pendientes — corre `python -m cclab.pipeline all --retrain`. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — run `python -m cclab.pipeline all --retrain`. The exact analytic engine runs live meanwhile.'}</p>
+        <p className="cc-note">{es ? 'Modelos aprendidos pendientes — re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
       )}
       {learned && <p className="cc-cap">{learned.honesty}</p>}
     </article>
