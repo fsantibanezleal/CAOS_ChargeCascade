@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useShellLang } from '@fasl-work/caos-app-shell';
 import type uPlot from 'uplot';
 import { UPlotChart, themeColors } from './UPlotChart.tsx';
 import type { PowerPoint } from '../mill/types.ts';
@@ -6,6 +7,7 @@ import type { PowerPoint } from '../mill/types.ts';
 // Power vs fraction-of-critical-speed: the Hogg-Fuerstenau + Morrell-form curves, with the current operating phiC
 // marked and the centrifuging band (phiC >= 1) shaded. Reads kW on hover. The dramatic peak-then-roll-off picture.
 export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[]; phiC: number; height?: number }) {
+  const es = useShellLang() === 'es';
   const x = curve.map((p) => p.phiC);
   const data = [x, curve.map((p) => p.phf), curve.map((p) => p.morrell)] as unknown as uPlot.AlignedData;
   const build = useCallback((width: number, h: number): uPlot.Options => {
@@ -15,8 +17,8 @@ export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[];
       height: h,
       scales: { x: { time: false }, y: { range: [0, null] as unknown as uPlot.Scale.Range } },
       axes: [
-        { label: 'fraction of critical speed φc', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
-        { label: 'net power [kW]', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
+        { label: es ? 'fracción de velocidad crítica φc' : 'fraction of critical speed φc', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
+        { label: es ? 'potencia neta [kW]' : 'net power [kW]', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
       ],
       series: [
         { label: 'φc' },
@@ -44,6 +46,6 @@ export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[];
         ],
       },
     };
-  }, [phiC]);
+  }, [phiC, es]);
   return <UPlotChart data={data} build={build} height={height} />;
 }
