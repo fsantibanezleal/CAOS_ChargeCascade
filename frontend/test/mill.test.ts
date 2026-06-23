@@ -83,3 +83,44 @@ test('the control cases hold their anchors', () => {
   assert.ok(evaluate(caseById('C-CRITICAL').op).fracCentrifuging > 0, 'phiC=1 -> centrifuging onset');
   assert.equal(CASES.length, 10);
 });
+
+// --- T4: the inverse recommender (target -> phiC on the monotone exact engine) ---
+test('solvePhiCForPower bisects to the target net power (round-trip)', async () => {
+  const { solvePhiCForPower } = await import('../src/mill/inverse.ts');
+  const sol = solvePhiCForPower(BALL, 1000);                 // ask for 1.0 MW
+  assert.ok(sol.achievable && sol.phiC != null, 'should be achievable mid-range');
+  const got = evaluate({ ...BALL, phiC: sol.phiC! }).phfKw;  // re-evaluate at the recommended phiC
+  assert.ok(Math.abs(got - 1000) < 1.0, `round-trip power ${got} != 1000`);
+  assert.ok(sol.phiC! > 0.3 && sol.phiC! < 1.05, 'phiC in range');
+});
+
+test('solvePhiCForPower flags an out-of-reach target (above the ceiling)', async () => {
+  const { solvePhiCForPower } = await import('../src/mill/inverse.ts');
+  const sol = solvePhiCForPower(BALL, sol0Max(BALL) * 2);    // ask for 2x the ceiling
+  assert.equal(sol.achievable, false, 'beyond the ceiling -> not achievable');
+});
+function sol0Max(op: Operating): number { return evaluate({ ...op, phiC: 1.05 }).phfKw; }
+
+test('solvePhiCForCapacity round-trips through P/W and reports the ceiling', async () => {
+  const { solvePhiCForCapacity } = await import('../src/mill/inverse.ts');
+  const w = bondWKwhT(BALL.oreWi, BALL.feedF80um, BALL.prodP80um);
+  const midTph = (evaluate({ ...BALL, phiC: 1.05 }).phfKw / w) * 0.6;
+  const sol = solvePhiCForCapacity(BALL, midTph);
+  assert.ok(sol.achievable && sol.phiC != null, 'mid capacity achievable');
+  const gotTph = evaluate({ ...BALL, phiC: sol.phiC! }).phfKw / w;
+  assert.ok(Math.abs(gotTph - midTph) < 0.5, `round-trip tph ${gotTph} != ${midTph}`);
+  assert.ok(sol.maxTph > sol.minTph, 'ceiling above floor');
+});
+
+test('recommendPhiCForRegime returns the band and marks centrifuging non-operational', async () => {
+  const { recommendPhiCForRegime } = await import('../src/mill/inverse.ts');
+  const cat = recommendPhiCForRegime(BALL, 'cataracting');
+  assert.ok(cat.phiCRec != null && cat.operational, 'cataracting is operational');
+  // the recommended phiC must actually classify as cataracting
+  assert.equal(evaluate({ ...BALL, phiC: cat.phiCRec! }).regime, 'cataracting', 'rec phiC is cataracting');
+  const cen = recommendPhiCForRegime(BALL, 'centrifuging');
+  assert.equal(cen.operational, false, 'centrifuging is non-operational');
+  // monotone ordering: cascading band sits below the cataracting band
+  const cas = recommendPhiCForRegime(BALL, 'cascading');
+  assert.ok(cas.phiCRec! < cat.phiCRec!, 'cascading below cataracting');
+});
