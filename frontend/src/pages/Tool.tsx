@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
-import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, type MillType, type Operating, type Regime } from '../mill/index.ts';
+import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, validateMill, MILL_TYPES, type MillInput, type MillType, type Operating, type Regime } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
 import { loadLearned } from '../lib/artifacts.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
@@ -28,6 +28,8 @@ export default function Tool() {
   const [oodThr, setOodThr] = useState<number | null>(null);
   const [invRegime, setInvRegime] = useState<Regime>('cataracting');   // inverse: target regime → recommended φc
   const [invTph, setInvTph] = useState<number | null>(null);           // inverse: target throughput → recommended φc
+  // bring-your-own-mill: a custom descriptor validated live by CONTRACT 1 (defaults deliberately ≠ any preset)
+  const [custom, setCustom] = useState<MillInput>({ mill_type: 'ball', diameter_m: 5.0, length_m: 7.0, fill: 0.32, phi_c: 0.74, ball_top_mm: 75, charge_density: 4.6 });
 
   useEffect(() => { loadLearned().then((l) => setOodThr(l.ood?.thr ?? null)).catch(() => setOodThr(null)); }, []);
 
@@ -286,6 +288,65 @@ export default function Tool() {
           {r.flags.length > 0 && <p className="pf-note" style={{ color: 'var(--color-warn)' }}>{r.flags.join(' · ')}</p>}
         </div>
       ),
+    },
+    {
+      id: 'custom', label: es ? 'Molino propio' : 'Custom mill',
+      content: (() => {
+        // bring-your-own-mill: the CONTRACT-1 gate, live. Validate the descriptor; on accept, run the EXACT engine on
+        // it (carrying the current ore params) and offer to apply it to the whole workbench.
+        const cval = validateMill(custom);
+        const setC = (k: keyof MillInput, val: number | string) => setCustom((o) => ({ ...o, [k]: val }));
+        const asOp = (o: Operating): Operating => ({ ...o, millType: custom.mill_type as MillType, diameterM: custom.diameter_m, lengthM: custom.length_m, fill: custom.fill, phiC: custom.phi_c, ballTopMm: custom.ball_top_mm, chargeDensity: custom.charge_density });
+        const preview = cval.accepted ? evaluate(asOp(op)) : null;
+        const numField = (k: keyof MillInput, label: string, step: number) => (
+          <label className="pf-ctl" style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', marginRight: '1rem' }}>
+            {label} <input type="number" step={step} value={Number.isFinite(custom[k] as number) ? (custom[k] as number) : ''} onChange={(e) => setC(k, e.target.value === '' ? NaN : +e.target.value)} style={{ width: '5.5rem' }} />
+          </label>
+        );
+        return (
+          <div className="pf-vizstack">
+            <div className="pf-plot-t">{es
+              ? 'Trae tu propio molino: describe el punto de operación; CONTRACT-1 (la misma puerta que valida los casos) lo acepta / rechaza con motivo / marca banderas de honestidad. Si se acepta, el motor EXACTO corre sobre tu molino y puedes aplicarlo a todo el workbench.'
+              : 'Bring your own mill: describe the operating point; CONTRACT-1 (the same gate that validates the cases) accepts / rejects it with a reason / raises honesty flags. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
+            <div className="pf-card">
+              <div className="pf-card-t">{es ? 'Tu molino — CONTRACT-1' : 'Your mill — CONTRACT-1'}</div>
+              <div className="pf-chips">
+                {MILL_TYPES.map((m) => <button key={m} className={`chip ${custom.mill_type === m ? 'on' : ''}`} onClick={() => setC('mill_type', m)}>{m}</button>)}
+              </div>
+              <div style={{ marginTop: '0.5rem' }}>
+                {numField('diameter_m', es ? 'diámetro D [m]' : 'diameter D [m]', 0.1)}
+                {numField('length_m', es ? 'largo L [m]' : 'length L [m]', 0.1)}
+                {numField('fill', es ? 'llenado J [0–0.6]' : 'fill J [0–0.6]', 0.01)}
+                {numField('phi_c', 'φc [0–1.5]', 0.01)}
+                {numField('ball_top_mm', es ? 'medio top [mm]' : 'top media [mm]', 5)}
+                {numField('charge_density', es ? 'densidad ρ [t/m³]' : 'density ρ [t/m³]', 0.1)}
+              </div>
+            </div>
+
+            {cval.accepted ? (
+              <div className="cc-regime-pill cc-regime-cascading">{es ? 'ACEPTADO' : 'ACCEPTED'} ✓{cval.flags.length > 0 ? ` · ${cval.flags.length} ${es ? 'bandera(s)' : 'flag(s)'}` : ''}</div>
+            ) : (
+              <div className="cc-regime-pill cc-regime-centrifuging">{es ? 'RECHAZADO' : 'REJECTED'} ✗ — {cval.reason}</div>
+            )}
+            {cval.flags.map((f, i) => <p key={i} className="pf-note" style={{ color: 'var(--color-warn)' }}>⚠ {f}</p>)}
+
+            {preview && (
+              <>
+                <div className="pf-kpis">
+                  <Kpi label={es ? 'régimen' : 'regime'} value={preview.regime} />
+                  <Kpi label="φc" value={custom.phi_c.toFixed(2)} />
+                  <Kpi label={es ? 'potencia neta' : 'net power'} value={kw(preview.phfKw)} />
+                  <Kpi label="Nc" value={`${preview.ncRpm.toFixed(1)} rpm`} />
+                </div>
+                <p className="pf-note">{es
+                  ? `El motor exacto sobre tu molino: ${preview.regime}, ${kw(preview.phfKw)}. Aplícalo para ver el 3D, las trayectorias, la potencia y la conminución sobre él (usa el mineral del caso actual).`
+                  : `The exact engine on your mill: ${preview.regime}, ${kw(preview.phfKw)}. Apply it to see the 3D, trajectories, power and comminution on it (using the current case’s ore).`}
+                  {' '}<button className="chip" onClick={() => setOp((o) => asOp(o))}>{es ? 'aplicar al workbench' : 'apply to workbench'}</button></p>
+              </>
+            )}
+          </div>
+        );
+      })(),
     },
   ];
 
