@@ -13,7 +13,7 @@ export default function Methodology() {
         {
           id: 'crit', label: es ? 'Velocidad crítica' : 'Critical speed',
           content: (
-            <div className="pf-doc-sec">
+            <div className="cc-doc-sec">
               <p>{es ? 'La capa externa centrifuga (se pega a la pared arriba) cuando la fuerza centrípeta iguala a la gravedad: ' : 'The outer layer centrifuges (pins to the shell at the top) when the centripetal force equals gravity: '}<InlineMath tex="m\,\omega^2 R = m g" />{es ? '. En rpm con la corrección del tamaño de bola:' : '. In rpm with the ball-size correction:'}</p>
               <Equation tex="N_c = \frac{42.3}{\sqrt{D-d}}\ \text{[rpm]},\qquad \varphi_c=\frac{N}{N_c}" />
               <p>{es ? 'La constante 42.3 = ' : 'The constant 42.3 = '}<InlineMath tex="\tfrac{60}{2\pi}\sqrt{2g}" />{es ? ' (derivada, no ajustada). Los molinos reales corren ' : ' (derived, not fitted). Real mills run '}<InlineMath tex="\varphi_c\approx0.65\text{–}0.82" />{es ? '.' : '.'} <Cite id="wills2016" paren /></p>
@@ -23,7 +23,7 @@ export default function Methodology() {
         {
           id: 'davis', label: es ? 'Movimiento de la carga' : 'Charge motion',
           content: (
-            <div className="pf-doc-sec">
+            <div className="cc-doc-sec">
               <p>{es ? 'Un elemento en una capa radial de radio ' : 'An element on a radial shell at radius '}<InlineMath tex="r" />{es ? ' es llevado por la pared hasta el ángulo de partida donde la componente radial de la gravedad ya no aporta la fuerza centrípeta ' : ' is carried by the shell until the departure angle where the radial component of gravity can no longer supply the centripetal force '}<InlineMath tex="m\omega^2 r" />{es ? ' (Davis 1919):' : ' (Davis 1919):'}</p>
               <Equation tex="\cos\alpha = \frac{\omega^2 r}{g} = \varphi_c^2\,\frac{r}{R}" />
               <p>{es ? 'Luego vuela una parábola hasta el pie de la carga (toe):' : 'It then flies a parabola to the charge toe:'}</p>
@@ -37,7 +37,7 @@ export default function Methodology() {
         {
           id: 'regime', label: es ? 'Regímenes' : 'Regimes',
           content: (
-            <div className="pf-doc-sec">
+            <div className="cc-doc-sec">
               <p>{es ? 'La transición que observas, en bandas de φc (Wills & Finch; Napier-Munn et al.):' : 'The transition you watch, in φc bands (Wills & Finch; Napier-Munn et al.):'}</p>
               <ul>
                 <li><b>{es ? 'slumping' : 'slumping'}</b> <InlineMath tex="\varphi_c\lesssim0.4" /> — {es ? 'la carga resbala y se desploma.' : 'the charge slips & slumps.'}</li>
@@ -52,7 +52,7 @@ export default function Methodology() {
         {
           id: 'power', label: es ? 'Potencia' : 'Power',
           content: (
-            <div className="pf-doc-sec">
+            <div className="cc-doc-sec">
               <p>{es ? 'Hogg & Fuerstenau (1972): la potencia neta es el brazo de torque del centro de masa de la carga, toda girando rígidamente:' : 'Hogg & Fuerstenau (1972): the net power is the torque-arm of the charge centre of mass, all rotating rigidly:'}</p>
               <Equation tex="P_{net} = \omega\,M\,g\,a,\qquad M=\rho_c\,\pi R^2 L\,J,\qquad a = c\,R\sin\alpha\,(1-1.065\,J)" />
               <p>{es ? 'El factor ' : 'The factor '}<InlineMath tex="J(1-1.065J)" />{es ? ' hace que la potencia llegue a su máximo cerca de ' : ' peaks the power near '}<InlineMath tex="J\approx0.47" />{es ? ' (la clásica "potencia máxima al 45–50% de llenado"); de primeros principios ' : ' (the classic "power peaks at 45–50% fill"); from first principles '}<InlineMath tex="P\propto D^{2.5}" />{es ? '. El brazo está calibrado a ~1.3 MW para el molino de referencia. ' : '. The arm is calibrated to ~1.3 MW for the reference mill. '}<Cite id="hoggfuerstenau1972" paren /></p>

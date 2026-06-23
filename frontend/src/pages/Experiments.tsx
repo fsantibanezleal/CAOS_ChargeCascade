@@ -33,7 +33,7 @@ export default function Experiments() {
         ? 'Los 10 casos, horneados por el motor. Cada fila lleva la velocidad crítica, φc, el régimen, la potencia neta, el % centrifugando y la masa de carga.'
         : 'The 10 cases, baked by the engine. Each row carries the critical speed, φc, the regime, the net power, the % centrifuging and the charge mass.'}</p>
 
-      {rows == null ? <p className="pf-note">{es ? 'cargando…' : 'loading…'}</p> : (
+      {rows == null ? <p className="cc-note">{es ? 'cargando…' : 'loading…'}</p> : (
         <table className="cmp-table">
           <thead>
             <tr>
@@ -57,7 +57,7 @@ export default function Experiments() {
           </tbody>
         </table>
       )}
-      <p className="pf-note">{es
+      <p className="cc-note">{es
         ? 'Anclas: K-SAG (10 m) saca la mayor potencia (P ∝ D^2.5). S-CASCADE/S-CATARACT/S-CENTRIFUGE son el MISMO molino a distinta φc (la transición de régimen). C-CRITICAL (φc=1) centrifuga; C-EMPTY (J=0) → 0 potencia.'
         : 'Anchors: K-SAG (10 m) draws the most power (P ∝ D^2.5). S-CASCADE/S-CATARACT/S-CENTRIFUGE are the SAME mill at different φc (the regime transition). C-CRITICAL (φc=1) centrifuges; C-EMPTY (J=0) → 0 power.'}</p>
     </article>
