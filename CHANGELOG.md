@@ -3,6 +3,29 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.11.000] — 2026-06-23
+
+Bring-to-bar T8 (the last gap-review item): a live **bring-your-own-mill** ingest. CONTRACT-1 was fully implemented
+and tested offline, and the guide documented BYO — but the browser had no live door to it. Now it does.
+
+### Added
+- **`mill/contract.ts`** — CONTRACT-1 ported to TS (`validateMill`), in lock-step with the reference
+  `data-pipeline/cclab/io/contract.py`: a descriptor is ACCEPTED iff it passes; ill-formed ones are REJECTED with a
+  reason (never coerced — bad mill type, non-positive D/L/ρ, fill ∉ [0, 0.6], φc ∉ (0, 1.5], ball ≥ diameter); and
+  plausible-but-honesty-relevant ones are FLAGGED (φc ≥ 1 centrifuging, φc > 0.85 over-speed, fill > 45 % crowding,
+  fill < 15 % ball-on-liner, large ball/diameter ratio).
+- **App — "Custom mill" tab**: a form (mill-type chips + the 6 CONTRACT-1 numeric fields) validated **live** by the
+  gate, with the accepted ✓ / rejected ✗ (with reason) / ⚠ flag verdict. On accept it runs the **exact engine** on
+  your mill (regime, net power, Nc, using the current case's ore) and an **apply-to-workbench** button sets the
+  operating point so every tab — 3D, trajectories, power, comminution — renders on your mill.
+- **Tests:** 3 `validateMill` tests mirror the Python policy (a clean accept; every rejection path with its reason;
+  every honesty flag). 17 mill tests pass; all three paths (accept / reject / flag) verified live, 0 console errors.
+
+### Status
+- **ChargeCascade is now at-bar** — all eight gap-review tasks shipped (T1+T2 mill-type, T3 Comminution, T4 inverse,
+  T5 training transparency, T6 viz i18n, T7 per-case docs, T8 BYO ingest) on top of a real workbench (9 App tabs, two
+  genuinely-trained ONNX models, a 22-file + 10-per-case docs wiki, the ⓘ architecture modal).
+
 ## [0.10.002] — 2026-06-23
 
 Bring-to-bar T7: **per-case documentation.** `docs/cases/` had only the README (taxonomy + coverage matrix);

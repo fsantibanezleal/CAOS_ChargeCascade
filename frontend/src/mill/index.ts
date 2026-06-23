@@ -14,3 +14,5 @@ export { CASES, caseById, CAT_TYPE, CAT_SPEED, CAT_FILL, CAT_CONTROL, MILL_PRESE
 export type { CCCase } from './cases.ts';
 export { solvePhiCForPower, solvePhiCForCapacity, recommendPhiCForRegime, PHI_LO, PHI_HI } from './inverse.ts';
 export type { PowerSolve, CapacitySolve, RegimeSolve } from './inverse.ts';
+export { validateMill, MILL_TYPES } from './contract.ts';
+export type { MillInput, ContractResult } from './contract.ts';

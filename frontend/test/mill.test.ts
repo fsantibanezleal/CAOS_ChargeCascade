@@ -124,3 +124,41 @@ test('recommendPhiCForRegime returns the band and marks centrifuging non-operati
   const cas = recommendPhiCForRegime(BALL, 'cascading');
   assert.ok(cas.phiCRec! < cat.phiCRec!, 'cascading below cataracting');
 });
+
+// --- T8: the bring-your-own-mill CONTRACT-1 gate (validateMill mirrors data-pipeline/cclab/io/contract.py) ---
+test('validateMill accepts a clean descriptor with no flags', async () => {
+  const { validateMill } = await import('../src/mill/contract.ts');
+  const r = validateMill({ mill_type: 'ball', diameter_m: 5, length_m: 7, fill: 0.32, phi_c: 0.74, ball_top_mm: 75, charge_density: 4.6 });
+  assert.equal(r.accepted, true);
+  assert.equal(r.reason, null);
+  assert.equal(r.flags.length, 0);
+});
+
+test('validateMill REJECTS ill-formed descriptors with a reason (never coerced)', async () => {
+  const { validateMill } = await import('../src/mill/contract.ts');
+  const base = { mill_type: 'ball', diameter_m: 5, length_m: 7, fill: 0.32, phi_c: 0.74, ball_top_mm: 75, charge_density: 4.6 };
+  assert.equal(validateMill({ ...base, mill_type: 'gyratory' }).accepted, false);   // not a mill type
+  assert.equal(validateMill({ ...base, diameter_m: 0 }).accepted, false);            // D must be > 0
+  assert.equal(validateMill({ ...base, charge_density: -1 }).accepted, false);       // rho must be > 0
+  assert.equal(validateMill({ ...base, fill: 0.7 }).accepted, false);                // fill not in [0,0.6]
+  assert.equal(validateMill({ ...base, phi_c: 1.6 }).accepted, false);               // phi_c not in (0,1.5]
+  assert.equal(validateMill({ ...base, phi_c: 0 }).accepted, false);                 // phi_c must be > 0
+  assert.equal(validateMill({ ...base, ball_top_mm: 6000 }).accepted, false);        // ball >= mill diameter (6 m)
+  assert.equal(validateMill({ ...base, diameter_m: NaN }).accepted, false);          // non-numeric
+  assert.ok(validateMill({ ...base, mill_type: 'gyratory' }).reason);                // carries a reason
+});
+
+test('validateMill FLAGS plausible-but-honesty-relevant descriptors (accepted + flag)', async () => {
+  const { validateMill } = await import('../src/mill/contract.ts');
+  const base = { mill_type: 'ball', diameter_m: 5, length_m: 7, fill: 0.32, phi_c: 0.74, ball_top_mm: 75, charge_density: 4.6 };
+  const cent = validateMill({ ...base, phi_c: 1.05 });
+  assert.ok(cent.accepted && cent.flags.some((f) => /centrifug/i.test(f)));          // phi_c >= 1
+  const over = validateMill({ ...base, phi_c: 0.9 });
+  assert.ok(over.accepted && over.flags.some((f) => /over-speed/i.test(f)));         // 0.85 < phi_c < 1
+  const crowd = validateMill({ ...base, fill: 0.5 });
+  assert.ok(crowd.accepted && crowd.flags.some((f) => /crowding|45%/.test(f)));      // fill > 0.45
+  const lean = validateMill({ ...base, fill: 0.1 });
+  assert.ok(lean.accepted && lean.flags.some((f) => /ball-on-liner|15%/.test(f)));   // fill < 0.15
+  const bigball = validateMill({ ...base, ball_top_mm: 300, diameter_m: 5 });
+  assert.ok(bigball.accepted && bigball.flags.some((f) => /ball\/diameter/i.test(f))); // d >= 0.05 D
+});
