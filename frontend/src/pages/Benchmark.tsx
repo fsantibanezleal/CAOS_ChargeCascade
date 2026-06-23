@@ -24,17 +24,72 @@ export default function Benchmark() {
 
       <h2>{es ? 'Modelos aprendidos (held-out)' : 'Learned models (held-out)'}</h2>
       {learned ? (
-        <table className="cmp-table">
-          <thead><tr><th>{es ? 'modelo' : 'model'}</th><th>{es ? 'métrica' : 'metric'}</th><th>{es ? 'valor' : 'value'}</th></tr></thead>
-          <tbody>
-            <tr><td>{es ? 'surrogate de potencia' : 'power surrogate'}</td><td>{es ? 'error de potencia vs exacto' : 'power error vs exact'}</td><td><b>{(learned.surrogate.power_err * 100).toFixed(1)}%</b></td></tr>
-            <tr><td>{es ? 'OOD de operación' : 'operating OOD-AE'}</td><td>AUC</td><td><b>{learned.ood.auc.toFixed(3)}</b></td></tr>
-          </tbody>
-        </table>
+        <>
+          <table className="cmp-table">
+            <thead><tr><th>{es ? 'modelo' : 'model'}</th><th>{es ? 'métrica' : 'metric'}</th><th>{es ? 'valor' : 'value'}</th></tr></thead>
+            <tbody>
+              <tr><td>{es ? 'surrogate de potencia' : 'power surrogate'}</td><td>{es ? 'error de potencia vs exacto' : 'power error vs exact'}</td><td><b>{(learned.surrogate.power_err * 100).toFixed(1)}%{learned.surrogate.power_err_std != null ? ` ± ${(learned.surrogate.power_err_std * 100).toFixed(1)}%` : ''}</b></td></tr>
+              <tr><td>{es ? 'OOD de operación' : 'operating OOD-AE'}</td><td>AUC</td><td><b>{learned.ood.auc.toFixed(3)}</b></td></tr>
+            </tbody>
+          </table>
+          <LearnedTransparency learned={learned} es={es} />
+        </>
       ) : (
         <p className="pf-note">{es ? 'Modelos aprendidos pendientes — corre `python -m cclab.pipeline all --retrain`. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — run `python -m cclab.pipeline all --retrain`. The exact analytic engine runs live meanwhile.'}</p>
       )}
       {learned && <p className="pf-cap">{learned.honesty}</p>}
     </article>
+  );
+}
+
+// T5 — training transparency: the surrogate/AE lineage made auditable (architecture, data design, the predicted-vs-
+// exact scatter on held-out points), so the held-out metric is visibly EARNED, not asserted.
+function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolean }) {
+  const s = learned.surrogate, o = learned.ood, d = learned.data;
+  const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : '—');
+  const sc = s.scatter ?? [];
+  // predicted-vs-exact scatter (kW): points should sit on the y=x diagonal if the surrogate tracks the engine
+  const W = 360, H = 240, padL = 44, padB = 34, padT = 12, padR = 12;
+  const vals = sc.flat();
+  const hi = vals.length ? Math.max(...vals) : 1;
+  const sx = (v: number) => padL + (v / (hi || 1)) * (W - padL - padR);
+  const sy = (v: number) => padT + (1 - v / (hi || 1)) * (H - padT - padB);
+  if (s.arch == null) return null;   // v1 file — no lineage to show
+  return (
+    <div style={{ marginTop: '0.8rem' }}>
+      <div className="pf-card-t">{es ? 'Transparencia del entrenamiento (auditable)' : 'Training transparency (auditable)'}</div>
+      <p className="pf-note">{es
+        ? 'La métrica held-out de arriba es real y EARNED, no afirmada: aquí está el linaje completo del surrogate (cómo se entrenó) y el scatter predicho-vs-exacto en los puntos held-out.'
+        : 'The held-out metric above is real and EARNED, not asserted: here is the surrogate’s full training lineage (how it was trained) and the predicted-vs-exact scatter on the held-out points.'}</p>
+      <div className="pf-twocol" style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <table className="cmp-table" style={{ flex: '1 1 320px' }}>
+          <tbody>
+            <tr><td>{es ? 'arquitectura' : 'architecture'}</td><td className="mono">{s.arch} · {s.params} {es ? 'parám.' : 'params'}</td></tr>
+            <tr><td>{es ? 'optimizador' : 'optimizer'}</td><td className="mono">{s.optimizer} lr {s.lr} · {s.epochs} ep · batch {s.batch}</td></tr>
+            <tr><td>{es ? 'pérdida' : 'loss'}</td><td className="mono">{s.loss}</td></tr>
+            <tr><td>{es ? 'división' : 'split'}</td><td className="mono">{s.split} → {s.nTrain}/{s.nVal}</td></tr>
+            <tr><td>{es ? 'pérdida final tr/val' : 'final loss tr/val'}</td><td className="mono">{s.finalTrainLoss} / {s.finalValLoss}</td></tr>
+            <tr><td>{es ? 'error potencia (med ± σ)' : 'power err (mean ± σ)'}</td><td className="mono">{(s.power_err * 100).toFixed(1)}% ± {((s.power_err_std ?? 0) * 100).toFixed(1)}% (n={s.nEval})</td></tr>
+            <tr><td>ONNX</td><td className="mono">opset {s.opset} · {kb(s.modelBytes)}</td></tr>
+            <tr className="matched"><td>{es ? 'OOD-AE' : 'OOD-AE'}</td><td className="mono">{o.arch} · {o.params} {es ? 'parám.' : 'params'} · AUC {o.auc.toFixed(3)} · {kb(o.modelBytes)}</td></tr>
+          </tbody>
+        </table>
+        <div className="rv-plot" style={{ flex: '0 0 auto', maxWidth: W + 16 }}>
+          <div className="pf-cap pf-muted">{es ? 'predicho vs exacto (kW, held-out)' : 'predicted vs exact (kW, held-out)'}</div>
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ font: '10px var(--font-sans, system-ui, sans-serif)' }} role="img" aria-label={es ? 'predicho vs exacto' : 'predicted vs exact'}>
+            <line x1={sx(0)} y1={sy(0)} x2={sx(hi)} y2={sy(hi)} stroke="var(--color-fg-subtle)" strokeDasharray="4 3" />
+            {sc.map(([ex, pr], i) => <circle key={i} cx={sx(ex)} cy={sy(pr)} r={2.4} fill="var(--color-accent)" opacity={0.6} />)}
+            <text x={sx(0)} y={sy(0) + 14} fill="var(--color-fg-subtle)">0</text>
+            <text x={sx(hi)} y={sy(0) + 14} textAnchor="end" fill="var(--color-fg-subtle)">{Math.round(hi)}</text>
+            <text x={(W) / 2} y={H - 2} textAnchor="middle" fill="var(--color-fg-faint)">{es ? 'exacto (Hogg-F.) kW' : 'exact (Hogg-F.) kW'}</text>
+          </svg>
+        </div>
+      </div>
+      {d && (
+        <p className="pf-cap pf-muted" style={{ marginTop: '0.4rem' }}>
+          {es ? 'Diseño de datos: ' : 'Data design: '}{d.nTrainPoints} {es ? 'puntos de entrenamiento' : 'training points'} · {d.nEvalInDist} held-out · {d.nOod} OOD · {d.nFeatures} {es ? 'features' : 'features'} · {es ? 'semilla' : 'seed'} {d.seed} · {d.sampling}. {es ? 'Envolvente' : 'Envelope'}: {Object.entries(d.envelope).map(([k, v]) => `${k} [${v[0]}–${v[1]}]`).join(' · ')}.
+        </p>
+      )}
+    </div>
   );
 }

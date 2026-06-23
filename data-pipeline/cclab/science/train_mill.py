@@ -67,11 +67,15 @@ class Surrogate(nn.Module):
         return self.net(x)
 
 
+SURR_EPOCHS = 160
+OOD_EPOCHS = 180
+
+
 def train_surrogate(X: np.ndarray, Y: np.ndarray):
     n = len(X)
     idx = rng.permutation(n)
     cut = int(n * 0.85)
-    tr = idx[:cut]
+    tr, va = idx[:cut], idx[cut:]
     mu_x = X.mean(0, keepdims=True)
     sd_x = X.std(0, keepdims=True) + 1e-9
     # power spans 0..several MW; frac-centrifuging is 0..1 — standardise the targets for stable training
@@ -84,8 +88,11 @@ def train_surrogate(X: np.ndarray, Y: np.ndarray):
     opt = torch.optim.Adam(net.parameters(), lr=2e-3)
     Xt = torch.from_numpy(Xs[tr].astype(np.float32))
     Yt = torch.from_numpy(Ys[tr].astype(np.float32))
+    Xv = torch.from_numpy(Xs[va].astype(np.float32))
+    Yv = torch.from_numpy(Ys[va].astype(np.float32))
     bs = 128
-    for _ in range(160):  # epochs
+    tr_loss = va_loss = 0.0
+    for _ in range(SURR_EPOCHS):  # epochs
         perm = torch.randperm(len(tr))
         for b in range(0, len(tr), bs):
             sel = perm[b:b + bs]
@@ -93,7 +100,19 @@ def train_surrogate(X: np.ndarray, Y: np.ndarray):
             loss = nn.functional.mse_loss(net(Xt[sel]), Yt[sel])
             loss.backward()
             opt.step()
+        with torch.no_grad():
+            tr_loss = float(nn.functional.mse_loss(net(Xt), Yt))
+            va_loss = float(nn.functional.mse_loss(net(Xv), Yv))
     net.eval()
+    lineage = {
+        "arch": "MLP 6->64->64->2 (ReLU)",
+        "params": int(sum(p.numel() for p in net.parameters())),
+        "optimizer": "Adam", "lr": 2e-3, "epochs": SURR_EPOCHS, "batch": bs,
+        "loss": "MSE (standardized features + targets)", "split": "85/15 train/val",
+        "nTrain": int(len(tr)), "nVal": int(len(va)),
+        "finalTrainLoss": round(tr_loss, 5), "finalValLoss": round(va_loss, 5),
+        "opset": 17, "seedTorch": 0,
+    }
 
     # export wrapper: RAW features -> standardise -> net -> inverse-standardise -> RAW [power_kw, frac_centrifuging]
     class SurrogateExport(nn.Module):
@@ -108,7 +127,7 @@ def train_surrogate(X: np.ndarray, Y: np.ndarray):
         def forward(self, x):
             return self.core((x - self.mu_x) / self.sd_x) * self.sd_y + self.mu_y
 
-    return SurrogateExport(net), (mu_x, sd_x)
+    return SurrogateExport(net), (mu_x, sd_x), lineage
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -130,7 +149,7 @@ def train_ood(X: np.ndarray, mu_x: np.ndarray, sd_x: np.ndarray, in_eval: np.nda
     opt = torch.optim.Adam(net.parameters(), lr=2e-3)
     Xt = torch.from_numpy(Xs.astype(np.float32))
     bs = 128
-    for _ in range(180):
+    for _ in range(OOD_EPOCHS):
         perm = torch.randperm(len(Xt))
         for b in range(0, len(Xt), bs):
             sel = perm[b:b + bs]
@@ -172,7 +191,9 @@ def train_ood(X: np.ndarray, mu_x: np.ndarray, sd_x: np.ndarray, in_eval: np.nda
             r = self.core(xs)
             return ((r - xs) ** 2).mean(dim=1, keepdim=True)
 
-    return {"model": AEExport(net), "auc": round(auc, 4), "nEval": int(len(scores)), "thr": round(thr, 4)}
+    return {"model": AEExport(net), "auc": round(auc, 4), "nEval": int(len(scores)), "thr": round(thr, 4),
+            "arch": "autoencoder 6->8->3->8->6 (ReLU)", "params": int(sum(p.numel() for p in net.parameters())),
+            "epochs": OOD_EPOCHS, "nTrain": int(len(X)), "opset": 17}
 
 
 def _strip_metadata(path: Path) -> None:
@@ -209,14 +230,20 @@ def main() -> None:
     ood = np.asarray(ev["ood"], dtype=np.float64)
     n_in = X.shape[1]
 
-    surrogate, (mu_x, sd_x) = train_surrogate(X, Y)
+    surrogate, (mu_x, sd_x), surr_lineage = train_surrogate(X, Y)
     ae = train_ood(X, mu_x, sd_x, in_eval, ood)
 
     export_onnx(surrogate, n_in, "x", "y", DERIVED / "power-surrogate.onnx")
     export_onnx(ae["model"], n_in, "x", "xr", DERIVED / "scenario-ood.onnx")
+    surr_lineage["modelBytes"] = (DERIVED / "power-surrogate.onnx").stat().st_size
 
     partial = {
-        "ood": {"auc": ae["auc"], "nEval": ae["nEval"], "thr": ae["thr"]},
+        # the surrogate's real training lineage (so the held-out metric is auditable, not just asserted) — eval_mill.mjs
+        # merges the downstream power error + the predicted-vs-exact scatter onto this.
+        "surrogateLineage": surr_lineage,
+        "ood": {"auc": ae["auc"], "nEval": ae["nEval"], "thr": ae["thr"], "arch": ae["arch"], "params": ae["params"],
+                "epochs": ae["epochs"], "nTrain": ae["nTrain"], "opset": ae["opset"],
+                "modelBytes": (DERIVED / "scenario-ood.onnx").stat().st_size},
         "honesty": ("Synthetic but physically-realistic mill operating points across a typical SAG/ball/rod envelope; "
                     "the labels ARE the EXACT analytic engine (Hogg-Fuerstenau/Morrell power, Davis centrifuging), at the "
                     "standard 35-deg lifter geometry. The surrogate's DOWNSTREAM skill (its predicted power vs the exact "

@@ -3,7 +3,29 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
-## [0.09.000] — 2026-06-23
+## [0.10.000] — 2026-06-23
+
+Bring-to-bar T5: **learned-model training transparency** — the two ONNX models were genuinely trained, but the
+Benchmark only showed two numbers (5.2 % / AUC 0.922). This surfaces the full, auditable lineage so the held-out
+metric is visibly EARNED, not asserted.
+
+### Added
+- **The training lineage is now emitted by the pipeline and rendered live.** `train_mill.py` writes the surrogate's
+  real recipe (architecture `MLP 6→64→64→2`, 4738 params, Adam lr 2e-3, 160 epochs, batch 128, MSE, 85/15 split →
+  2550/450, final train/val loss, opset 17) + the OOD-AE's (6→8→3→8→6, 169 params, 180 epochs, AUC); `gen_train.mjs`
+  writes the data design (`train-design.json`: 3000 train / 500 held-out / 500 OOD, 6 features, fixed seed 20260621,
+  the sampled envelope ranges); `eval_mill.mjs` adds the **power-error std** and a **predicted-vs-exact scatter** of
+  the surrogate on the held-out points + the on-disk model sizes. All assembled into `cc-learned.json` (schema v2).
+- **Benchmark — "Training transparency (auditable)"**: a lineage table (architecture / optimizer / loss / split /
+  final losses / power error mean ± σ / ONNX opset + size / OOD-AE) + the **predicted-vs-exact scatter** (points sit
+  on the y=x diagonal — the surrogate tracks the exact engine) + the data-design line (n points, seed, envelope).
+  The power error is now reported as **5.2 % ± 12.5 %** (the σ tail is the low-power points where the relative error
+  inflates; the scatter shows the bulk tracking tightly).
+- **`docs/frameworks/03_torch-onnx.md`** gains a "Training lineage (auditable)" section with the exact seeded recipe.
+
+### Notes
+- The retrain is deterministic (fixed seeds): the committed ONNX bytes are unchanged; only `cc-learned.json` gains the
+  lineage + scatter. `data/raw/*` stays git-ignored/regenerable. 10 mill tests pass.
 
 Bring-to-bar T4: an **inverse recommender** on the What-if tab — instead of reading the output of a φc, set a GOAL
 and the exact engine solves the φc that meets it. The highest-interactivity feature for a workbench (you find the
