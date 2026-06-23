@@ -42,3 +42,12 @@ The mill-type cases vary the machine (ball / SAG / rod); the speed-sweep cases v
 transition); the fill cases bracket the power peak; the controls are the exactness anchors (their answer is computable
 by hand, so any regression in the engine is caught immediately). The exact baked numbers are in
 `data/derived/case-results.json`.
+
+## Per-case pages
+
+Each case has a deep page (operating point · expected regime + physical intuition · validation anchor · real/synthetic flag):
+
+- **mill type:** [K-BALL](K-BALL.md) · [K-SAG](K-SAG.md) · [K-ROD](K-ROD.md)
+- **speed sweep:** [S-CASCADE](S-CASCADE.md) · [S-CATARACT](S-CATARACT.md) · [S-CENTRIFUGE](S-CENTRIFUGE.md)
+- **fill / charge:** [D-LOWFILL](D-LOWFILL.md) · [D-HIGHFILL](D-HIGHFILL.md)
+- **control:** [C-CRITICAL](C-CRITICAL.md) · [C-EMPTY](C-EMPTY.md)
