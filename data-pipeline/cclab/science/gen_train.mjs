@@ -92,4 +92,12 @@ for (let i = 0; i < 500; i++) {
 
 writeFileSync(resolve(RAW, 'mill-train.json'), JSON.stringify({ x: X, y: Y, features: [...MILL_FEATURES], outputs: ['power_kw', 'frac_centrifuging'] }));
 writeFileSync(resolve(RAW, 'mill-eval.json'), JSON.stringify({ inDist: evalIn, ood: OUT }));
+// the data-design facts (so the learned-model lineage is auditable: how the training set was sampled). The labels ARE
+// the exact TS engine; the envelope is a Latin-hypercube-style uniform sweep over the operating ranges, fixed seed.
+writeFileSync(resolve(RAW, 'train-design.json'), JSON.stringify({
+  nTrainPoints: X.length, nEvalInDist: evalIn.length, nOod: OUT.length,
+  features: [...MILL_FEATURES], nFeatures: MILL_FEATURES.length, seed: 20260621,
+  sampling: 'uniform over the in-distribution operating envelope (fixed-seed mulberry32); labels = exact analytic engine',
+  envelope: ENV,
+}, null, 2));
 console.log(`gen_train: ${X.length} train points - ${evalIn.length} held-out - ${OUT.length} OOD -> ${RAW}`);

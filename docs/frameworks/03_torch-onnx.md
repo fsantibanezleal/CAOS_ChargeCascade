@@ -23,6 +23,23 @@ canonical lifter geometry (stated honestly in the model honesty note). The ONNX 
 onnxruntime-web's WASM EP cannot mount — embedding the (tiny) weights inside the single file is required for the
 browser to load it.
 
+## Training lineage (auditable)
+
+The exact, seeded recipe — surfaced live in the Benchmark **Training transparency** panel (read from `cc-learned.json`)
+so the held-out metric is visibly EARNED, not asserted:
+
+- **Data design (`gen_train.mjs`, seed `20260621`):** 3000 in-envelope training points + 500 held-out in-distribution
+  + 500 out-of-envelope, each labelled by the EXACT engine. The 6-feature envelope is a fixed-seed uniform sweep:
+  `diameter_m [2.5–11] · length_m [3–12] · fill [0.12–0.45] · phi_c [0.45–0.92] · ball_top_mm [25–130] ·
+  charge_density [2.8–5.6]`.
+- **Surrogate (`train_mill.py`, `torch.manual_seed(0)`):** MLP 6→64→64→2 (ReLU), **4738 params**; Adam `lr 2e-3`,
+  **160 epochs**, batch 128, MSE on standardised features+targets, **85/15 split → 2550 train / 450 val**; final
+  train/val loss ≈ `1.1e-4 / 3.3e-4`; ONNX opset 17 (~20 kB).
+- **OOD-AE:** autoencoder 6→8→3→8→6 (ReLU), 169 params, 180 epochs; AUC **0.922** (~5.5 kB).
+- **Downstream skill:** power error **5.2 % ± 12.5 %** (mean ± σ) over the 500 held-out points — the σ tail is the
+  low-power points where the relative error inflates; the predicted-vs-exact scatter (in kW) shows the bulk tracking
+  the engine tightly. Reported whichever way the numbers land.
+
 ## The honest downstream eval (`eval_mill.mjs`)
 
 The surrogate predicts `[power, frac-centrifuging]`; `eval_mill.mjs` runs the surrogate ONNX in Node (onnxruntime-web,

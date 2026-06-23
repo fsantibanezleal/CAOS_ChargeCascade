@@ -18,8 +18,23 @@ export interface CaseResultsFile {
 
 export interface LearnedFile {
   schema: string;
-  surrogate: { power_err: number; nEval: number };
-  ood: { auc: number; nEval: number; thr?: number };
+  surrogate: {
+    power_err: number; nEval: number;
+    // T5 training-transparency lineage (present in schema v2; all optional so v1 files still load)
+    power_err_std?: number; cent_err?: number;
+    arch?: string; params?: number; optimizer?: string; lr?: number; epochs?: number; batch?: number;
+    loss?: string; split?: string; nTrain?: number; nVal?: number;
+    finalTrainLoss?: number; finalValLoss?: number; opset?: number; seedTorch?: number; modelBytes?: number;
+    scatter?: [number, number][];   // [exactPowerKw, predPowerKw] sample for the predicted-vs-exact plot
+  };
+  ood: {
+    auc: number; nEval: number; thr?: number;
+    arch?: string; params?: number; epochs?: number; nTrain?: number; opset?: number; modelBytes?: number;
+  };
+  data?: {
+    nTrainPoints: number; nEvalInDist: number; nOod: number; features: string[]; nFeatures: number;
+    seed: number; sampling: string; envelope: Record<string, [number, number]>;
+  };
   honesty: string;
 }
 
