@@ -3,6 +3,34 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.08.000] — 2026-06-23
+
+Bring-to-bar T3: a **Comminution** tab (the 9th App view), lifting Bond grinding duty from a buried KPI to a
+first-class workbench view — takes the App from 8 tabs toward the ≥10–12 bar with zero invented filler.
+
+### Added
+- **Comminution tab** — connects Bond's process-energy law to the mill's mechanical power. Bond's law sets the
+  specific grinding energy `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t] (a function of the ore + the F80→P80 size
+  reduction, independent of mill speed/fill); the Hogg-Fuerstenau engine sets the net power `P_net` [kW]; their
+  ratio `P_net / W` is the **power-limited throughput capacity** [t/h] — the real "where does this mill grind the
+  most of THIS ore?" answer.
+  - **Capacity heatmap** (`ComminutionMap`, canvas) of `T = P_net(φc,J)/W` over the φc×J plane, re-evaluating the
+    exact engine on a 48×28 grid: bright = higher capacity, red hatch = below the target tonnage (the mill cannot
+    meet the duty there), **grey = centrifuging (grinding collapses)**. The grey mask is an honesty fix: the
+    Hogg-Fuerstenau torque model is monotone in φc and is NOT tapered at centrifuging, so raw `P/W` there is not a
+    real capacity — those cells are masked and the colour scale is taken over the grinding region only.
+  - **Bond energy-size curve** (`BondCurve`, SVG): `W` vs product P80 (log axis) — the specific energy rises as you
+    grind finer — with the current operating point and a dashed **available-energy** line (`P_net/tph`); where it
+    crosses the curve is the finest P80 the mill can achieve at that throughput (with an off-scale note when the
+    mill has abundant spare energy).
+  - **Duty KPIs**: Bond W [kWh/t], net power, capacity (P/W) [t/h], and the margin vs the target throughput — an
+    honest "can this mill meet the duty?" power balance. All reactive to the φc/fill/diameter/ball-size sliders, the
+    case selector, and the mill-type presets.
+- Adversarially reviewed (physics + honesty): verdict **SOUND** — the P/W units, the centrifuging mask, the Bond
+  available-energy crossing and the cross-surface self-consistency (`available ≥ demand ⇔ capacity ≥ tph ⇔ margin ≥
+  0 ⇔ feasible`) all check out; an earlier self-contradiction (the heatmap painting centrifuging as high-capacity
+  while the copy said grinding collapses) was caught and fixed before ship. 10 mill tests pass.
+
 ## [0.07.000] — 2026-06-23
 
 Bring-to-bar pass after a deep gap review (vs the RotorVitals reference). The review found ChargeCascade is a real

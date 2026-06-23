@@ -8,4 +8,4 @@ gate, the manifest/trace, and the cases-by-category registry. The numpy-LIGHT pi
 `--retrain` runs the heavy lane (torch -> ONNX) in cclab/science/.
 """
 
-__version__ = "0.07.000"  # display X.XX.XXX; PEP 440 form in pyproject.toml (0.7.0)
+__version__ = "0.08.000"  # display X.XX.XXX; PEP 440 form in pyproject.toml (0.8.0)
