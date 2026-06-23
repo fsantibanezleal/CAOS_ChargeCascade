@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
-import { CASES, caseById, evaluate, MILL_PRESETS, type MillType, type Operating } from '../mill/index.ts';
+import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, type MillType, type Operating, type Regime } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
 import { loadLearned } from '../lib/artifacts.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
@@ -19,13 +19,15 @@ export default function Tool() {
   const [caseId, setCaseId] = useState('K-BALL');
   const theCase = useMemo(() => caseById(caseId), [caseId]);
   const [op, setOp] = useState<Operating>(theCase.op);
-  useEffect(() => { setOp(theCase.op); }, [theCase]);
+  useEffect(() => { setOp(theCase.op); setInvTph(null); }, [theCase]);   // reset the inverse target to the new case's capacity
 
   const r = useMemo(() => evaluate(op), [op]);
   const [surr, setSurr] = useState<{ powerKw: number; fracCentrifuging: number } | null>(null);
   const [surrPending, setSurrPending] = useState(true);
   const [ood, setOod] = useState<number | null>(null);
   const [oodThr, setOodThr] = useState<number | null>(null);
+  const [invRegime, setInvRegime] = useState<Regime>('cataracting');   // inverse: target regime → recommended φc
+  const [invTph, setInvTph] = useState<number | null>(null);           // inverse: target throughput → recommended φc
 
   useEffect(() => { loadLearned().then((l) => setOodThr(l.ood?.thr ?? null)).catch(() => setOodThr(null)); }, []);
 
@@ -183,26 +185,75 @@ export default function Tool() {
     },
     {
       id: 'whatif', label: es ? 'What-if (ONNX)' : 'What-if (ONNX)',
-      content: (
-        <div className="pf-vizstack">
-          <div className="pf-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico para barridos instantáneos del envolvente de operación.' : 'The power surrogate (ONNX) emulates the analytic engine for instant operating-envelope sweeps.'}</div>
-          {surrPending ? (
-            <div className="pf-pending">
-              <strong>{es ? 'Surrogate: pendiente de entrenamiento' : 'Surrogate: pending training'}</strong>
-              <p>{es ? 'Corre `python -m cclab.pipeline all --retrain` para entrenar el surrogate de potencia (torch → ONNX). El motor analítico EXACTO corre en vivo mientras tanto.' : 'Run `python -m cclab.pipeline all --retrain` to train the power surrogate (torch → ONNX). The EXACT analytic engine runs live meanwhile.'}</p>
-            </div>
-          ) : (
-            <>
-              <div className="pf-kpis">
-                <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : '—'} />
-                <Kpi label={es ? 'exacto (Hogg-F.)' : 'exact (Hogg-F.)'} value={kw(r.phfKw)} />
-                <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : '—'} />
+      content: (() => {
+        // inverse recommender (exact engine — the surrogate is only for sweeps). Power is monotone in φc, so a target
+        // throughput bisects to a φc; the regime bands give a representative φc per motion regime.
+        const curCap = r.bondWKwhT > 0 ? r.phfKw / r.bondWKwhT : 0;
+        const cap = solvePhiCForCapacity(op, invTph ?? Math.round(curCap));
+        const reg = recommendPhiCForRegime(op, invRegime);
+        const tphLo = Math.max(0, Math.floor(cap.minTph / 10) * 10);
+        const tphHi = Math.max(tphLo + 10, Math.ceil(cap.maxTph / 10) * 10);
+        const tgt = invTph ?? Math.round(curCap);
+        const regimes: Regime[] = ['cascading', 'cataracting', 'centrifuging'];
+        return (
+          <div className="pf-vizstack">
+            <div className="pf-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico para barridos instantáneos del envolvente de operación.' : 'The power surrogate (ONNX) emulates the analytic engine for instant operating-envelope sweeps.'}</div>
+            {surrPending ? (
+              <div className="pf-pending">
+                <strong>{es ? 'Surrogate: pendiente de entrenamiento' : 'Surrogate: pending training'}</strong>
+                <p>{es ? 'Corre `python -m cclab.pipeline all --retrain` para entrenar el surrogate de potencia (torch → ONNX). El motor analítico EXACTO corre en vivo mientras tanto.' : 'Run `python -m cclab.pipeline all --retrain` to train the power surrogate (torch → ONNX). The EXACT analytic engine runs live meanwhile.'}</p>
               </div>
-              <p className="pf-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate gana su lugar por la velocidad (barridos Monte-Carlo instantáneos), no por una victoria fabricada.' : 'The exact analytic engine is the authority; the surrogate earns its place on speed (instant Monte-Carlo sweeps), not a fabricated win.'}</p>
-            </>
-          )}
-        </div>
-      ),
+            ) : (
+              <>
+                <div className="pf-kpis">
+                  <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : '—'} />
+                  <Kpi label={es ? 'exacto (Hogg-F.)' : 'exact (Hogg-F.)'} value={kw(r.phfKw)} />
+                  <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : '—'} />
+                </div>
+                <p className="pf-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate gana su lugar por la velocidad (barridos Monte-Carlo instantáneos), no por una victoria fabricada.' : 'The exact analytic engine is the authority; the surrogate earns its place on speed (instant Monte-Carlo sweeps), not a fabricated win.'}</p>
+              </>
+            )}
+
+            <div className="pf-card" style={{ marginTop: '0.4rem' }}>
+              <div className="pf-card-t">{es ? 'Inverso: objetivo → φc recomendado (motor exacto)' : 'Inverse: target → recommended φc (exact engine)'}</div>
+              <p className="pf-note">{es ? 'El problema inverso: en lugar de leer la salida de un φc, fija una META y el motor (monótono en φc) resuelve el φc que la cumple a la geometría D/L/J actual.' : 'The inverse problem: instead of reading the output of a φc, set a GOAL and the engine (monotone in φc) solves the φc that meets it at the current D/L/J geometry.'}</p>
+
+              {/* by motion regime */}
+              <div className="pf-cap pf-muted">{es ? 'por régimen de movimiento' : 'by motion regime'}</div>
+              <div className="pf-chips">
+                {regimes.map((rg) => (
+                  <button key={rg} className={`chip ${invRegime === rg ? 'on' : ''}`} onClick={() => setInvRegime(rg)}>{rg}</button>
+                ))}
+              </div>
+              {reg.phiCRec != null ? (
+                <p className="pf-note">
+                  {es ? '→ φc recomendado' : '→ recommended φc'} <b>{reg.phiCRec.toFixed(2)}</b>
+                  {reg.phiCLo != null && reg.phiCHi != null && ` (${es ? 'banda' : 'band'} ${reg.phiCLo.toFixed(2)}–${reg.phiCHi.toFixed(2)})`}
+                  {!reg.operational && ` — ${es ? 'régimen no operativo (la molienda colapsa); es el límite a evitar' : 'non-operational regime (grinding collapses); the limit to avoid'}`}
+                  {' '}<button className="chip" onClick={() => set('phiC', reg.phiCRec!)}>{es ? 'aplicar' : 'apply'}</button>
+                </p>
+              ) : <p className="pf-note">{es ? `el régimen ${invRegime} no es alcanzable a esta geometría` : `the ${invRegime} regime is not reachable at this geometry`}</p>}
+
+              {/* by target throughput */}
+              <div className="pf-cap pf-muted" style={{ marginTop: '0.5rem' }}>{es ? 'por capacidad objetivo' : 'by target throughput'}</div>
+              <label className="pf-ctl">{es ? 'objetivo' : 'target'}: {tgt} t/h
+                <input className="range" type="range" min={tphLo} max={tphHi} step={Math.max(1, Math.round((tphHi - tphLo) / 100))} value={tgt} onChange={(e) => setInvTph(+e.target.value)} />
+              </label>
+              {tgt > cap.maxTph + 0.5 ? (
+                <p className="pf-note" style={{ color: 'var(--color-warn)' }}>
+                  {es ? `fuera de alcance: el techo es ${cap.maxTph.toFixed(0)} t/h a φc ≈ 1.05 — sube D/L/J o reduce la finura` : `out of reach: the ceiling is ${cap.maxTph.toFixed(0)} t/h at φc ≈ 1.05 — raise D/L/J or coarsen the product`}
+                </p>
+              ) : cap.phiC != null ? (
+                <p className="pf-note">
+                  {es ? '→ φc recomendado' : '→ recommended φc'} <b>{cap.phiC.toFixed(2)}</b> {es ? 'para' : 'for'} {tgt} t/h
+                  {tgt <= cap.minTph + 0.5 && ` (${es ? 'la velocidad mínima ya lo supera — capacidad de sobra' : 'min speed already exceeds it — spare capacity'})`}
+                  {' '}<button className="chip" onClick={() => set('phiC', cap.phiC!)}>{es ? 'aplicar' : 'apply'}</button>
+                </p>
+              ) : <p className="pf-note">—</p>}
+            </div>
+          </div>
+        );
+      })(),
     },
     {
       id: 'anomaly', label: es ? 'Anomalía (AE)' : 'Anomaly (AE)',
