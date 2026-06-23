@@ -3,6 +3,20 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.10.001] — 2026-06-23
+
+Bring-to-bar T6 (a polish fix): **bilingual parity in the viz layer.** The pages were ES/EN but the canvas/chart axis
+labels and captions were EN-only, so switching to Spanish left the plots half-English.
+
+### Fixed
+- Plumbed `useShellLang()` into the four viz components that draw their own text — **PowerChart** (axis labels: net
+  power / fraction of critical speed), **RegimeMap** + **ComminutionMap** (the φc and fill-J axis labels), and
+  **TrajectoryDiagram** (the `cos α` caption, the `shoulder→hombro` marker, and the `regime / % centrifuging`
+  readout). Each now localises its descriptive text from the shell language. (`BondCurve` was already bilingual.)
+- The motion-regime **names** stay raw English (slumping / cascading / cataracting / centrifuging) — the same
+  technical classification the App's pills and the engine use everywhere — so only the descriptive prose is
+  translated, keeping the UI internally consistent. Verified live in ES on every affected tab; 0 console errors.
+
 ## [0.10.000] — 2026-06-23
 
 Bring-to-bar T5: **learned-model training transparency** — the two ONNX models were genuinely trained, but the

@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { useThemeStore } from '@fasl-work/caos-app-shell';
+import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 
 // The motion-regime map: fraction of critical speed phiC (x) vs fill J (y), with the slumping / cascading /
 // cataracting / centrifuging bands and a marker at the current operating point. The bands are phiC-driven (Wills &
-// Finch; Napier-Munn et al.). Pure canvas, theme-aware.
+// Finch; Napier-Munn et al.). Pure canvas, theme-aware. (The regime names stay in English — the same technical
+// classification the App's pills show raw — only the descriptive axis labels are localised.)
 export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: number; height?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
+  const es = useShellLang() === 'es';
 
   useEffect(() => {
     const canvas = ref.current;
@@ -61,11 +63,11 @@ export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: nu
     ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'center';
     for (let p = 0.4; p <= 1.1; p += 0.2) ctx.fillText(p.toFixed(1), px(p), H - 20);
-    ctx.fillText('fraction of critical speed φc', W / 2, H - 6);
+    ctx.fillText(es ? 'fracción de velocidad crítica φc' : 'fraction of critical speed φc', W / 2, H - 6);
     ctx.save();
     ctx.translate(12, H / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText('fill J', 0, 0);
+    ctx.fillText(es ? 'llenado J' : 'fill J', 0, 0);
     ctx.restore();
     ctx.textAlign = 'right';
     for (let j = 0.1; j <= 0.5; j += 0.1) ctx.fillText(`${(j * 100).toFixed(0)}%`, pad.l - 6, py(j) + 4);
@@ -78,7 +80,7 @@ export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: nu
     ctx.arc(px(Math.min(PHI_MAX, phiC)), py(fill), 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-  }, [phiC, fill, height, theme]);
+  }, [phiC, fill, height, theme, es]);
 
   return (
     <div ref={wrapRef} className="cc-canvas-wrap">
