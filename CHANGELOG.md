@@ -3,6 +3,21 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.10.002] — 2026-06-23
+
+Bring-to-bar T7: **per-case documentation.** `docs/cases/` had only the README (taxonomy + coverage matrix);
+STRUCTURE.md prescribes one `docs/cases/<id>.md` per case.
+
+### Added
+- The 10 per-case curriculum pages (`docs/cases/{K-BALL,K-SAG,K-ROD,S-CASCADE,S-CATARACT,S-CENTRIFUGE,D-LOWFILL,
+  D-HIGHFILL,C-CRITICAL,C-EMPTY}.md`), each carrying: the operating point (D×L, J, φc, top media, type, density),
+  the expected motion regime + the **physical intuition** for it, the **validation anchor** (the property the result
+  must satisfy), and the real/synthetic flag. The mill-type trio contrasts the machines; the speed-sweep trio is the
+  same ball mill at three φc (the regime transition); the fill pair brackets the J ≈ 0.47 power peak; the `C-*`
+  controls are the exact-answer oracles (`P = 0` at `J = 0`; centrifuging onset at `φc = 1`).
+- The README now links each case to its page. Numbers cross-checked against the engine (the J(1−1.065J) power peak,
+  the fill validity flags at <15 %/>45 %, the φc=1 centrifuging onset).
+
 ## [0.10.001] — 2026-06-23
 
 Bring-to-bar T6 (a polish fix): **bilingual parity in the viz layer.** The pages were ES/EN but the canvas/chart axis
