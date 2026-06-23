@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useThemeStore } from '@fasl-work/caos-app-shell';
+import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import type { MillResult } from '../mill/types.ts';
 
 // The 2D mill cross-section: the shell circle, the per-radial-shell departure points (the Davis-circle shoulder
@@ -20,6 +20,7 @@ export function TrajectoryDiagram({ result, diameterM, height = 360 }: { result:
   const ref = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
+  const es = useShellLang() === 'es';
 
   useEffect(() => {
     const canvas = ref.current;
@@ -82,16 +83,16 @@ export function TrajectoryDiagram({ result, diameterM, height = 360 }: { result:
     if (!outer.centrifuging) {
       ctx.fillStyle = fg;
       ctx.font = '12px system-ui, sans-serif';
-      ctx.fillText(`shoulder ${result.shoulderDeg.toFixed(0)}°`, sx(outer.departure[0]) + 6, sy(outer.departure[1]) - 6);
+      ctx.fillText(`${es ? 'hombro' : 'shoulder'} ${result.shoulderDeg.toFixed(0)}°`, sx(outer.departure[0]) + 6, sy(outer.departure[1]) - 6);
     }
-    // axis labels
+    // axis labels (the regime name stays raw — the same technical classification the App's pills show)
     ctx.fillStyle = fg;
     ctx.globalAlpha = 0.7;
     ctx.font = '11px system-ui, sans-serif';
-    ctx.fillText('cos α = φc²·(r/R) per shell → the cataract fan', 10, 18);
-    ctx.fillText(`regime: ${result.regime} · % centrifuging ${(result.fracCentrifuging * 100).toFixed(0)}%`, 10, H - 10);
+    ctx.fillText(es ? 'cos α = φc²·(r/R) por capa → el abanico de cataract' : 'cos α = φc²·(r/R) per shell → the cataract fan', 10, 18);
+    ctx.fillText(`${es ? 'régimen' : 'regime'}: ${result.regime} · ${es ? '% centrifugando' : '% centrifuging'} ${(result.fracCentrifuging * 100).toFixed(0)}%`, 10, H - 10);
     ctx.globalAlpha = 1;
-  }, [result, diameterM, height, theme]);
+  }, [result, diameterM, height, theme, es]);
 
   return (
     <div ref={wrapRef} className="cc-canvas-wrap">

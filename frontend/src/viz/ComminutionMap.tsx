@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useThemeStore } from '@fasl-work/caos-app-shell';
+import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import { bondWKwhT, evaluate, type Operating } from '../mill/index.ts';
 
 // The comminution capacity map: the power-LIMITED throughput T = P_net(phiC,J) / W_bond [t/h] over the phiC x J
@@ -12,6 +12,7 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
   const ref = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
+  const es = useShellLang() === 'es';
 
   useEffect(() => {
     const canvas = ref.current;
@@ -101,11 +102,11 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
     ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'center';
     for (let p = 0.4; p <= 1.1; p += 0.2) ctx.fillText(p.toFixed(1), px(p), H - 20);
-    ctx.fillText('fraction of critical speed φc', W / 2, H - 6);
+    ctx.fillText(es ? 'fracción de velocidad crítica φc' : 'fraction of critical speed φc', W / 2, H - 6);
     ctx.save();
     ctx.translate(12, H / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText('fill J', 0, 0);
+    ctx.fillText(es ? 'llenado J' : 'fill J', 0, 0);
     ctx.restore();
     ctx.textAlign = 'right';
     for (let j = 0.1; j <= 0.5; j += 0.1) ctx.fillText(`${(j * 100).toFixed(0)}%`, pad.l - 6, py(j) + 4);
@@ -118,7 +119,7 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
     ctx.arc(px(Math.min(PHI_MAX, op.phiC)), py(op.fill), 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-  }, [op, height, theme]);
+  }, [op, height, theme, es]);
 
   return (
     <div ref={wrapRef} className="cc-canvas-wrap">
