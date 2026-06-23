@@ -7,6 +7,8 @@ import { Mill3D } from '../viz/Mill3D.tsx';
 import { TrajectoryDiagram } from '../viz/TrajectoryDiagram.tsx';
 import { RegimeMap } from '../viz/RegimeMap.tsx';
 import { PowerChart } from '../viz/PowerChart.tsx';
+import { ComminutionMap } from '../viz/ComminutionMap.tsx';
+import { BondCurve } from '../viz/BondCurve.tsx';
 
 const CATS = ['mill type (the machine)', 'speed sweep (the regime transition)', 'fill / charge regime', 'control (analytic anchor)'];
 const MILLS: MillType[] = ['ball', 'sag', 'rod', 'ag'];
@@ -101,6 +103,38 @@ export default function Tool() {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'comminution', label: es ? 'Conminución' : 'Comminution',
+      content: (() => {
+        const wBond = r.bondWKwhT;                                   // Bond specific energy [kWh/t] (ore + F80->P80)
+        const capacity = wBond > 0 ? r.phfKw / wBond : 0;            // power-limited throughput [t/h] = P_net / W
+        const margin = capacity - op.tph;                            // headroom over the target throughput
+        return (
+          <div className="pf-vizstack">
+            <div className="pf-plot-t">{es
+              ? 'Conminución: la ley de Bond fija la ENERGÍA específica W para moler F80→P80; el motor fija la POTENCIA neta. Su cociente P/W es la capacidad de molienda [t/h]. El mapa muestra esa capacidad sobre φc×J. El marcador es tu punto.'
+              : 'Comminution: Bond’s law sets the specific ENERGY W to grind F80→P80; the engine sets the net POWER. Their ratio P/W is the grinding capacity [t/h]. The map shows that capacity over φc×J. The marker is your operating point.'}</div>
+            <ComminutionMap op={op} />
+            <div className="pf-cap pf-muted" style={{ display: 'flex', gap: '1.1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'rgb(232,202,64)', marginRight: 4 }} />{es ? 'mayor capacidad' : 'higher capacity'}</span>
+              <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'rgba(248,81,73,0.6)', marginRight: 4 }} />{es ? 'bajo el objetivo (no rinde la tarea)' : 'below target (cannot meet the duty)'}</span>
+              <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'rgb(150,154,164)', marginRight: 4 }} />{es ? 'centrifugando (molienda colapsa)' : 'centrifuging (grinding collapses)'}</span>
+            </div>
+            <div className="pf-kpis">
+              <Kpi label={es ? 'energía Bond W' : 'Bond duty W'} value={`${wBond.toFixed(1)} kWh/t`} />
+              <Kpi label={es ? 'potencia neta' : 'net power'} value={kw(r.phfKw)} />
+              <Kpi label={es ? 'capacidad (P/W)' : 'capacity (P/W)'} value={`${capacity.toFixed(0)} t/h`} />
+              <Kpi label={es ? `margen vs objetivo ${op.tph} t/h` : `margin vs target ${op.tph} t/h`} value={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)} t/h`} />
+            </div>
+            <p className="pf-note">{es
+              ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (sube φc/J o reduce la finura)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene — esos puntos van en gris (el modelo de torque NO se atenúa ahí, por eso no se muestra su P/W como capacidad).`
+              : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops — those points are greyed (the torque model is NOT tapered there, so its P/W is not shown as capacity).`}</p>
+            <div className="pf-plot-t">{es ? 'La ley de Bond: la energía específica sube al moler más fino. La línea es la energía disponible (P/tph); donde corta la curva está el P80 más fino alcanzable.' : 'Bond’s law: the specific energy rises as you grind finer. The line is the available energy (P/tph); where it crosses the curve is the finest P80 achievable.'}</div>
+            <BondCurve op={op} netPowerKw={r.phfKw} es={es} />
+          </div>
+        );
+      })(),
     },
     {
       id: 'gauges', label: es ? 'Indicadores' : 'Gauges',
