@@ -3,6 +3,30 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.07.000] — 2026-06-23
+
+Bring-to-bar pass after a deep gap review (vs the RotorVitals reference). The review found ChargeCascade is a real
+workbench — 8 reactive tabs, two genuinely-trained ONNX models, deep bilingual docs — with ONE control that made it
+look fake: a no-op mill-type selector. This release kills that.
+
+### Fixed
+- **Mill-type selector is no longer a no-op (the blocker).** The ball/sag/rod/ag chips wrote `op.millType` but the
+  physics engine never read it, so toggling them changed nothing on screen — exactly the kind of fake control that
+  must not ship. Each chip now loads that machine's characteristic geometry/media/density preset (`MILL_PRESETS`):
+  ball D 4 m / ρ 4.8, SAG D 10 m / ρ 3.0, rod D 3.5 m / ρ 5.5, AG D 7 m / ρ 2.7. The engine already differentiates on
+  D/L/J/φc/top-media/lift/ρ, so the critical speed, regime, power and 3D charge now visibly change — verified ball
+  1.19 MW → SAG 6.11 MW → rod 0.74 MW → AG 1.55 MW. The sliders fine-tune from the loaded preset; relabelled the
+  group "Mill type (preset)".
+- **The dead `ag` chip is now real.** `'ag'` was in the `MillType` union and rendered a 4th chip but mapped to no
+  geometry. AG (autogenous) is now a genuine 4th machine in `MILL_PRESETS`: no steel media — competent ore lumps are
+  the grinding media (~100 mm top), so its charge bulk density (2.7 t/m³) sits below SAG's (3.0, ore + steel),
+  giving a distinct, lower-power machine.
+
+### Notes
+- Frontend-only change (the live `MILL_PRESETS` UI convenience); the committed cases/artifacts and the offline bake
+  are unchanged. Remaining bring-to-bar backlog (gap review): a Comminution/Bond tab, a What-if inverse recommender,
+  learned-model training transparency, viz-layer bilingual parity, per-case docs, a live custom-mill ingest.
+
 ## [0.06.000] — 2026-06-21
 
 ### Added

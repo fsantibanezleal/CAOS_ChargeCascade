@@ -3,7 +3,7 @@
 // labelled; the controls (C-) are exact analytic anchors. This is the SOURCE OF TRUTH for the cases; the Node bake
 // (science/bake_cases.mjs) runs the SAME engine over it, and data-pipeline/cclab/cases/mill_cases.py mirrors the ids.
 
-import type { Operating } from './types.ts';
+import type { MillType, Operating } from './types.ts';
 
 export const CAT_TYPE = 'mill type (the machine)';
 export const CAT_SPEED = 'speed sweep (the regime transition)';
@@ -26,6 +26,20 @@ const BALL: Operating = {
   liftAngleDeg: 35, chargeDensity: 4.8, oreWi: 14, feedF80um: 2000, prodP80um: 150, tph: 120,
 };
 const c = (over: Partial<Operating>): Operating => ({ ...BALL, ...over });
+
+// Machine presets for the live mill-type selector. Selecting a type loads that machine's CHARACTERISTIC geometry +
+// media + charge density — the fields the engine actually differentiates on (D, L, J, φc, top media, lift, ρc) — so
+// the critical speed, regime, power and 3D charge all visibly change. Process params (Wi/F80/P80/tph, about the ORE
+// not the machine) are left to the case selector. The ball/sag/rod values equal the K-* cases (one source of truth);
+// AG (autogenous) is the 4th canonical type: no steel media — competent ORE lumps are the grinding media (top size
+// ~100 mm), so its charge bulk density (~2.7 t/m³) is well below SAG's (~3.0, ore + ~8% steel), giving a distinct,
+// lower-power machine. SI: metres, t/m³, mm.
+export const MILL_PRESETS: Record<MillType, Pick<Operating, 'diameterM' | 'lengthM' | 'fill' | 'phiC' | 'ballTopMm' | 'liftAngleDeg' | 'chargeDensity'>> = {
+  ball: { diameterM: 4.0, lengthM: 6.0, fill: 0.35, phiC: 0.75, ballTopMm: 80, liftAngleDeg: 35, chargeDensity: 4.8 },
+  sag: { diameterM: 10.0, lengthM: 5.0, fill: 0.28, phiC: 0.78, ballTopMm: 125, liftAngleDeg: 38, chargeDensity: 3.0 },
+  rod: { diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.65, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5 },
+  ag: { diameterM: 7.0, lengthM: 4.0, fill: 0.25, phiC: 0.75, ballTopMm: 100, liftAngleDeg: 36, chargeDensity: 2.7 },
+};
 
 export const CASES: CCCase[] = [
   {
