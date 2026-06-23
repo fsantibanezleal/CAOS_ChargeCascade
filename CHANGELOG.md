@@ -3,7 +3,29 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
-## [0.08.000] — 2026-06-23
+## [0.09.000] — 2026-06-23
+
+Bring-to-bar T4: an **inverse recommender** on the What-if tab — instead of reading the output of a φc, set a GOAL
+and the exact engine solves the φc that meets it. The highest-interactivity feature for a workbench (you find the
+operating point for a target, not just read a forward number).
+
+### Added
+- **`mill/inverse.ts`** — solves the inverse problem on the EXACT engine (the surrogate is only for sweeps):
+  - `solvePhiCForPower` / `solvePhiCForCapacity` — net power (Hogg-Fuerstenau) is monotone in φc, so a target net
+    power (and the grinding capacity `P/W` that scales with it) is a clean **bisection** over φc ∈ [0.30, 1.05],
+    with the floor/ceiling reported.
+  - `recommendPhiCForRegime` — scans φc for the contiguous band that classifies as the target motion regime at the
+    current geometry (using the real engine, since `fracCentrifuging` can move the centrifuging onset), returning the
+    band + a representative φc (band midpoint for grinding regimes; the onset for centrifuging, flagged
+    non-operational — grinding collapses there).
+- **What-if tab — "Inverse: target → recommended φc"**: pick a motion regime (cascading / cataracting /
+  centrifuging) → recommended φc + band, or drag a target-throughput slider → the φc that delivers it. Each has an
+  **apply** button that sets the live operating point, so the whole workbench updates. Edge cases handled honestly:
+  over-ceiling targets say "out of reach: the ceiling is X t/h"; below-floor targets say "φc 0.30 already exceeds it
+  — spare capacity"; centrifuging is flagged as the limit to avoid.
+- **Tests:** 4 inverse round-trip tests (`solvePhiCForPower` re-evaluates to the target within 1 kW; the ceiling is
+  flagged; capacity round-trips through `P/W`; the regime recommendation actually classifies as that regime and the
+  bands are ordered). 14 mill tests pass.
 
 Bring-to-bar T3: a **Comminution** tab (the 9th App view), lifting Bond grinding duty from a buried KPI to a
 first-class workbench view — takes the App from 8 tabs toward the ≥10–12 bar with zero invented filler.
