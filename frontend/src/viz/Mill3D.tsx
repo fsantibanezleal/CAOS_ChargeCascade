@@ -22,9 +22,14 @@ function viridis(t: number): THREE.Color {
   return new THREE.Color((a[0] + f * (b[0] - a[0])) / 255, (a[1] + f * (b[1] - a[1])) / 255, (a[2] + f * (b[2] - a[2])) / 255);
 }
 
-export function Mill3D({ op, height = 380 }: { op: Operating; height?: number }) {
+export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
+  // playback speed — a VISUAL control (how fast the kinematic animation plays); it does NOT change the physics
+  // (phiC / power / regime are unaffected). Read from a ref inside the rAF loop so dragging the slider never
+  // re-creates the three.js scene.
+  const speedRef = useRef(speed);
+  useEffect(() => { speedRef.current = speed; }, [speed]);
 
   useEffect(() => {
     const el = ref.current;
@@ -122,10 +127,11 @@ export function Mill3D({ op, height = 380 }: { op: Operating; height?: number })
     const dt = 0.05; // s per frame (a watchable time scale)
 
     const animate = () => {
-      millGroup.rotation.z += omega * dt;
+      const d = dt * speedRef.current;        // playback-scaled time step (visual speed; physics unchanged)
+      millGroup.rotation.z += omega * d;
       for (let i = 0; i < N; i++) {
         if (flying[i]) {
-          tFly[i] += dt;
+          tFly[i] += d;
           const t = tFly[i];
           const x = lpx[i] + lvx[i] * t;
           const y = lpy[i] + lvy[i] * t - 0.5 * G * t * t;
@@ -140,7 +146,7 @@ export function Mill3D({ op, height = 380 }: { op: Operating; height?: number })
           }
           setColor(i, Math.min(1, (Math.hypot(lvx[i], lvy[i]) - G * t) / (omega * R + 1) + 0.5));
         } else {
-          phi[i] += omega * dt;
+          phi[i] += omega * d;
           const pm = ((phi[i] % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
           pos[i * 3] = Math.cos(pm) * rho[i] * S;
           pos[i * 3 + 1] = Math.sin(pm) * rho[i] * S;

@@ -3,6 +3,36 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.12.000] — 2026-06-23
+
+**At-bar remediation** — brought the product to the RotorVitals quality bar (ADR-0017 §2/§3/§4) via two
+rounds of adversarial audit converging to 0 blockers.
+
+### Added
+- **Methodology** rebuilt to 6 floor-meeting tabs, each ≥4 dense paragraphs + ≥2 captioned equations + ≥1
+  hand-authored theme-aware SVG + 1 honest callout + per-tab refs. Two are LEARNED methods: the **power
+  surrogate** (MLP, ±12.5 % held-out) and the **OOD autoencoder** (AUC ≈ 0.92), with architecture + training +
+  held-out skill.
+- **Implementation** rebuilt from a 33-line stub to 8 tabs + a theme-aware compute-tier architecture SVG
+  (shared exact engine → live browser + offline bake → torch→ONNX lane → frozen artifacts → CDN).
+- **Experiments** rebuilt from a single table to 6 tabs (cross-model power agreement, isolated regime
+  transition, exact analytic controls, surrogate held-out skill with a leakage-safe protocol SVG, and the case
+  table scoped to one tab).
+- **Introduction** rebuilt to the §2 floor (5 sections + overview SVG + 12-symbol glossary + 3 captioned
+  equations + inline citations).
+- Verifiable URLs on all 7 citations; the two ⓘ-modal SVGs redrawn as real ChargeCascade diagrams.
+
+### Fixed
+- **Honesty (the key fix):** the docs claimed *"φc = 1 → power collapses to 0"*. The engine deliberately does
+  NOT taper the published torque model, so at φc = 1 the draw power stays high (~1.58 MW) while only the
+  **centrifuging fraction** turns positive and the **regime** switches to centrifuging (grinding collapses).
+  C-CRITICAL is now verified on the fraction/regime; C-EMPTY (J = 0 → P = 0) is the only zero-power control.
+  Corrected across all four content pages + both tech SVGs.
+- Continuum vs sampled centrifuging-fraction reconciled (`max(0, 1−1/φc²)` is the continuum onset; the 9-shell
+  sampled engine reports a small positive value at the onset — no airbrushed zero).
+- Removed banned `.pf-*` classes (→ `.cc-*`), a page-width CSS override, an internal `--retrain` CLI flag from
+  visible App prose, and bare `.onnx` filenames from SVG labels; dropped the banned `ReferenceList`.
+
 ## [0.11.000] — 2026-06-23
 
 Bring-to-bar T8 (the last gap-review item): a live **bring-your-own-mill** ingest. CONTRACT-1 was fully implemented
