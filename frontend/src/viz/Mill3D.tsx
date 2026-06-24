@@ -30,6 +30,10 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
   // re-creates the three.js scene.
   const speedRef = useRef(speed);
   useEffect(() => { speedRef.current = speed; }, [speed]);
+  // preserve the user's orbit/zoom across op changes: the scene is rebuilt whenever op (or theme/height) changes, and
+  // without this the camera would snap back to the default framing every time you change the case or a slider. We save
+  // the camera position + orbit target when the scene tears down and restore them when it is recreated.
+  const viewRef = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -44,14 +48,21 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
 
     const scene = new THREE.Scene();
     const cam = new THREE.PerspectiveCamera(45, W / H, 1, 100000);
-    cam.position.set(R * S * 1.1, R * S * 0.5, L * S * 1.4 + R * S);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(2, devicePixelRatio));
     el.appendChild(renderer.domElement);
     const controls = new OrbitControls(cam, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(0, 0, 0);
+    // restore the user's orbit/zoom if we already have one (op changed → scene rebuilt); else use the default framing
+    if (viewRef.current) {
+      cam.position.copy(viewRef.current.pos);
+      controls.target.copy(viewRef.current.target);
+    } else {
+      cam.position.set(R * S * 1.1, R * S * 0.5, L * S * 1.4 + R * S);
+      controls.target.set(0, 0, 0);
+    }
+    controls.update();
 
     scene.add(new THREE.AmbientLight(0xffffff, dark ? 0.75 : 0.95));
     const dl = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -194,6 +205,8 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      // save the current view so the next rebuild (op/theme/height change) keeps the user's orbit/zoom
+      viewRef.current = { pos: cam.position.clone(), target: controls.target.clone() };
       controls.dispose();
       for (const d of disposables) d.dispose();
       renderer.dispose();
