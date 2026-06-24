@@ -76,7 +76,7 @@
   <!-- Output -->
   <rect class="bx bx-good" x="16" y="328" width="866" height="60" rx="9"/>
   <text class="it" x="28" y="352">Output: power draw (MW) · the binding regime · toe/shoulder angles · the 3D cataract trajectories · the capacity readout — all live, all from the same exact engine.</text>
-  <text class="mu" x="28" y="376">Controls: C-CRITICAL (φc = 1 → centrifuging → power → 0) and C-EMPTY (J = 0 → no charge → no power) are exact analytic checks the engine must reproduce.</text>
+  <text class="mu" x="28" y="376">Controls: C-CRITICAL (φc ≥ 1 → charge centrifuges, grinding collapses) and C-EMPTY (J = 0 → no charge → no power) are exact analytic checks the engine must reproduce.</text>
 
   <!-- flows -->
   <path class="flow" d="M174,116 H188" marker-end="url(#sc-arrow)"/>

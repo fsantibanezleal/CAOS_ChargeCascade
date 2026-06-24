@@ -58,7 +58,7 @@ export default function Introduction() {
             <text className="s" x="656" y="160">{es ? 'C-CRITICAL · C-EMPTY (controles exactos)' : 'C-CRITICAL · C-EMPTY (exact controls)'}</text>
             <path className="fl" d="M192,97 H220" markerEnd="url(#cc-ar)" /><path className="fl" d="M402,97 H430" markerEnd="url(#cc-ar)" /><path className="fl" d="M612,97 H640" markerEnd="url(#cc-ar)" />
             <text className="s" x="12" y="210">{es ? 'Velocidad mal puesta o llenado mal elegido = potencia desperdiciada, capacidad perdida y revestimientos rotos por impacto contra el acero.' : 'A mis-set speed or wrong fill = wasted power, lost capacity and liners broken by impact against the steel.'}</text>
-            <text className="s" x="12" y="230">{es ? 'C-CRITICAL (φc = 1 → centrifugado → potencia → 0) y C-EMPTY (J = 0) son controles analíticos exactos; nada está fabricado.' : 'C-CRITICAL (φc = 1 → centrifuging → power → 0) and C-EMPTY (J = 0) are exact analytic controls; nothing is fabricated.'}</text>
+            <text className="s" x="12" y="230">{es ? 'C-CRITICAL (φc ≥ 1 → la carga centrifuga, la molienda colapsa) y C-EMPTY (J = 0 → 0 potencia) son controles analíticos exactos; nada está fabricado.' : 'C-CRITICAL (φc ≥ 1 → the charge centrifuges, grinding collapses) and C-EMPTY (J = 0 → 0 power) are exact analytic controls; nothing is fabricated.'}</text>
           </g>
         </svg>
         <figcaption>{es ? 'Geometría + velocidad → velocidad crítica + partida de Davis + trayectorias → régimen y potencia, en vivo.' : 'Geometry + speed → critical speed + Davis departure + trajectories → regime and power, live.'}</figcaption>

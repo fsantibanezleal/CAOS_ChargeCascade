@@ -270,7 +270,7 @@ export default function Tool() {
           {ood == null ? (
             <div className="cc-pending">
               <strong>{es ? 'Autoencoder OOD: pendiente de entrenamiento' : 'OOD autoencoder: pending training'}</strong>
-              <p>{es ? 'Entrénalo con `--retrain`. Mientras tanto, las banderas de validez del motor (abajo) son el guardia honesto.' : 'Train it with `--retrain`. Meanwhile the engine validity flags (below) are the honest guard.'}</p>
+              <p>{es ? 'El modelo OOD aún no está horneado en este build. Mientras tanto, las banderas de validez del motor (abajo) son el guardia honesto.' : 'The OOD model is not baked into this build yet. Meanwhile the engine validity flags (below) are the honest guard.'}</p>
             </div>
           ) : (
             <>

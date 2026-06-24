@@ -74,7 +74,7 @@
   <text class="mu" x="36" y="302">- the TypeScript mill engine recomputes the critical speed, the charge motion, the regime and the power on every D / J / φc / ball-size control;</text>
   <text class="mu" x="36" y="324">- the 3D charge is a KINEMATIC animation of the analytic engine (Davis departure + parabolic cataract trajectories) — NOT a DEM solve; a real DEM trace is the documented offline upgrade;</text>
   <text class="mu" x="36" y="346">- the power is the Hogg–Fuerstenau torque-arm model, calibrated to a ~1.3 MW reference; a learned surrogate (ONNX) gives instant sweeps + an OOD-AE flags out-of-envelope mills;</text>
-  <text class="mu" x="36" y="368">- C-CRITICAL (φc = 1 → centrifuging, power → 0) and C-EMPTY (J = 0 → no charge, no power) are EXACT analytic controls; nothing is fabricated;</text>
+  <text class="mu" x="36" y="368">- C-CRITICAL (φc ≥ 1 → charge centrifuges, grinding collapses) and C-EMPTY (J = 0 → no charge, no power) are EXACT analytic controls; nothing is fabricated;</text>
   <text class="mu" x="36" y="390">- Contract 1 accepts your own SAG / ball / rod mill; six documented pages; every number sourced or labelled as a kinematic illustration.</text>
   <text class="cd mono" x="36" y="418">D · L · J · ball · φc  →  Nc + Davis departure + regimes + Hogg–Fuerstenau power  →  3D charge · power draw · capacity</text>
 </svg>
