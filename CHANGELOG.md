@@ -3,6 +3,15 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.12.001] — 2026-06-23
+
+### Fixed
+- **Bilingual equations**: several equation `\text{…}` labels carried hardcoded Spanish prose (e.g. "capa
+  centrifuga", "régimen", "parábola", "exacto", "energía no potencia") that did not switch with the language
+  toggle, so they showed Spanish on the English pages. Caught by live screenshot-verify. Equation labels are now
+  language-neutral (English convention, matching the referente); the localized explanation stays in the bilingual
+  captions.
+
 ## [0.12.000] — 2026-06-23
 
 **At-bar remediation** — brought the product to the RotorVitals quality bar (ADR-0017 §2/§3/§4) via two
