@@ -35,9 +35,9 @@ export default function Benchmark() {
           <LearnedTransparency learned={learned} es={es} />
         </>
       ) : (
-        <p className="pf-note">{es ? 'Modelos aprendidos pendientes — corre `python -m cclab.pipeline all --retrain`. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — run `python -m cclab.pipeline all --retrain`. The exact analytic engine runs live meanwhile.'}</p>
+        <p className="cc-note">{es ? 'Modelos aprendidos pendientes — re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
       )}
-      {learned && <p className="pf-cap">{learned.honesty}</p>}
+      {learned && <p className="cc-cap">{learned.honesty}</p>}
     </article>
   );
 }
@@ -57,11 +57,11 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
   if (s.arch == null) return null;   // v1 file — no lineage to show
   return (
     <div style={{ marginTop: '0.8rem' }}>
-      <div className="pf-card-t">{es ? 'Transparencia del entrenamiento (auditable)' : 'Training transparency (auditable)'}</div>
-      <p className="pf-note">{es
+      <div className="cc-card-t">{es ? 'Transparencia del entrenamiento (auditable)' : 'Training transparency (auditable)'}</div>
+      <p className="cc-note">{es
         ? 'La métrica held-out de arriba es real y EARNED, no afirmada: aquí está el linaje completo del surrogate (cómo se entrenó) y el scatter predicho-vs-exacto en los puntos held-out.'
         : 'The held-out metric above is real and EARNED, not asserted: here is the surrogate’s full training lineage (how it was trained) and the predicted-vs-exact scatter on the held-out points.'}</p>
-      <div className="pf-twocol" style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div className="cc-twocol" style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <table className="cmp-table" style={{ flex: '1 1 320px' }}>
           <tbody>
             <tr><td>{es ? 'arquitectura' : 'architecture'}</td><td className="mono">{s.arch} · {s.params} {es ? 'parám.' : 'params'}</td></tr>
@@ -75,7 +75,7 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
           </tbody>
         </table>
         <div className="rv-plot" style={{ flex: '0 0 auto', maxWidth: W + 16 }}>
-          <div className="pf-cap pf-muted">{es ? 'predicho vs exacto (kW, held-out)' : 'predicted vs exact (kW, held-out)'}</div>
+          <div className="cc-cap cc-muted">{es ? 'predicho vs exacto (kW, held-out)' : 'predicted vs exact (kW, held-out)'}</div>
           <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ font: '10px var(--font-sans, system-ui, sans-serif)' }} role="img" aria-label={es ? 'predicho vs exacto' : 'predicted vs exact'}>
             <line x1={sx(0)} y1={sy(0)} x2={sx(hi)} y2={sy(hi)} stroke="var(--color-fg-subtle)" strokeDasharray="4 3" />
             {sc.map(([ex, pr], i) => <circle key={i} cx={sx(ex)} cy={sy(pr)} r={2.4} fill="var(--color-accent)" opacity={0.6} />)}
@@ -86,7 +86,7 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
         </div>
       </div>
       {d && (
-        <p className="pf-cap pf-muted" style={{ marginTop: '0.4rem' }}>
+        <p className="cc-cap cc-muted" style={{ marginTop: '0.4rem' }}>
           {es ? 'Diseño de datos: ' : 'Data design: '}{d.nTrainPoints} {es ? 'puntos de entrenamiento' : 'training points'} · {d.nEvalInDist} held-out · {d.nOod} OOD · {d.nFeatures} {es ? 'features' : 'features'} · {es ? 'semilla' : 'seed'} {d.seed} · {d.sampling}. {es ? 'Envolvente' : 'Envelope'}: {Object.entries(d.envelope).map(([k, v]) => `${k} [${v[0]}–${v[1]}]`).join(' · ')}.
         </p>
       )}

@@ -1,68 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="What the app is — placeholder, specialise per product">
-  <!-- PLACEHOLDER (template). Each product REPLACES this with a diagram of its own
-       domain: the real problem, the inputs, the science core, the value it returns.
-       Keep the shell CSS-variable tokens so it stays themed. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="ChargeCascade — a tumbling mill's diameter, fill, speed and ball size to the charge regime and power draw">
+  <!-- Hand-authored for ChargeCascade. Every colour is a shell CSS variable, so the diagram repaints with the
+       active light/dark theme when inlined into the SPA (ADR-0058). -->
   <style>
     .arch-svg text { font-family: var(--font-sans, Inter, "Segoe UI", system-ui, sans-serif); }
     .arch-svg .mono { font-family: var(--font-mono, ui-monospace, Consolas, monospace); }
     .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1.2; }
     .arch-svg .bx-hi { stroke: var(--color-accent); }
     .arch-svg .bx-good { stroke: var(--color-good); }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
     .arch-svg .ttl { fill: var(--color-fg); font-size: 13px; font-weight: 700; }
     .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10px; }
-    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
     .arch-svg .cd { fill: var(--color-accent); font-size: 9.5px; }
     .arch-svg .mu { fill: var(--color-fg-subtle); font-size: 10px; }
     .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.6; }
-    .arch-svg .ph { fill: var(--color-warn); font-size: 10px; font-weight: 600; }
+    .arch-svg .shell { fill: none; stroke: var(--color-fg-subtle); stroke-width: 1.4; }
+    .arch-svg .toe { fill: var(--color-accent); opacity: 0.5; }
+    .arch-svg .ball { fill: var(--color-magenta); }
+    .arch-svg .cat { fill: none; stroke: var(--color-bad); stroke-width: 1.4; }
   </style>
   <defs>
-    <marker id="ta-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
+    <marker id="ta-arrow" viewBox="0 0 8 8" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--color-fg-faint)"/>
     </marker>
   </defs>
 
-  <text class="ttl" x="22" y="30">What the app is</text>
-  <text class="ph" x="22" y="47">PLACEHOLDER — replace with this product's domain problem → input → method → value</text>
+  <text class="ttl" x="22" y="30">ChargeCascade — what is happening inside a tumbling mill, and what does it cost?</text>
+  <text class="sub" x="22" y="47">a comminution-physics workbench: a mill's diameter, fill, ball size and speed to the charge regime, the trajectories and the power draw — live in 3D</text>
 
-  <rect class="bx bx-hi" x="20" y="74" width="194" height="150" rx="11"/>
-  <text class="it" x="34" y="100">The problem</text>
-  <text class="mu" x="34" y="120">a real mining /</text>
-  <text class="mu" x="34" y="136">operations question</text>
-  <text class="mu" x="34" y="156">answered from data</text>
-  <text class="cd mono" x="34" y="182">products/&lt;slug&gt;.md</text>
+  <rect class="bx bx-hi" x="20" y="74" width="196" height="150" rx="11"/>
+  <text class="it" x="34" y="98">The question</text>
+  <text class="mu" x="34" y="118">How does a mill grind?</text>
+  <text class="mu" x="34" y="134">The charge motion is</text>
+  <text class="mu" x="34" y="150">INVISIBLE in steel — yet</text>
+  <text class="mu" x="34" y="166">it sets the power, the</text>
+  <text class="mu" x="34" y="182">throughput and the liner</text>
+  <text class="mu" x="34" y="198">wear.</text>
+  <text class="cd mono" x="34" y="214">Davis 1919 / Wills 2016</text>
 
-  <rect class="bx" x="248" y="74" width="194" height="150" rx="11"/>
-  <text class="it" x="262" y="100">The input</text>
-  <text class="mu" x="262" y="120">a measurement,</text>
-  <text class="mu" x="262" y="136">image, or signal</text>
-  <text class="mu" x="262" y="156">(Contract 1)</text>
-  <text class="cd mono" x="262" y="182">data/examples/*</text>
+  <rect class="bx" x="244" y="74" width="196" height="150" rx="11"/>
+  <text class="it" x="258" y="98">The input</text>
+  <circle class="shell" cx="342" cy="158" r="42"/>
+  <path class="toe" d="M342,158 L342,200 A42,42 0 0,1 304,170 Z"/>
+  <circle class="ball" cx="318" cy="150" r="3"/><circle class="ball" cx="330" cy="168" r="3"/><circle class="ball" cx="350" cy="172" r="3"/>
+  <path class="cat" d="M362,150 C384,130 392,150 380,180"/>
+  <text class="sub" x="258" y="120">D · L · J(fill) · ball d · φc</text>
+  <text class="cd mono" x="258" y="214">mill + charge (Contract 1)</text>
 
-  <rect class="bx bx-hi" x="476" y="74" width="194" height="150" rx="11"/>
-  <text class="it" x="490" y="100">The method</text>
-  <text class="mu" x="490" y="120">SOTA, real — a</text>
-  <text class="mu" x="490" y="136">classical baseline</text>
-  <text class="mu" x="490" y="156">+ a learned model</text>
-  <text class="cd mono" x="490" y="182">src/&lt;domain&gt;/ · *.onnx</text>
+  <rect class="bx bx-hi" x="468" y="74" width="196" height="150" rx="11"/>
+  <text class="it" x="482" y="98">The method</text>
+  <text class="mu" x="482" y="118">· critical speed Nc</text>
+  <text class="mu" x="482" y="134">· Davis departure +</text>
+  <text class="mu" x="482" y="150">  parabolic flight</text>
+  <text class="mu" x="482" y="166">· cascade / cataract /</text>
+  <text class="mu" x="482" y="182">  centrifuge regimes</text>
+  <text class="mu" x="482" y="198">· Hogg–Fuerstenau power</text>
+  <text class="cd mono" x="482" y="214">frontend/src/mill/ + ONNX</text>
 
-  <rect class="bx bx-good" x="704" y="74" width="176" height="150" rx="11"/>
-  <text class="it" x="718" y="100">The value</text>
-  <text class="mu" x="718" y="120">a decision-grade</text>
-  <text class="mu" x="718" y="136">number + an</text>
-  <text class="mu" x="718" y="156">interactive readout</text>
-  <text class="cd mono" x="718" y="182">pages/Tool.tsx</text>
+  <rect class="bx bx-good" x="692" y="74" width="188" height="150" rx="11"/>
+  <text class="it" x="706" y="98">The value</text>
+  <text class="mu" x="706" y="120">· power draw (MW)</text>
+  <text class="mu" x="706" y="138">· the binding regime</text>
+  <text class="mu" x="706" y="156">· toe / shoulder angles</text>
+  <text class="mu" x="706" y="174">· capacity readout</text>
+  <text class="mu" x="706" y="196">recomputed on every slider</text>
+  <text class="cd mono" x="706" y="214">power · regime · capacity</text>
 
-  <path class="flow" d="M214,149 H246" marker-end="url(#ta-arrow)"/>
-  <path class="flow" d="M442,149 H474" marker-end="url(#ta-arrow)"/>
-  <path class="flow" d="M670,149 H702" marker-end="url(#ta-arrow)"/>
+  <path class="flow" d="M216,149 H242" marker-end="url(#ta-arrow)"/>
+  <path class="flow" d="M440,149 H466" marker-end="url(#ta-arrow)"/>
+  <path class="flow" d="M664,149 H690" marker-end="url(#ta-arrow)"/>
 
-  <rect class="bx" x="20" y="256" width="860" height="180" rx="11"/>
-  <text class="it" x="36" y="282">It is a real system, not a demo:</text>
-  <text class="mu" x="36" y="306">• a deterministic engine that recomputes live in the browser on every control — no mocked outputs;</text>
-  <text class="mu" x="36" y="328">• an offline pipeline with two validated data contracts, so you can run it on YOUR data, not just the built-in cases;</text>
-  <text class="mu" x="36" y="350">• a learned model trained from real / sourced data and exported to ONNX, running client-side next to a classical baseline;</text>
-  <text class="mu" x="36" y="372">• six documented pages (App · Introduction · Methodology · Implementation · Experiments · Benchmark);</text>
-  <text class="mu" x="36" y="394">• an honest record: every number is sourced or labelled synthetic, every limitation stated.</text>
-  <text class="cd mono" x="36" y="420">replace the four boxes above with the concrete nouns of THIS product (e.g. muckpile image → watershed → PSD → P80).</text>
+  <rect class="bx" x="20" y="252" width="860" height="184" rx="11"/>
+  <text class="it" x="36" y="278">It is a real physics system, not a demo:</text>
+  <text class="mu" x="36" y="302">- the TypeScript mill engine recomputes the critical speed, the charge motion, the regime and the power on every D / J / φc / ball-size control;</text>
+  <text class="mu" x="36" y="324">- the 3D charge is a KINEMATIC animation of the analytic engine (Davis departure + parabolic cataract trajectories) — NOT a DEM solve; a real DEM trace is the documented offline upgrade;</text>
+  <text class="mu" x="36" y="346">- the power is the Hogg–Fuerstenau torque-arm model, calibrated to a ~1.3 MW reference; a learned surrogate (ONNX) gives instant sweeps + an OOD-AE flags out-of-envelope mills;</text>
+  <text class="mu" x="36" y="368">- C-CRITICAL (φc ≥ 1 → charge centrifuges, grinding collapses) and C-EMPTY (J = 0 → no charge, no power) are EXACT analytic controls; nothing is fabricated;</text>
+  <text class="mu" x="36" y="390">- Contract 1 accepts your own SAG / ball / rod mill; six documented pages; every number sourced or labelled as a kinematic illustration.</text>
+  <text class="cd mono" x="36" y="418">D · L · J · ball · φc  →  Nc + Davis departure + regimes + Hogg–Fuerstenau power  →  3D charge · power draw · capacity</text>
 </svg>
