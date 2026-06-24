@@ -3,6 +3,13 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.12.003] — 2026-06-24
+
+UX fix — the **3D mill view no longer resets when you change the case or a slider**. The Three.js scene is rebuilt
+on every `op` change, which also recreated the camera + OrbitControls, snapping the view back to the default
+framing. Now the camera position + orbit target are saved on teardown and restored on rebuild, so your orbit/zoom
+is preserved across selections.
+
 ## [0.12.002] — 2026-06-24
 
 UX (patch) — the **3D animation-speed slider** now ranges **0–1.5× with finer 0.05 steps** (was 0–3× / 0.1):
