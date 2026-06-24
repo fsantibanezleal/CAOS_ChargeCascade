@@ -27,7 +27,7 @@ const config: ShellConfig = {
     { path: '/benchmark', en: 'Benchmark', es: 'Benchmark' },
   ],
   links: { github: 'https://github.com/fsantibanezleal/CAOS_ChargeCascade' },
-  version: '0.12.001',
+  version: '0.12.002',
   architecture,
 };
 
