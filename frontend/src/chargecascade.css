@@ -43,13 +43,12 @@
 .fq-hist-col i { width: 100%; background: var(--color-accent); border-radius: 2px 2px 0 0; min-height: 1px; }
 .fq-hist-x { font-size: 0.62rem; color: var(--color-fg-faint); margin-top: 0.2rem; }
 
-/* doc pages (shared with the sibling apps) */
-.cc-doc { max-width: 60rem; }
-.cc-doc h1 { margin-bottom: 0.4rem; }
-.cc-doc h2 { margin-top: 1.6rem; }
-.cc-lead { font-size: 1.02rem; color: var(--color-fg-subtle); line-height: 1.7; margin-bottom: 1rem; }
+/* doc pages (shared with the sibling apps) — no page-width override; the shell owns the column */
 .cc-doc-sec { line-height: 1.7; }
 .cc-doc-sec p { margin: 0.6rem 0; }
+.cc-fig { margin: 1.1rem 0; }
+.cc-fig svg { display: block; width: 100%; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 0.6rem; }
+.cc-fig figcaption { font-size: 0.8rem; color: var(--color-fg-subtle); line-height: 1.55; margin-top: 0.4rem; }
 .cc-list { line-height: 1.7; padding-left: 1.1rem; }
 .cc-list li { margin: 0.35rem 0; }
 .cc-exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
