@@ -3,6 +3,12 @@
 All notable changes to this product. Format: `X.XX.XXX` (display) — see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.12.002] — 2026-06-24
+
+UX (patch) — the **3D animation-speed slider** now ranges **0–1.5× with finer 0.05 steps** (was 0–3× / 0.1):
+1.0× is already fast, so the upper half was unusable; the finer steps give real control in the useful range.
+Visual-only control (does not change the physics); display shows 2 decimals.
+
 ## [0.12.001] — 2026-06-23
 
 ### Fixed

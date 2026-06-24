@@ -59,8 +59,8 @@ export default function Tool() {
           <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastra para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
           <Mill3D op={op} speed={animSpeed} />
           {/* playback-speed control — VISUAL only (does not change the physics); scoped to this tab */}
-          <label className="cc-ctl" style={{ maxWidth: 360 }}>{es ? 'velocidad de animación' : 'animation speed'}: {animSpeed === 0 ? (es ? 'pausa' : 'paused') : `${animSpeed.toFixed(1)}×`}
-            <input className="range" type="range" min={0} max={3} step={0.1} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
+          <label className="cc-ctl" style={{ maxWidth: 360 }}>{es ? 'velocidad de animación' : 'animation speed'}: {animSpeed === 0 ? (es ? 'pausa' : 'paused') : `${animSpeed.toFixed(2)}×`}
+            <input className="range" type="range" min={0} max={1.5} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
           </label>
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
