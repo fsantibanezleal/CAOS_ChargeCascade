@@ -1,5 +1,10 @@
 # CAOS product template — a REAL product repo (not a demo)
 
+[![CI](https://img.shields.io/github/actions/workflow/status/fsantibanezleal/CAOS_ChargeCascade/ci.yml?branch=main&label=CI)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/actions)
+[![License](https://img.shields.io/github/license/fsantibanezleal/CAOS_ChargeCascade)](LICENSE)
+[![Version](https://img.shields.io/github/v/tag/fsantibanezleal/CAOS_ChargeCascade?label=version&sort=semver)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/tags)
+[![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://chargecascade.fasl-work.com)
+
 This is the **canonical template** every Faena/CAOS data-product repo is instantiated from. It exists because
 ad-hoc products (bespoke scripts, baked cases, no reproducible env, no data contract) kept shipping — they
 *look* done but **cannot be applied to new data**, so they are demos, not tools. This template makes the standard
