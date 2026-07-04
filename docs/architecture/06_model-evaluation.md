@@ -31,6 +31,7 @@ Both are trained offline (`science/train_mill.py`, torch) and reported next to t
 **Honesty.** The surrogate's power error (5.2%) is measured DOWNSTREAM in `eval_mill.mjs`: the surrogate ONNX is run in
 Node via onnxruntime-web over the held-out scenarios and its predicted power is compared to the exact engine's. The
 exact analytic engine (Davis / Hogg & Fuerstenau / Morrell / Bond) is **always the authority** and runs live by default;
-the surrogate earns its place on **speed** — instant operating-envelope sweeps — not a fabricated win. The OOD AUC
+the surrogate is the measured learned lane (its intended bulk-sweep role is documented but not yet exercised by a
+shipped feature) — not a fabricated win. The OOD AUC
 (0.922) is measured against scenarios pushed outside the SAG / ball / rod training envelope, with the in-distribution
 p95 reconstruction error (1.09) as the flag threshold; we say so.

@@ -1,3 +1,3 @@
-"""The pure-Python analytic core — Pyodide-safe, shared by the offline stages AND the live lane (same code path).
-EXAMPLE: an SIR epidemic model. Replace with your product's research-chosen engine (kept here only if pure-Python
-and light enough for the live lane; heavy SOTA engines live in the offline stages, never imported by live)."""
+"""Shared pure-Python helpers — Pyodide-safe, usable by the offline stages AND the live lane (same code path).
+In ChargeCascade the physics single source of truth is the TypeScript mill engine (frontend/src/mill/), which the
+offline bake runs unchanged in Node; this package holds the learned-model helpers (learned.py), not the physics."""

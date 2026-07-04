@@ -1,67 +1,99 @@
-# CAOS product template — a REAL product repo (not a demo)
+# ChargeCascade — 3D tumbling-mill charge-motion + power workbench
 
 [![CI](https://img.shields.io/github/actions/workflow/status/fsantibanezleal/CAOS_ChargeCascade/ci.yml?branch=main&label=CI)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/actions)
 [![License](https://img.shields.io/github/license/fsantibanezleal/CAOS_ChargeCascade)](LICENSE)
 [![Version](https://img.shields.io/github/v/tag/fsantibanezleal/CAOS_ChargeCascade?label=version&sort=semver)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/tags)
 [![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://chargecascade.fasl-work.com)
 
-This is the **canonical template** every Faena/CAOS data-product repo is instantiated from. It exists because
-ad-hoc products (bespoke scripts, baked cases, no reproducible env, no data contract) kept shipping — they
-*look* done but **cannot be applied to new data**, so they are demos, not tools. This template makes the standard
-**executable**: clone it, run two scripts, and you have a reproducible offline pipeline that ingests data in a
-**standard format**, processes it through **typed, seeded, tested stages**, emits **committed standard-format
-artifacts + a manifest**, and feeds a web app that **replays** them — and that any third party can point at
-**their own data**.
+**Live: <https://chargecascade.fasl-work.com>** — an interactive workbench for tumbling-mill (SAG / ball / rod)
+charge motion and power draw. From geometry, fill, ball size and the fraction of critical speed to the charge
+regime, the Davis trajectories and the net power — computed live in the browser, in 3D, bilingual (EN/ES),
+light/dark. No application server: static files + client-side compute only.
 
-It is modelled on the validated exemplar **CAOS_SIMLAB** (`simlab/pipeline.py`, `requirements-*.txt`,
-`scripts/setup+precompute`, `docs/frameworks`, `data/artifacts`, `manifests/`).
+## What it computes (the exact engine)
 
-## The two data contracts (the thing that was missing everywhere)
+A dependency-free TypeScript engine (`frontend/src/mill/`) is the single source of physics truth; the App, the
+Experiments table and the offline bake all run the SAME code:
 
-A product is only real if data flows through **two enforced contracts**:
+- **Critical speed** `Nc = 42.3/√(D−d)` [rpm] and the dimensionless regime knob `φc = N/Nc` — derived, not fitted.
+- **Davis (1919) charge kinematics**: per-shell departure angle `cos α = φc²·r/R` + the ballistic parabola, over 9
+  radial shells → shoulder/toe angles, the cataract fan, the centrifuging fraction (exact onset at φc = 1).
+- **Regime classification** in literature φc bands (slumping / cascading / cataracting / centrifuging), with the
+  sampled centrifuging fraction as the precise onset detector.
+- **Power draw**: Hogg & Fuerstenau (1972) torque-arm net power with a disclosed calibration (`C_ARM = 0.80`, set so
+  the reference 4×6 m ball mill draws ~1.3 MW); the J(1−1.065J) fill term peaks near J ≈ 0.47 and P scales as D^2.5.
+  A calibrated **Morrell-form** is shown alongside as a consistency companion — it is a rescale of the same torque
+  arm, **not** an independent model; Morrell's real (1996) C-model is cited, not implemented (a documented upgrade).
+- **Bond (1961) specific energy** (kWh/t) — process ENERGY, deliberately kept distinct from charge power; their
+  ratio P/W gives the grinding capacity in the Comminution tab.
 
-1. **Ingestion contract — `raw → processing`.** `productlab/io/contract.py` defines the required schema (columns,
-   units, ranges) of an input dataset and an explicit **outlier policy** (reject / clip / flag). This is the
-   *"bring your own data"* gate: a user's dataset is accepted iff it satisfies the contract. Documented in
-   [docs/data-contract.md](docs/data-contract.md).
-2. **Artifact contract — `processing → web`.** Every pipeline run writes a compact, standard-format artifact and a
-   `manifests/<case>.json` (params, seed, run_ms, bytes, gate verdict, format/version). The web app loads **only**
-   these — it never recomputes — and a TS type mirrors the manifest schema so a contract drift fails the build.
+## The learned lane (real, measured, guarded)
 
-If either contract is missing, the product is a demo. CI enforces both.
+Two genuinely trained models (torch → ONNX) run live in the browser via onnxruntime-web, with committed lineage
+(`data/derived/cc-learned.json`):
 
-## Quickstart (proves the template runs end-to-end)
+- a **power surrogate** (MLP 6-64-64-2) trained to reproduce the exact engine; held-out power error **5.2% ± 12.5%**
+  on whole-mill held-out configurations, always displayed next to the exact power (What-if tab);
+- an **OOD autoencoder** (held-out **AUC 0.922**) that flags operating points outside the training envelope, where
+  the surrogate would extrapolate (Anomaly tab).
+
+The exact engine is sub-millisecond and remains the authority everywhere; no shipped feature consumes the surrogate
+in bulk yet (its intended mass-sweep role is documented, not shipped).
+
+## Cases + bring your own mill
+
+10 synthetic, physically realistic cases in 4 categories (machine / speed sweep / fill / analytic controls), all
+labelled synthetic, baked to committed traces + manifests (`data/derived/`) by the same engine that runs live. The
+controls are exact: **C-CRITICAL** (φc = 1 → the centrifuging fraction turns positive and the regime switches;
+the published torque model is deliberately NOT tapered, so draw power stays high — grinding is what collapses) and
+**C-EMPTY** (J = 0 → exactly 0 power). A **Custom mill** tab validates any user mill through CONTRACT-1 (the same
+gate as the cases, TS mirroring the Python contract) and runs the exact engine on it.
+
+## What this is NOT (honesty posture)
+
+- The 3D charge is a **kinematic animation** of the Davis equations — NOT a DEM / N-body solve (a real DEM lane is
+  the documented offline upgrade).
+- The displayed Morrell-form is a **calibrated rescale** of the Hogg–Fuerstenau torque arm — agreement between the
+  two curves is a consistency check by construction, not a two-model validation.
+- **No published-mill dataset ships in this build** — no external power cross-check is claimed; the power magnitude
+  is calibrated to one industrial reference point (~1.3 MW).
+- The surrogate is trained on the app's own analytic engine (labels are analytic truth, not measurements).
+
+## Quickstart
 
 ```bash
-# 1. create the reproducible environment (.venv + pinned per-need requirements)
-./scripts/setup.sh                      # or scripts/setup.ps1 on Windows PowerShell
+# frontend (the product): dev server / build / engine tests
+cd frontend && npm install
+npm run dev          # http://localhost:5173
+npm run build        # type-check + production build (artifacts copied by copy-data.mjs)
+npm test             # engine / inverse / contract tests, incl. the two analytic controls
 
-# 2. run the offline pipeline over every case → data/artifacts/ + manifests/
-./scripts/precompute.sh                 # or scripts/precompute.ps1
-
-# 3. the tests (determinism, both data contracts, the gate, parity)
-.venv/bin/python -m pytest              # .venv/Scripts/python.exe on Windows
-
-# 4. the web app consumes the artifacts (copy-data enforces the artifact contract)
-cd web && npm install && node copy-data.mjs && npm run dev
+# offline lane (bake + contracts; optional for running the app)
+./scripts/setup.sh           # or scripts\setup.ps1  — creates .venv-pipeline + .venv (no globals)
+./scripts/precompute.sh      # re-bake the 10 cases (or one: ./scripts/precompute.sh K-BALL --seed 7)
+.venv-pipeline/bin/python -m pytest    # contracts, manifests, pipeline smoke
+./scripts/smoke.sh           # CONTRACT-2 artifact/manifest consistency check
 ```
 
-## How to instantiate this template for a NEW product
+The torch → ONNX retrain lane is separate and local-only: see
+[docs/guides/01_precompute-pipeline.md](docs/guides/01_precompute-pipeline.md).
 
-See [docs/guides/00_instantiate.md](docs/guides/00_instantiate.md). In short: copy this tree, rename the
-`productlab` package to `<slug>lab`, **replace the EXAMPLE engine** (`productlab/stages/process.py`) with your
-product's research-chosen SOTA engine (the one documented in `docs/frameworks/`, pinned in
-`requirements-precompute.txt` — e.g. Yade/Chrono for DEM, OR-Tools for dispatch, MintPy for InSAR), write your
-ingestion contract + cases, and fill the `docs/` wiki **as you build, not at the end** (ADR-0056).
+## Repo layout
 
-## Hard rules this template bakes in
+| Path | What |
+|---|---|
+| `frontend/` | the web app (React + Vite + Three.js); `src/mill/` = the exact engine; `src/pages/` = the six pages |
+| `data-pipeline/` | `cclab`: the two data contracts, staged pipeline, lane gate, learned-model training |
+| `data/derived/` | committed baked traces, manifests, learned models + lineage |
+| `docs/` | the navigable wiki: [architecture](docs/architecture.md) · [frameworks](docs/frameworks.md) · [cases](docs/cases.md) · [guides](docs/guides.md) |
+| `tests/` | Python tests (contracts, manifest, pipeline smoke) |
+| `app/` | dormant FastAPI lane (activates only on an ADR-0002 trigger; [app/README.md](app/README.md)) |
+| `scripts/` | cross-platform setup / precompute / dev / smoke ([scripts/README.md](scripts/README.md)) |
 
-- **The deep research is binding, not decoration.** Every engine/solver/library the research selected lives in
-  `docs/frameworks/<tool>/` *and* `requirements-precompute.txt`, and the pipeline actually uses it. No hand-rolled
-  substitute for a SOTA engine the research prescribed.
-- **Standard formats end-to-end** (`productlab/io/formats.py`): domain-standard in, compact-standard out.
-- **Reproducible**: pinned requirements per need; `scripts/setup`; CI installs them and runs a pipeline smoke.
-- **Applicable to new data**: the ingestion contract is the bring-your-own-data door.
-- **Versioned** (X.XX.XXX, CHANGELOG + tags from day 1) with **license/attribution hygiene**.
+See [STRUCTURE.md](STRUCTURE.md) for the layout in one page and
+[docs/README.md](docs/README.md) for the documentation entry point.
 
-See [docs/architecture/01_overview.md](docs/architecture/01_overview.md) for the full rationale.
+## Versioning
+
+`X.XX.XXX` (see [CHANGELOG.md](CHANGELOG.md)); releases are tagged. Licensed under
+[Apache-2.0](LICENSE).
