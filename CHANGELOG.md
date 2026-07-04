@@ -3,6 +3,19 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.13.000], 2026-07-04
+
+### Changed
+- **Mill3D no longer autoplays** (no-compute-bomb rule, ADR-0059 / the feedback rule). The 3D charge
+  animation was an uncontrolled `requestAnimationFrame` loop that started on landing and ran forever,
+  burning CPU on an unattended tab. It now mounts through the shared `usePausedViz` hook
+  (`@fasl-work/caos-app-shell` bumped to `^0.3.0`): **default paused**, an explicit **Play/Pause** button,
+  run-once-then-stop is N/A here so `loop: true` (the mill rotation is a continuous dynamics view), and the
+  rAF **halts when the tab is hidden**. A static frame is drawn on mount so the paused mill is visible (not a
+  blank canvas), and orbiting while paused still re-renders via a `controls.change` listener. Screenshot-
+  verified: Play button present, 0 console errors.
+- Bumped `@fasl-work/caos-app-shell` `^0.2.0` -> `^0.3.0`.
+
 ## [0.12.004], 2026-07-04
 
 ### Changed
