@@ -193,7 +193,7 @@ export default function Tool() {
     {
       id: 'whatif', label: es ? 'What-if (ONNX)' : 'What-if (ONNX)',
       content: (() => {
-        // inverse recommender (exact engine — the surrogate is only for sweeps). Power is monotone in φc, so a target
+        // inverse recommender (exact engine; the surrogate is not used here). Power is monotone in φc, so a target
         // throughput bisects to a φc; the regime bands give a representative φc per motion regime.
         const curCap = r.bondWKwhT > 0 ? r.phfKw / r.bondWKwhT : 0;
         const cap = solvePhiCForCapacity(op, invTph ?? Math.round(curCap));
@@ -204,11 +204,11 @@ export default function Tool() {
         const regimes: Regime[] = ['cascading', 'cataracting', 'centrifuging'];
         return (
           <div className="cc-vizstack">
-            <div className="cc-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico para barridos instantáneos del envolvente de operación.' : 'The power surrogate (ONNX) emulates the analytic engine for instant operating-envelope sweeps.'}</div>
+            <div className="cc-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico; aquí corre en vivo junto al exacto, con su error a la vista. Su uso en barridos masivos es una extensión documentada, aún no publicada.' : 'The power surrogate (ONNX) emulates the analytic engine; here it runs live next to the exact engine, with its error in view. Its bulk-sweep use is a documented extension, not yet shipped.'}</div>
             {surrPending ? (
               <div className="cc-pending">
-                <strong>{es ? 'Surrogate: pendiente de entrenamiento' : 'Surrogate: pending training'}</strong>
-                <p>{es ? 'Re-genera el surrogate de potencia con el paso de re-entrenamiento del precómputo (torch → ONNX). El motor analítico EXACTO corre en vivo mientras tanto.' : 'Regenerate the power surrogate with the precompute retrain step (torch → ONNX). The EXACT analytic engine runs live meanwhile.'}</p>
+                <strong>{es ? 'Surrogate: no cargado' : 'Surrogate: not loaded'}</strong>
+                <p>{es ? 'El surrogate entrenado viene en este build (torch → ONNX) pero no se pudo cargar en esta sesión. El motor analítico EXACTO corre en vivo mientras tanto.' : 'The trained surrogate ships with this build (torch → ONNX) but could not be loaded in this session. The EXACT analytic engine runs live meanwhile.'}</p>
               </div>
             ) : (
               <>
@@ -217,7 +217,7 @@ export default function Tool() {
                   <Kpi label={es ? 'exacto (Hogg-F.)' : 'exact (Hogg-F.)'} value={kw(r.phfKw)} />
                   <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : '—'} />
                 </div>
-                <p className="cc-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate gana su lugar por la velocidad (barridos Monte-Carlo instantáneos), no por una victoria fabricada.' : 'The exact analytic engine is the authority; the surrogate earns its place on speed (instant Monte-Carlo sweeps), not a fabricated win.'}</p>
+                <p className="cc-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate es el carril aprendido medido (su error vs el exacto se muestra en vivo); ninguna funcionalidad publicada lo consume aún en masa.' : 'The exact analytic engine is the authority; the surrogate is the measured learned lane (its error vs the exact engine is shown live); no shipped feature consumes it in bulk yet.'}</p>
               </>
             )}
 
@@ -269,8 +269,8 @@ export default function Tool() {
           <div className="cc-plot-t">{es ? 'El autoencoder OOD marca puntos de operación fuera del envolvente entrenado (sobre-velocidad, casi-centrifugando) — el guardia en vivo.' : 'The OOD autoencoder flags operating points outside the trained envelope (over-speed, near-centrifuging) — the live guard.'}</div>
           {ood == null ? (
             <div className="cc-pending">
-              <strong>{es ? 'Autoencoder OOD: pendiente de entrenamiento' : 'OOD autoencoder: pending training'}</strong>
-              <p>{es ? 'El modelo OOD aún no está horneado en este build. Mientras tanto, las banderas de validez del motor (abajo) son el guardia honesto.' : 'The OOD model is not baked into this build yet. Meanwhile the engine validity flags (below) are the honest guard.'}</p>
+              <strong>{es ? 'Autoencoder OOD: no cargado' : 'OOD autoencoder: not loaded'}</strong>
+              <p>{es ? 'El modelo OOD entrenado viene en este build pero no se pudo cargar en esta sesión. Mientras tanto, las banderas de validez del motor (abajo) son el guardia honesto.' : 'The trained OOD model ships with this build but could not be loaded in this session. Meanwhile the engine validity flags (below) are the honest guard.'}</p>
             </div>
           ) : (
             <>
@@ -396,6 +396,9 @@ export default function Tool() {
             <input className="range" type="range" min={20} max={150} step={5} value={op.ballTopMm} onChange={(e) => set('ballTopMm', +e.target.value)} />
           </label>
           <div className={`cc-regime-pill cc-regime-${r.regime}`}>{r.regime} · φc {op.phiC.toFixed(2)}</div>
+          <div className="cc-cap cc-muted">{es
+            ? 'el pill clasifica por bandas de φc (banda centrifuging desde ~0.9); el inicio exacto es φc = 1 — ver "% centrifugando"'
+            : 'the pill classifies by φc band (centrifuging band from ~0.9); the exact onset is φc = 1 — see "% centrifuging"'}</div>
         </div>
       </aside>
       <main className="cc-main">
