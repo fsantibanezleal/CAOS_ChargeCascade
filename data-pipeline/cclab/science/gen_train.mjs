@@ -1,4 +1,4 @@
-// Generate the learned-model training data by running the SAME TypeScript mill engine the browser runs — so the power
+// Generate the learned-model training data by running the SAME TypeScript mill engine the browser runs, so the power
 // surrogate trains on EXACTLY the analytic Hogg-Fuerstenau/Morrell engine the App uses, and is benchmarked against it.
 // Writes to data/raw/ (git-ignored, regenerable). Invoked by pipeline.retrain before train_mill.py. Run from frontend/
 // so tsx resolves:  node --import tsx ../data-pipeline/cclab/science/gen_train.mjs
@@ -10,7 +10,7 @@
 //    measures the surrogate's power error vs the EXACT engine), plus out-of-envelope points for the OOD AUC.
 //
 // The 6 features are the App's live controls + the case geometry; the lifter angle is held at the standard 35 deg (the
-// surrogate emulates the engine at the canonical lifter geometry — stated honestly in the learned-model honesty note).
+// surrogate emulates the engine at the canonical lifter geometry, stated honestly in the learned-model honesty note).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +21,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const RAW = resolve(HERE, '../../../data/raw');
 mkdirSync(RAW, { recursive: true });
 
-// a small seeded RNG (mulberry32) — deterministic training data
+// a small seeded RNG (mulberry32), deterministic training data
 function mulberry32(seed) {
   let a = seed >>> 0;
   return () => {
@@ -40,7 +40,7 @@ const ENV = {
   diameter_m: [2.5, 11], length_m: [3, 12], fill: [0.12, 0.45],
   phi_c: [0.45, 0.92], ball_top_mm: [25, 130], charge_density: [2.8, 5.6],
 };
-// out-of-envelope ranges (over-speed / centrifuging / extreme geometry) — genuinely off the trained manifold
+// out-of-envelope ranges (over-speed / centrifuging / extreme geometry), genuinely off the trained manifold
 const OUT_ENV = {
   diameter_m: [11.5, 15], length_m: [13, 18], fill: [0.46, 0.62],
   phi_c: [0.95, 1.2], ball_top_mm: [135, 210], charge_density: [6.0, 8.0],

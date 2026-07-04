@@ -1,15 +1,15 @@
-"""HEAVY lane (local-only) — train ChargeCascade's two learned models and export them to ONNX. Run inside the
+"""HEAVY lane (local-only), train ChargeCascade's two learned models and export them to ONNX. Run inside the
 .venv-precompute (torch) AFTER gen_train.mjs has written data/raw/{mill-train,mill-eval}.json:
 
     python data-pipeline/cclab/science/train_mill.py
 
-1. power-surrogate — an MLP regressor (6 standardized mill features -> [net power kW, fraction centrifuging]). A fast
+1. power-surrogate, an MLP regressor (6 standardized mill features -> [net power kW, fraction centrifuging]). A fast
    emulation of the analytic Hogg-Fuerstenau/Morrell engine for instant Monte-Carlo / operating-envelope sweeps (the
    App's What-if tool). Its DOWNSTREAM skill (power vs the EXACT engine on held-out points) is measured by eval_mill.mjs
    (the engine is TypeScript, so the honest comparison runs in the engine's own language). The standardisation is folded
    into the export wrapper, so the ONNX takes RAW features and returns RAW [power_kw, frac_centrifuging].
-2. scenario-ood — a small autoencoder over the standardized feature vector; the reconstruction MSE separates
-   in-distribution operating points from out-of-envelope ones (over-speed, near-centrifuging, extreme geometry) — the
+2. scenario-ood, a small autoencoder over the standardized feature vector; the reconstruction MSE separates
+   in-distribution operating points from out-of-envelope ones (over-speed, near-centrifuging, extreme geometry), the
    App's live Anomaly guard. The AUC is reported here.
 
 Outputs: data/derived/{power-surrogate.onnx, scenario-ood.onnx} + data/raw/learned-partial.json (eval_mill.mjs
@@ -78,7 +78,7 @@ def train_surrogate(X: np.ndarray, Y: np.ndarray):
     tr, va = idx[:cut], idx[cut:]
     mu_x = X.mean(0, keepdims=True)
     sd_x = X.std(0, keepdims=True) + 1e-9
-    # power spans 0..several MW; frac-centrifuging is 0..1 — standardise the targets for stable training
+    # power spans 0..several MW; frac-centrifuging is 0..1, standardise the targets for stable training
     mu_y = Y.mean(0, keepdims=True)
     sd_y = Y.std(0, keepdims=True) + 1e-9
     Xs = (X - mu_x) / sd_x
@@ -171,14 +171,14 @@ def train_ood(X: np.ndarray, mu_x: np.ndarray, sd_x: np.ndarray, in_eval: np.nda
     labels = np.concatenate([np.zeros(len(in_scores)), np.ones(len(ood_scores))])
     scores = np.concatenate([in_scores, ood_scores])
     auc = _auc(labels, scores)
-    # the in-distribution 95th-percentile reconstruction MSE — the App flags an operating point as off-envelope when
+    # the in-distribution 95th-percentile reconstruction MSE, the App flags an operating point as off-envelope when
     # its (ONNX-computed) anomaly score exceeds this. Derived from held-out in-dist data, not hand-picked.
     thr = float(np.quantile(in_scores, 0.95))
     print(f"OOD scores: in-dist p50={np.median(in_scores):.3f} p95={thr:.3f} | ood p50={np.median(ood_scores):.3f}")
 
     # export wrapper: RAW features -> standardise -> AE -> the standardized-space reconstruction MSE (the anomaly
     # score itself, [batch, 1]). Computing it INSIDE the ONNX means the browser reads an interpretable, correctly-scaled
-    # score directly (the SAME quantity used for the AUC above) — no client-side scaler needed.
+    # score directly (the SAME quantity used for the AUC above), no client-side scaler needed.
     class AEExport(nn.Module):
         def __init__(self, core: OODAE) -> None:
             super().__init__()
@@ -197,7 +197,7 @@ def train_ood(X: np.ndarray, mu_x: np.ndarray, sd_x: np.ndarray, in_eval: np.nda
 
 
 def _strip_metadata(path: Path) -> None:
-    """Remove machine-specific provenance the dynamo exporter bakes in — the node `pkg.torch.onnx.stack_trace`
+    """Remove machine-specific provenance the dynamo exporter bakes in, the node `pkg.torch.onnx.stack_trace`
     metadata_props carry ABSOLUTE source paths (D:\\_Repos\\...), which both leak the local path and make the bytes
     non-portable. Stripping them (+ the doc_strings) keeps the committed ONNX clean and reproducible across machines."""
     import onnx
@@ -213,7 +213,7 @@ def _strip_metadata(path: Path) -> None:
 def export_onnx(model: nn.Module, n_in: int, in_name: str, out_name: str, path: Path) -> None:
     model.eval()
     dummy = torch.zeros(1, n_in)
-    # external_data=False embeds the (tiny) weights INSIDE the single .onnx file — required for browser /
+    # external_data=False embeds the (tiny) weights INSIDE the single .onnx file, required for browser /
     # onnxruntime-web loading (no sidecar .onnx.data, which the WASM EP cannot mount).
     torch.onnx.export(model, dummy, str(path), input_names=[in_name], output_names=[out_name],
                       dynamic_axes={in_name: {0: "batch"}, out_name: {0: "batch"}},
@@ -238,7 +238,7 @@ def main() -> None:
     surr_lineage["modelBytes"] = (DERIVED / "power-surrogate.onnx").stat().st_size
 
     partial = {
-        # the surrogate's real training lineage (so the held-out metric is auditable, not just asserted) — eval_mill.mjs
+        # the surrogate's real training lineage (so the held-out metric is auditable, not just asserted), eval_mill.mjs
         # merges the downstream power error + the predicted-vs-exact scatter onto this.
         "surrogateLineage": surr_lineage,
         "ood": {"auc": ae["auc"], "nEval": ae["nEval"], "thr": ae["thr"], "arch": ae["arch"], "params": ae["params"],

@@ -1,14 +1,14 @@
-# Architecture — overview
+# Architecture, overview
 
 ChargeCascade is an instance of the **CAOS product-repo archetype** ([ADR-0057]): an offline-pipeline-heavy,
 backend-optional product that deploys as a static, deterministic-replay viewer. The base is **frozen** (instantiated,
-never re-litigated); per-product rework lives only in the **core** — the mill physics engine, the visualisations, the
+never re-litigated); per-product rework lives only in the **core**, the mill physics engine, the visualisations, the
 cases, content.
 
 The distinctive thing about ChargeCascade is that the **physics is the live lane**: the critical speed, the Davis
 per-shell charge departure, the cascading → cataracting → centrifuging regime classifier and the Hogg & Fuerstenau /
 Morrell power draw are TypeScript that run in the browser, and the power surrogate + OOD autoencoder run via
-onnxruntime-web — so the App recomputes the charge motion, the regime and the power as you drag the diameter, length,
+onnxruntime-web, so the App recomputes the charge motion, the regime and the power as you drag the diameter, length,
 fill, speed or top ball size, and the 3D animates the same trajectories the engine just computed.
 
 ## The lanes (and what runs where)
@@ -16,7 +16,7 @@ fill, speed or top ball size, and the 3D animates the same trajectories the engi
 | Lane | Where | Deps | Notes |
 |---|---|---|---|
 | **Live (client-side)** | `frontend/src/mill/` (critical speed + Davis charge + regime + power) + onnxruntime-web (the surrogate + OOD-AE) | web npm | the interactive core; recomputes on every control change, sub-ms |
-| **Offline (precompute)** | `cclab/science/` — Node bake of the SAME TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
+| **Offline (precompute)** | `cclab/science/`, Node bake of the SAME TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
 | **Replay (light)** | `cclab.pipeline` (numpy) | `data-pipeline/requirements.txt` | reshapes the committed bake → per-case traces + manifests |
 | **API (backend)** | `app/` (FastAPI) | `requirements-api.txt` | DORMANT; activate only on an ADR-0002 trigger |
 
@@ -41,7 +41,7 @@ compact per-case trace) → `data/derived/` (committed) → the `frontend/` App 
 - **Is:** Davis (1919) single-particle charge motion + Hogg & Fuerstenau (1972) / Morrell (1996) power draw + the
   cascading → cataracting → centrifuging transition rendered in 3D, with an honest surrogate-vs-exact comparison and an
   out-of-envelope flag.
-- **Is NOT:** a DEM / N-body discrete-element solver — the 3D is a kinematic animation of the analytic engine, and a
+- **Is NOT:** a DEM / N-body discrete-element solver, the 3D is a kinematic animation of the analytic engine, and a
   real DEM / PEPT trace is the documented offline upgrade. The operating points are synthetic-but-realistic (clearly
   labelled), the power magnitude is calibrated to real industrial values, and the `C-*` cases are exact analytic
   controls.

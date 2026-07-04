@@ -1,6 +1,6 @@
 import type { Citation } from '@fasl-work/caos-app-shell';
 
-// The references ChargeCascade's physics rests on — tumbling-mill charge motion + power draw.
+// The references ChargeCascade's physics rests on, tumbling-mill charge motion + power draw.
 // None carry a DOI (the foundational works are pre-DOI AIME/SME Transactions or books), so each links to a
 // verifiable, stable source: the publisher, a library/bibliographic record, or the author's own publication page.
 export const CITATIONS: Citation[] = [

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="ChargeCascade science flow: validate, critical speed, per-shell departure, parabolic flight, regime, Hogg-Fuerstenau power">
-  <!-- Hand-authored for ChargeCascade — the real algorithm, step by step with the genuine equations.
+  <!-- Hand-authored for ChargeCascade, the real algorithm, step by step with the genuine equations.
        Shell CSS-variable tokens only, so it stays themed (ADR-0058). -->
   <style>
     .arch-svg text { font-family: var(--font-sans, Inter, "Segoe UI", system-ui, sans-serif); }
@@ -23,7 +23,7 @@
     </marker>
   </defs>
 
-  <text class="ttl" x="22" y="30">The science / algorithm flow — exact analytic mill physics</text>
+  <text class="ttl" x="22" y="30">The science / algorithm flow, exact analytic mill physics</text>
   <text class="sub" x="22" y="47">mill geometry + speed → critical speed → per-shell departure (Davis) → trajectories + regime → torque-arm power (Hogg–Fuerstenau)</text>
 
   <!-- Stage 1: validate -->
@@ -58,24 +58,24 @@
   <!-- Stage 5: regimes -->
   <rect class="bx" x="738" y="70" width="148" height="160" rx="9"/>
   <text class="it" x="750" y="92">5 · Regime (by φc)</text>
-  <text class="mu" x="750" y="112">cascading — φc low</text>
+  <text class="mu" x="750" y="112">cascading, φc low</text>
   <text class="mu" x="750" y="128">(charge rolls / slumps)</text>
-  <text class="mu" x="750" y="148">cataracting — mid φc</text>
+  <text class="mu" x="750" y="148">cataracting, mid φc</text>
   <text class="mu" x="750" y="164">(charge thrown, impacts toe)</text>
-  <text class="mu" x="750" y="184">centrifuging — φc ≥ 1</text>
+  <text class="mu" x="750" y="184">centrifuging, φc ≥ 1</text>
   <text class="mu" x="750" y="200">(pinned to shell, no grind)</text>
   <text class="cd mono" x="750" y="222">regime.ts</text>
 
   <!-- Stage 6: power (wide) -->
   <rect class="bx bx-good" x="16" y="206" width="706" height="98" rx="9"/>
-  <text class="it" x="28" y="228">6 · Power draw — Hogg–Fuerstenau torque-arm model</text>
+  <text class="it" x="28" y="228">6 · Power draw, Hogg–Fuerstenau torque-arm model</text>
   <text class="eq" x="28" y="254">P = ω · M · g · (R_arm · sin θ)        with the fill term  J (1 − 1.065 J)  peaking near 45–50% fill</text>
   <text class="mu" x="28" y="276">M = charge mass, ω = mill angular speed, R_arm = torque-arm radius, θ = the shoulder angle; the Morrell C-model is the cross-check.</text>
   <text class="cd mono" x="28" y="294">power.ts · Hogg–Fuerstenau 1972 · Morrell 1996</text>
 
   <!-- Output -->
   <rect class="bx bx-good" x="16" y="328" width="866" height="60" rx="9"/>
-  <text class="it" x="28" y="352">Output: power draw (MW) · the binding regime · toe/shoulder angles · the 3D cataract trajectories · the capacity readout — all live, all from the same exact engine.</text>
+  <text class="it" x="28" y="352">Output: power draw (MW) · the binding regime · toe/shoulder angles · the 3D cataract trajectories · the capacity readout, all live, all from the same exact engine.</text>
   <text class="mu" x="28" y="376">Controls: C-CRITICAL (φc ≥ 1 → charge centrifuges, grinding collapses) and C-EMPTY (J = 0 → no charge → no power) are exact analytic checks the engine must reproduce.</text>
 
   <!-- flows -->

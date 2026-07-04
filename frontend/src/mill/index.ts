@@ -1,4 +1,4 @@
-// The ChargeCascade mill physics engine barrel — dependency-free TypeScript, runs LIVE in the browser AND in the Node
+// The ChargeCascade mill physics engine barrel, dependency-free TypeScript, runs LIVE in the browser AND in the Node
 // bake (under tsx). Tumbling-mill charge motion (Davis trajectories) + the regimes + the power draw (Hogg-Fuerstenau /
 // Morrell / Bond). The analytic engine is the authority; the learned surrogate (commit 4b) emulates it and is measured
 // downstream. Mirrors ChancaDEM's `physics/` + CutoffGrade's `lane/`.

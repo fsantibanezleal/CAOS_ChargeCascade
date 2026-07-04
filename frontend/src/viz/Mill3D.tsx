@@ -6,7 +6,7 @@ import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 
 // The interactive 3D tumbling mill. The cylindrical shell (axis along z) rotates; lifter bars carry the charge up;
 // each charge particle RIDES the shell until the Davis departure azimuth (cos a = omega^2 r/g per radial shell), then
-// flies the parabolic free-flight trajectory and lands back at the toe — so the user WATCHES cascading -> cataracting
+// flies the parabolic free-flight trajectory and lands back at the toe, so the user WATCHES cascading -> cataracting
 // -> centrifuging as they change phiC. Centrifuging shells (cos a >= 1) stay pinned to the shell. This is a KINEMATIC
 // animation of the analytic engine's physics (the ChancaDEM Chamber3D pattern), NOT a DEM solve. Pure three.js.
 const G = 9.81;
@@ -25,7 +25,7 @@ function viridis(t: number): THREE.Color {
 export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
-  // playback speed — a VISUAL control (how fast the kinematic animation plays); it does NOT change the physics
+  // playback speed, a VISUAL control (how fast the kinematic animation plays); it does NOT change the physics
   // (phiC / power / regime are unaffected). Read from a ref inside the rAF loop so dragging the slider never
   // re-creates the three.js scene.
   const speedRef = useRef(speed);
@@ -71,7 +71,7 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
 
     const disposables: { dispose(): void }[] = [];
 
-    // the mill shell (cylinder, axis along z) — wireframe-ish + two end rings
+    // the mill shell (cylinder, axis along z), wireframe-ish + two end rings
     const shellGeo = new THREE.CylinderGeometry(R * S, R * S, L * S, 56, 1, true);
     shellGeo.rotateX(Math.PI / 2); // axis: y -> z
     const shellMat = new THREE.MeshBasicMaterial({ color: dark ? 0x3a4350 : 0x9aa6b2, wireframe: true, transparent: true, opacity: 0.35 });

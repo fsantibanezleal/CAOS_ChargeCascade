@@ -1,4 +1,4 @@
-"""cclab — the offline+light engine for ChargeCascade (tumbling-mill charge motion + power draw), instantiated on the
+"""cclab, the offline+light engine for ChargeCascade (tumbling-mill charge motion + power draw), instantiated on the
 CAOS product-repo template (ADR-0057).
 
 The live + bake science is the dependency-free TypeScript engine (frontend/src/mill/). This Python package is the
@@ -8,4 +8,4 @@ gate, the manifest/trace, and the cases-by-category registry. The numpy-LIGHT pi
 `--retrain` runs the heavy lane (torch -> ONNX) in cclab/science/.
 """
 
-__version__ = "0.12.003"  # display X.XX.XXX; PEP 440 form in pyproject.toml (0.12.3)
+__version__ = "0.12.004"  # display X.XX.XXX; PEP 440 form in pyproject.toml (0.12.4)

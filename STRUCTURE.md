@@ -1,4 +1,4 @@
-# STRUCTURE — the actual layout of this repo
+# STRUCTURE, the actual layout of this repo
 
 ChargeCascade is an instance of the CAOS product-repo archetype (ADR-0057). This page maps what is actually
 here; the full rationale lives in [docs/architecture/01_overview.md](docs/architecture/01_overview.md).
@@ -8,9 +8,9 @@ here; the full rationale lives in [docs/architecture/01_overview.md](docs/archit
 | Lane | Where | Notes |
 |---|---|---|
 | **Live (browser)** | `frontend/src/mill/` (TypeScript, dependency-free) | the SINGLE source of physics truth; recomputes on every control move |
-| **Offline bake** | `data-pipeline/cclab` orchestrates; the bake runs the **same TS engine** in Node (via `tsx`) | no Python re-implementation — live and baked numbers are identical by construction |
+| **Offline bake** | `data-pipeline/cclab` orchestrates; the bake runs the **same TS engine** in Node (via `tsx`) | no Python re-implementation, live and baked numbers are identical by construction |
 | **Learned (torch → ONNX)** | `data-pipeline/` retrain lane (separate `.venv-precompute`, local-only) | trains the power surrogate + the OOD-AE; the `.onnx` run live via onnxruntime-web |
-| **API** | `app/` (FastAPI) | **dormant** — activates only on an ADR-0002 trigger ([app/README.md](app/README.md)) |
+| **API** | `app/` (FastAPI) | **dormant**, activates only on an ADR-0002 trigger ([app/README.md](app/README.md)) |
 
 ## Tree
 
@@ -28,8 +28,8 @@ here; the full rationale lives in [docs/architecture/01_overview.md](docs/archit
 
 ## The two data contracts
 
-1. **Ingestion (mill descriptor → pipeline)** — `data-pipeline/cclab/io/contract.py`, mirrored live in TS
+1. **Ingestion (mill descriptor → pipeline)**, `data-pipeline/cclab/io/contract.py`, mirrored live in TS
    (`frontend/src/mill/contract.ts`, the Custom-mill tab). Accept / reject-with-reason / flag; documented in
    [data/README.md](data/README.md).
-2. **Artifact (pipeline → web)** — `data/derived/manifests/<case>.json` (+ `index.json`); the TS mirror
+2. **Artifact (pipeline → web)**, `data/derived/manifests/<case>.json` (+ `index.json`); the TS mirror
    `frontend/src/lib/contract.types.ts` fails the build on drift; `scripts/check_artifacts.py` guards it in CI.

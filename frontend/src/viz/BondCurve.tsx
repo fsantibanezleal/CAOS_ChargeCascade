@@ -2,7 +2,7 @@ import type { Operating } from '../mill/index.ts';
 
 // Bond's energy-size law as an SVG curve: the specific grinding energy W = 10*Wi*(1/sqrt(P80)-1/sqrt(F80)) [kWh/t]
 // rises as the target product P80 gets finer (left). The marker is the current (P80, W); the dashed line is the
-// available specific energy P_net/tph — where it crosses the Bond curve is the FINEST P80 this mill+throughput can
+// available specific energy P_net/tph, where it crosses the Bond curve is the FINEST P80 this mill+throughput can
 // actually achieve (to its right the mill has spare energy; to its left it is energy-limited). Reacts to the ore
 // (Wi, F80) and the live mill power. Pure SVG, theme-via-CSS-vars.
 export function BondCurve({ op, netPowerKw, es }: { op: Operating; netPowerKw: number; es: boolean }) {
@@ -34,11 +34,11 @@ export function BondCurve({ op, netPowerKw, es }: { op: Operating; netPowerKw: n
           <g><line x1={padL} y1={ly(wAvail)} x2={W - padR} y2={ly(wAvail)} stroke="var(--color-accent)" strokeDasharray="5 4" strokeWidth={1.6} />
             <text x={W - padR} y={ly(wAvail) - 4} textAnchor="end" fill="var(--color-accent)">{es ? 'energía disponible' : 'available energy'} {wAvail.toFixed(1)}</text></g>
         )}
-        {/* abundant spare energy: the available-energy line sits above the whole Bond curve — pin it to the top edge
+        {/* abundant spare energy: the available-energy line sits above the whole Bond curve, pin it to the top edge
             with an off-scale note rather than letting it vanish silently */}
         {wAvail >= wMax * 1.05 && (
           <g><line x1={padL} y1={ly(wMax * 1.05)} x2={W - padR} y2={ly(wMax * 1.05)} stroke="var(--color-accent)" strokeDasharray="5 4" strokeWidth={1.6} />
-            <text x={W - padR} y={ly(wMax * 1.05) + 12} textAnchor="end" fill="var(--color-accent)">{es ? `energía disponible ${wAvail.toFixed(0)} (fuera de escala — energía de sobra)` : `available energy ${wAvail.toFixed(0)} (off scale — abundant spare)`}</text></g>
+            <text x={W - padR} y={ly(wMax * 1.05) + 12} textAnchor="end" fill="var(--color-accent)">{es ? `energía disponible ${wAvail.toFixed(0)} (fuera de escala, energía de sobra)` : `available energy ${wAvail.toFixed(0)} (off scale, abundant spare)`}</text></g>
         )}
         <polyline points={pts.map((q) => `${lx(q.p80)},${ly(q.w)}`).join(' ')} fill="none" stroke="#d9a406" strokeWidth={2.4} />
         {/* current operating point (P80, W) */}

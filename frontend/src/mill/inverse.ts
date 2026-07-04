@@ -1,6 +1,6 @@
 // The INVERSE problem: given a target, find the fraction of critical speed phiC that achieves it on the EXACT engine.
-// Net power (Hogg-Fuerstenau) is monotone increasing in phiC and is NOT tapered (engine.ts), so a target power — and
-// the grinding capacity P_net/W that scales with it — is a clean bisection. The motion regime is a monotone sequence
+// Net power (Hogg-Fuerstenau) is monotone increasing in phiC and is NOT tapered (engine.ts), so a target power, and
+// the grinding capacity P_net/W that scales with it, is a clean bisection. The motion regime is a monotone sequence
 // in phiC (slumping → cascading → cataracting → centrifuging), so a target regime is a scan for the phiC band that
 // yields it at the current geometry. The exact engine is the authority here (the ONNX surrogate is only for sweeps).
 import { bondWKwhT } from './power.ts';
@@ -54,7 +54,7 @@ export interface RegimeSolve {
   phiCLo: number | null;   // onset of the band at this geometry
   phiCHi: number | null;   // end of the band
   phiCRec: number | null;  // a representative phiC: band midpoint for grinding regimes, onset for centrifuging
-  operational: boolean;    // false for centrifuging (no grinding — a limit to avoid, not an operating point)
+  operational: boolean;    // false for centrifuging (no grinding, a limit to avoid, not an operating point)
 }
 
 /** Scan phiC for the contiguous band that classifies as `regime` at the current geometry (fracCentrifuging can move

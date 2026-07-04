@@ -1,6 +1,6 @@
 """The measured live-vs-precompute GATE (ADR-0054), adapted for ChargeCascade's client-side lane.
 
-ChargeCascade runs its whole physics IN THE BROWSER — a pure-TypeScript mill engine (frontend/src/mill/) plus the power
+ChargeCascade runs its whole physics IN THE BROWSER, a pure-TypeScript mill engine (frontend/src/mill/) plus the power
 surrogate + the scenario OOD autoencoder via onnxruntime-web. A case runs LIVE iff it is client-side AND its runtimes
 are a subset of the deployed set AND a full recompute + its replay trace are within budget; otherwise it is PRECOMPUTE
 and the SPA replays the committed trace. A teaching-scale mill evaluation is sub-millisecond and the traces are small,

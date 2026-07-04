@@ -58,7 +58,7 @@ export default function Tool() {
         <div className="cc-vizstack">
           <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastra para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
           <Mill3D op={op} speed={animSpeed} />
-          {/* playback-speed control — VISUAL only (does not change the physics); scoped to this tab */}
+          {/* playback-speed control, VISUAL only (does not change the physics); scoped to this tab */}
           <label className="cc-ctl" style={{ maxWidth: 360 }}>{es ? 'velocidad de animación' : 'animation speed'}: {animSpeed === 0 ? (es ? 'pausa' : 'paused') : `${animSpeed.toFixed(2)}×`}
             <input className="range" type="range" min={0} max={1.5} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
           </label>
@@ -137,8 +137,8 @@ export default function Tool() {
               <Kpi label={es ? `margen vs objetivo ${op.tph} t/h` : `margin vs target ${op.tph} t/h`} value={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)} t/h`} />
             </div>
             <p className="cc-note">{es
-              ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (sube φc/J o reduce la finura)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene — esos puntos van en gris (el modelo de torque NO se atenúa ahí, por eso no se muestra su P/W como capacidad).`
-              : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops — those points are greyed (the torque model is NOT tapered there, so its P/W is not shown as capacity).`}</p>
+              ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (sube φc/J o reduce la finura)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene, esos puntos van en gris (el modelo de torque NO se atenúa ahí, por eso no se muestra su P/W como capacidad).`
+              : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops, those points are greyed (the torque model is NOT tapered there, so its P/W is not shown as capacity).`}</p>
             <div className="cc-plot-t">{es ? 'La ley de Bond: la energía específica sube al moler más fino. La línea es la energía disponible (P/tph); donde corta la curva está el P80 más fino alcanzable.' : 'Bond’s law: the specific energy rises as you grind finer. The line is the available energy (P/tph); where it crosses the curve is the finest P80 achievable.'}</div>
             <BondCurve op={op} netPowerKw={r.phfKw} es={es} />
           </div>
@@ -186,7 +186,7 @@ export default function Tool() {
               })}
             </tbody>
           </table>
-          <p className="cc-note">{es ? 'Cada fila re-evalúa el motor exacto con un shock al parámetro — cuantifica cómo se mueve la potencia.' : 'Each row re-evaluates the exact engine with a shock to the parameter — it quantifies how the power moves.'}</p>
+          <p className="cc-note">{es ? 'Cada fila re-evalúa el motor exacto con un shock al parámetro, cuantifica cómo se mueve la potencia.' : 'Each row re-evaluates the exact engine with a shock to the parameter, it quantifies how the power moves.'}</p>
         </div>
       ),
     },
@@ -213,9 +213,9 @@ export default function Tool() {
             ) : (
               <>
                 <div className="cc-kpis">
-                  <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : '—'} />
+                  <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : ', '} />
                   <Kpi label={es ? 'exacto (Hogg-F.)' : 'exact (Hogg-F.)'} value={kw(r.phfKw)} />
-                  <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : '—'} />
+                  <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : ', '} />
                 </div>
                 <p className="cc-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate es el carril aprendido medido (su error vs el exacto se muestra en vivo); ninguna funcionalidad publicada lo consume aún en masa.' : 'The exact analytic engine is the authority; the surrogate is the measured learned lane (its error vs the exact engine is shown live); no shipped feature consumes it in bulk yet.'}</p>
               </>
@@ -236,7 +236,7 @@ export default function Tool() {
                 <p className="cc-note">
                   {es ? '→ φc recomendado' : '→ recommended φc'} <b>{reg.phiCRec.toFixed(2)}</b>
                   {reg.phiCLo != null && reg.phiCHi != null && ` (${es ? 'banda' : 'band'} ${reg.phiCLo.toFixed(2)}–${reg.phiCHi.toFixed(2)})`}
-                  {!reg.operational && ` — ${es ? 'régimen no operativo (la molienda colapsa); es el límite a evitar' : 'non-operational regime (grinding collapses); the limit to avoid'}`}
+                  {!reg.operational && `, ${es ? 'régimen no operativo (la molienda colapsa); es el límite a evitar' : 'non-operational regime (grinding collapses); the limit to avoid'}`}
                   {' '}<button className="chip" onClick={() => set('phiC', reg.phiCRec!)}>{es ? 'aplicar' : 'apply'}</button>
                 </p>
               ) : <p className="cc-note">{es ? `el régimen ${invRegime} no es alcanzable a esta geometría` : `the ${invRegime} regime is not reachable at this geometry`}</p>}
@@ -248,15 +248,15 @@ export default function Tool() {
               </label>
               {tgt > cap.maxTph + 0.5 ? (
                 <p className="cc-note" style={{ color: 'var(--color-warn)' }}>
-                  {es ? `fuera de alcance: el techo es ${cap.maxTph.toFixed(0)} t/h a φc ≈ 1.05 — sube D/L/J o reduce la finura` : `out of reach: the ceiling is ${cap.maxTph.toFixed(0)} t/h at φc ≈ 1.05 — raise D/L/J or coarsen the product`}
+                  {es ? `fuera de alcance: el techo es ${cap.maxTph.toFixed(0)} t/h a φc ≈ 1.05, sube D/L/J o reduce la finura` : `out of reach: the ceiling is ${cap.maxTph.toFixed(0)} t/h at φc ≈ 1.05, raise D/L/J or coarsen the product`}
                 </p>
               ) : cap.phiC != null ? (
                 <p className="cc-note">
                   {es ? '→ φc recomendado' : '→ recommended φc'} <b>{cap.phiC.toFixed(2)}</b> {es ? 'para' : 'for'} {tgt} t/h
-                  {tgt <= cap.minTph + 0.5 && ` (${es ? 'la velocidad mínima ya lo supera — capacidad de sobra' : 'min speed already exceeds it — spare capacity'})`}
+                  {tgt <= cap.minTph + 0.5 && ` (${es ? 'la velocidad mínima ya lo supera, capacidad de sobra' : 'min speed already exceeds it, spare capacity'})`}
                   {' '}<button className="chip" onClick={() => set('phiC', cap.phiC!)}>{es ? 'aplicar' : 'apply'}</button>
                 </p>
-              ) : <p className="cc-note">—</p>}
+              ) : <p className="cc-note">, </p>}
             </div>
           </div>
         );
@@ -266,7 +266,7 @@ export default function Tool() {
       id: 'anomaly', label: es ? 'Anomalía (AE)' : 'Anomaly (AE)',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'El autoencoder OOD marca puntos de operación fuera del envolvente entrenado (sobre-velocidad, casi-centrifugando) — el guardia en vivo.' : 'The OOD autoencoder flags operating points outside the trained envelope (over-speed, near-centrifuging) — the live guard.'}</div>
+          <div className="cc-plot-t">{es ? 'El autoencoder OOD marca puntos de operación fuera del envolvente entrenado (sobre-velocidad, casi-centrifugando), el guardia en vivo.' : 'The OOD autoencoder flags operating points outside the trained envelope (over-speed, near-centrifuging), the live guard.'}</div>
           {ood == null ? (
             <div className="cc-pending">
               <strong>{es ? 'Autoencoder OOD: no cargado' : 'OOD autoencoder: not loaded'}</strong>
@@ -284,7 +284,7 @@ export default function Tool() {
               {oodThr != null && (
                 <div className={`cc-regime-pill ${ood > oodThr ? 'cc-regime-centrifuging' : 'cc-regime-cascading'}`}>
                   {ood > oodThr
-                    ? (es ? 'el punto está fuera del envolvente entrenado — el surrogate está extrapolando' : 'the point is outside the trained envelope — the surrogate is extrapolating')
+                    ? (es ? 'el punto está fuera del envolvente entrenado, el surrogate está extrapolando' : 'the point is outside the trained envelope, the surrogate is extrapolating')
                     : (es ? 'el punto está dentro del envolvente entrenado' : 'the point is inside the trained envelope')}
                 </div>
               )}
@@ -314,7 +314,7 @@ export default function Tool() {
               ? 'Trae tu propio molino: describe el punto de operación; CONTRACT-1 (la misma puerta que valida los casos) lo acepta / rechaza con motivo / marca banderas de honestidad. Si se acepta, el motor EXACTO corre sobre tu molino y puedes aplicarlo a todo el workbench.'
               : 'Bring your own mill: describe the operating point; CONTRACT-1 (the same gate that validates the cases) accepts / rejects it with a reason / raises honesty flags. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
             <div className="cc-card">
-              <div className="cc-card-t">{es ? 'Tu molino — CONTRACT-1' : 'Your mill — CONTRACT-1'}</div>
+              <div className="cc-card-t">{es ? 'Tu molino, CONTRACT-1' : 'Your mill, CONTRACT-1'}</div>
               <div className="cc-chips">
                 {MILL_TYPES.map((m) => <button key={m} className={`chip ${custom.mill_type === m ? 'on' : ''}`} onClick={() => setC('mill_type', m)}>{m}</button>)}
               </div>
@@ -331,7 +331,7 @@ export default function Tool() {
             {cval.accepted ? (
               <div className="cc-regime-pill cc-regime-cascading">{es ? 'ACEPTADO' : 'ACCEPTED'} ✓{cval.flags.length > 0 ? ` · ${cval.flags.length} ${es ? 'bandera(s)' : 'flag(s)'}` : ''}</div>
             ) : (
-              <div className="cc-regime-pill cc-regime-centrifuging">{es ? 'RECHAZADO' : 'REJECTED'} ✗ — {cval.reason}</div>
+              <div className="cc-regime-pill cc-regime-centrifuging">{es ? 'RECHAZADO' : 'REJECTED'} ✗, {cval.reason}</div>
             )}
             {cval.flags.map((f, i) => <p key={i} className="cc-note" style={{ color: 'var(--color-warn)' }}>⚠ {f}</p>)}
 
@@ -377,7 +377,7 @@ export default function Tool() {
           <div className="cc-card-t">{es ? 'Tipo de molino (preset)' : 'Mill type (preset)'}</div>
           <div className="cc-chips">
             {MILLS.map((m) => (
-              // selecting a type loads that machine's characteristic geometry/media/density (MILL_PRESETS) — so Nc,
+              // selecting a type loads that machine's characteristic geometry/media/density (MILL_PRESETS), so Nc,
               // regime, power and the 3D charge all change; the sliders below then fine-tune from the preset.
               <button key={m} className={`chip ${op.millType === m ? 'on' : ''}`} onClick={() => setOp((o) => ({ ...o, millType: m, ...MILL_PRESETS[m] }))}>{m}</button>
             ))}
@@ -397,8 +397,8 @@ export default function Tool() {
           </label>
           <div className={`cc-regime-pill cc-regime-${r.regime}`}>{r.regime} · φc {op.phiC.toFixed(2)}</div>
           <div className="cc-cap cc-muted">{es
-            ? 'el pill clasifica por bandas de φc (banda centrifuging desde ~0.9); el inicio exacto es φc = 1 — ver "% centrifugando"'
-            : 'the pill classifies by φc band (centrifuging band from ~0.9); the exact onset is φc = 1 — see "% centrifuging"'}</div>
+            ? 'el pill clasifica por bandas de φc (banda centrifuging desde ~0.9); el inicio exacto es φc = 1, ver "% centrifugando"'
+            : 'the pill classifies by φc band (centrifuging band from ~0.9); the exact onset is φc = 1, see "% centrifuging"'}</div>
         </div>
       </aside>
       <main className="cc-main">

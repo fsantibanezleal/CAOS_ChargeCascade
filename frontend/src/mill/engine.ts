@@ -1,6 +1,6 @@
 // The top-level live engine: an Operating point -> a full MillResult. The single source of physics truth the whole
 // app reads, AND the ground-truth the offline LHS sweep samples to train the ONNX surrogate (the ChancaDEM pattern).
-// Pure TypeScript, sub-millisecond — no Pyodide, no backend. Recompute on EVERY control change.
+// Pure TypeScript, sub-millisecond, no Pyodide, no backend. Recompute on EVERY control change.
 
 import { criticalSpeedRpm, omegaRadS, speedRpm } from './criticalspeed.ts';
 import { chargeGeometry } from './charge.ts';
@@ -21,7 +21,7 @@ export function evaluate(op: Operating): MillResult {
   const mass = chargeMassT(op.diameterM, op.lengthM, op.fill, op.chargeDensity);
 
   // power vs phiC at the current J, D, L (raw Hogg-Fuerstenau is monotone in phiC; the regime/centrifuging overlay
-  // shows where grinding collapses — we do NOT taper the published torque model)
+  // shows where grinding collapses, we do NOT taper the published torque model)
   const powerCurve: PowerPoint[] = [];
   for (let i = 0; i <= 30; i++) {
     const p = 0.3 + ((1.05 - 0.3) * i) / 30;
@@ -35,11 +35,11 @@ export function evaluate(op: Operating): MillResult {
   }
 
   const flags: string[] = [];
-  if (op.phiC >= 1) flags.push('phiC >= 1: the outer charge centrifuges — no grinding');
+  if (op.phiC >= 1) flags.push('phiC >= 1: the outer charge centrifuges, no grinding');
   else if (op.phiC > 0.85) flags.push('phiC > 0.85: the cataract may impact the shell/liner above the toe (over-speed)');
   if (op.fill > 0.45) flags.push('fill > 45%: above the power peak; charge crowding');
   if (op.fill > 0 && op.fill < 0.15) flags.push('fill < 15%: low charge; ball-on-liner impacts');
-  if (op.ballTopMm / 1000 >= 0.05 * op.diameterM) flags.push('ball/diameter ratio large — the (D-d) critical speed matters');
+  if (op.ballTopMm / 1000 >= 0.05 * op.diameterM) flags.push('ball/diameter ratio large, the (D-d) critical speed matters');
 
   return {
     ncRpm,

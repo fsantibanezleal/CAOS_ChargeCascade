@@ -12,7 +12,7 @@ export interface Trace {
   real_or_synthetic: string;
   expected_band: string;
   validation_anchor: string;
-  operating: unknown; // the mill Operating point — the browser re-evaluates live
+  operating: unknown; // the mill Operating point, the browser re-evaluates live
   nc_rpm: number;
   phi_c: number;
   regime: string;
