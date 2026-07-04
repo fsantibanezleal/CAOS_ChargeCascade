@@ -1,4 +1,4 @@
-// Engine correctness — run with: node --import tsx --test test/mill.test.ts
+// Engine correctness, run with: node --import tsx --test test/mill.test.ts
 //
 // The physics is pinned against the published closed forms (Davis trajectories, Hogg-Fuerstenau power, Bond energy):
 //   · critical speed Nc = 42.3/sqrt(D-d); · centrifuging onset at phiC >= 1; · the shoulder lifts higher as phiC rises;
@@ -18,7 +18,7 @@ const BALL: Operating = {
   liftAngleDeg: 35, chargeDensity: 4.8, oreWi: 14, feedF80um: 2000, prodP80um: 150, tph: 120,
 };
 
-test('critical speed 42.3/sqrt(D-d) — closed form', () => {
+test('critical speed 42.3/sqrt(D-d), closed form', () => {
   // D=5.0 m, d=100 mm=0.1 m -> 42.305/sqrt(4.9) = 19.11 rpm
   assert.ok(Math.abs(criticalSpeedRpm(5.0, 100) - 19.111) < 0.02, `Nc=${criticalSpeedRpm(5.0, 100)}`);
   // the ball CENTRE rides at radius (D-d)/2, so a BIGGER ball -> smaller effective radius -> HIGHER Nc
@@ -67,7 +67,7 @@ test('power is monotone increasing in phiC (raw Hogg-Fuerstenau)', () => {
   assert.ok(hoggFuerstenauKw(4, 6, 4.8, 0.8, 0.35, 35) > hoggFuerstenauKw(4, 6, 4.8, 0.5, 0.35, 35));
 });
 
-test('Bond specific energy — closed form', () => {
+test('Bond specific energy, closed form', () => {
   // 10*14*(1/sqrt(150) - 1/sqrt(2000)) = 8.30 kWh/t
   assert.ok(Math.abs(bondWKwhT(14, 2000, 150) - 8.30) < 0.05, `W=${bondWKwhT(14, 2000, 150)}`);
   assert.equal(bondWKwhT(14, 0, 150), 0, 'guard against bad sizes');

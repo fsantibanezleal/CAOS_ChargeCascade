@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Callout, useShellLang } from '@fasl-work/caos-app-shell';
 import { loadLearned, type LearnedFile } from '../lib/artifacts.ts';
 
-// Benchmark = the learned-model evaluation (this is where the learned held-out metrics live — NOT in the App); a
+// Benchmark = the learned-model evaluation (this is where the learned held-out metrics live, NOT in the App); a
 // cross-case evaluation is a planned extension, not present yet. The power surrogate is measured DOWNSTREAM against
 // the exact analytic engine; the OOD autoencoder by its AUC.
 export default function Benchmark() {
@@ -36,18 +36,18 @@ export default function Benchmark() {
           <LearnedTransparency learned={learned} es={es} />
         </>
       ) : (
-        <p className="cc-note">{es ? 'Artefactos de los modelos aprendidos no cargados — este build los incluye; si esto persiste, re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned-model artifacts not loaded — this build ships them; if this persists, regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
+        <p className="cc-note">{es ? 'Artefactos de los modelos aprendidos no cargados, este build los incluye; si esto persiste, re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned-model artifacts not loaded, this build ships them; if this persists, regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
       )}
       {learned && <p className="cc-cap">{learned.honesty}</p>}
     </article>
   );
 }
 
-// T5 — training transparency: the surrogate/AE lineage made auditable (architecture, data design, the predicted-vs-
+// T5, training transparency: the surrogate/AE lineage made auditable (architecture, data design, the predicted-vs-
 // exact scatter on held-out points), so the held-out metric is visibly EARNED, not asserted.
 function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolean }) {
   const s = learned.surrogate, o = learned.ood, d = learned.data;
-  const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : '—');
+  const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : ', ');
   const sc = s.scatter ?? [];
   // predicted-vs-exact scatter (kW): points should sit on the y=x diagonal if the surrogate tracks the engine
   const W = 360, H = 240, padL = 44, padB = 34, padT = 12, padR = 12;
@@ -55,7 +55,7 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
   const hi = vals.length ? Math.max(...vals) : 1;
   const sx = (v: number) => padL + (v / (hi || 1)) * (W - padL - padR);
   const sy = (v: number) => padT + (1 - v / (hi || 1)) * (H - padT - padB);
-  if (s.arch == null) return null;   // v1 file — no lineage to show
+  if (s.arch == null) return null;   // v1 file, no lineage to show
   return (
     <div style={{ marginTop: '0.8rem' }}>
       <div className="cc-card-t">{es ? 'Transparencia del entrenamiento (auditable)' : 'Training transparency (auditable)'}</div>

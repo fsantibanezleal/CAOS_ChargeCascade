@@ -1,5 +1,5 @@
 // Bake the per-case mill evaluation through the SAME TypeScript engine the browser runs, and write
-// data/derived/case-results.json — the committed, deterministic per-case outputs the LIGHT Python pipeline reshapes
+// data/derived/case-results.json, the committed, deterministic per-case outputs the LIGHT Python pipeline reshapes
 // into per-case replay traces + manifests (CONTRACT 2). No Python re-port of the physics. The operating point + the
 // scalar results + the power-vs-phiC curve are committed (compact); the 3D charge trajectories are regenerated LIVE in
 // the browser from the operating point (no raster/particle blobs). Run (from frontend/ so tsx resolves):

@@ -1,4 +1,4 @@
-// Critical speed — the master scaling. Centrifuging of the outer layer (the ball pinned to the shell at the top)
+// Critical speed, the master scaling. Centrifuging of the outer layer (the ball pinned to the shell at the top)
 // begins when the centripetal requirement at the top equals gravity: m omega^2 R = m g => omega_c = sqrt(g/R). In
 // rpm with the finite-ball correction (the ball CENTRE rides at radius (D-d)/2):
 //   Nc = (60/2pi) * sqrt(2g) / sqrt(D-d) = 42.305 / sqrt(D - d)   [rpm, D & d in metres]   (Wills & Finch; Gupta & Yan)

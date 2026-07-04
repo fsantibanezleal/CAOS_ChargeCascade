@@ -1,6 +1,6 @@
-"""Stage 6 — export (CONTRACT 2): build the compact per-case trace from the committed bake (case-results.json, baked
+"""Stage 6, export (CONTRACT 2): build the compact per-case trace from the committed bake (case-results.json, baked
 by the SAME TS engine the browser runs) + the learned-model metrics (cc-learned.json, when trained), run the lane
-gate, and write the manifest. No torch/node — so the contract + replay regenerate deterministically anywhere, and CI
+gate, and write the manifest. No torch/node, so the contract + replay regenerate deterministically anywhere, and CI
 stays fast. The HEAVY export (baking case-results.json + training the ONNX) is done by the preserved science
 (cclab/science/bake_cases.mjs + train_mill.py), invoked by pipeline.retrain."""
 from __future__ import annotations

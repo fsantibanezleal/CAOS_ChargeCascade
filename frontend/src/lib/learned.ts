@@ -1,4 +1,4 @@
-// The learned-model feature contract (browser side) — mirrors data-pipeline/cclab/model/learned.py :: MILL_FEATURES.
+// The learned-model feature contract (browser side), mirrors data-pipeline/cclab/model/learned.py :: MILL_FEATURES.
 // The per-mill operating feature vector fed to the power-surrogate ONNX + the scenario-ood autoencoder. SINGLE SOURCE
 // OF TRUTH for the order.
 import type { Operating } from '../mill/index.ts';

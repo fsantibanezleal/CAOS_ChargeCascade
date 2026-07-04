@@ -1,16 +1,16 @@
-# Guide — run the precompute / retrain pipeline
+# Guide, run the precompute / retrain pipeline
 
 ChargeCascade has **two pipeline lanes**, both driven by `python -m cclab.pipeline`:
 
 - **Default lane (numpy-light, no torch / no node).** Rebuilds the per-case replay traces + manifests + index from
   the *committed* `data/derived/case-results.json` (which is the TS engine's real bake) and `cc-learned.json`. It is
-  deterministic — same input ⇒ byte-identical artifacts. This is what CI runs; it installs in seconds
+  deterministic, same input ⇒ byte-identical artifacts. This is what CI runs; it installs in seconds
   (`data-pipeline/requirements.txt` is just `numpy`).
 - **Heavy lane (`--retrain`, torch + node).** Re-bakes `case-results.json` with the **same** TS engine via `tsx`,
   generates the training data, trains the two learned models (`train_mill.py`) and exports them to ONNX, evaluates the
   surrogate downstream, then rebuilds the replay artifacts. Local-only; never deployed.
 
-## Default lane — rebuild the replay artifacts
+## Default lane, rebuild the replay artifacts
 
 PowerShell (primary):
 
@@ -35,7 +35,7 @@ Outputs land in `data/derived/<CASE>/trace.json`, `data/derived/manifests/<CASE>
 every case; each manifest + artifact exists, is non-empty, and its byte size + lane match the manifest) and prints
 `CONTRACT 2 OK: 10 cases` on success.
 
-## Heavy lane — re-bake + retrain (torch → ONNX)
+## Heavy lane, re-bake + retrain (torch → ONNX)
 
 The two learned models live in a **separate** `.venv-precompute` so the default lane and CI never pull torch.
 Create it and run the retrain from the repo root:
@@ -64,14 +64,14 @@ and `scripts/precompute.sh` wrappers for the default lane; the `--retrain` flag 
 
 What `--retrain` does, in order (see `cclab/pipeline.py::retrain` and `cclab/science/`):
 
-1. **`bake_cases.mjs`** — re-bakes `data/derived/case-results.json` by running the SAME TypeScript mill engine
+1. **`bake_cases.mjs`**, re-bakes `data/derived/case-results.json` by running the SAME TypeScript mill engine
    (`frontend/src/mill/`) over the 10 cases through `tsx`.
-2. **`gen_train.mjs`** — samples the operating envelope with that same engine to produce the training/eval data
+2. **`gen_train.mjs`**, samples the operating envelope with that same engine to produce the training/eval data
    (`data/raw/mill-train.json`, `mill-eval.json`).
-3. **`train_mill.py`** (torch, in `.venv-precompute`) — trains the **power surrogate** (6 features → net power kW +
+3. **`train_mill.py`** (torch, in `.venv-precompute`), trains the **power surrogate** (6 features → net power kW +
    fraction centrifuging) and the **scenario OOD autoencoder**, and exports both to single-file ONNX
    (`power-surrogate.onnx`, `scenario-ood.onnx`, `external_data=False` so onnxruntime-web can load them).
-4. **`eval_mill.mjs`** — measures the surrogate's downstream skill against the **exact** TS engine on held-out
+4. **`eval_mill.mjs`**, measures the surrogate's downstream skill against the **exact** TS engine on held-out
    points and assembles `data/derived/cc-learned.json`.
 
 > The train step needs **node + `tsx`** for `bake_cases.mjs` / `gen_train.mjs` / `eval_mill.mjs` (the pipeline runs
@@ -79,5 +79,5 @@ What `--retrain` does, in order (see `cclab/pipeline.py::retrain` and `cclab/sci
 > before the first `--retrain`.
 
 After a heavy run, re-run the default-lane checks (`pytest`, `scripts/smoke`) to confirm the freshly-baked artifacts
-still satisfy CONTRACT 2. The whole `--retrain` finishes in seconds on CPU — see [guide 03](03_gpu-lane.md) on why
+still satisfy CONTRACT 2. The whole `--retrain` finishes in seconds on CPU, see [guide 03](03_gpu-lane.md) on why
 no GPU is needed at the shipped scale.

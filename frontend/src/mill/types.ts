@@ -2,7 +2,7 @@
 // cylinder; the charge (grinding media + ore) is lifted by the shell and falls back, breaking the ore. HOW it moves
 // (cascading / cataracting / centrifuging) and how much power it draws depend on the fraction of critical speed phiC
 // and the fill J. Everything downstream (the 3D charge cloud, the regime, the power curve) is computed from one
-// Operating point — the same structure the browser renders and the Node bake / offline surrogate read (the ChancaDEM
+// Operating point, the same structure the browser renders and the Node bake / offline surrogate read (the ChancaDEM
 // `engine.ts` pattern). All SI: metres, t/m^3, kW.
 
 export type MillType = 'rod' | 'ball' | 'sag' | 'ag';
@@ -15,7 +15,7 @@ export interface Operating {
   lengthM: number;       // L, effective grinding length
   fill: number;          // J, fractional charge filling (0..0.6)
   phiC: number;          // fraction of critical speed (the headline slider), N/Nc
-  ballTopMm: number;     // top media (ball) size — affects Nc + the per-shell departure
+  ballTopMm: number;     // top media (ball) size, affects Nc + the per-shell departure
   liftAngleDeg: number;  // dynamic charge lift / repose angle (the Hogg-Fuerstenau alpha), ~30-40 deg
   chargeDensity: number; // rho_c, in-mill charge bulk density [t/m^3]
   oreWi: number;         // Bond ball-mill work index [kWh/t] (for the process-energy cross-check)

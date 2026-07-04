@@ -1,13 +1,13 @@
-# ChargeCascade — 3D tumbling-mill charge-motion + power workbench
+# ChargeCascade, 3D tumbling-mill charge-motion + power workbench
 
 [![CI](https://img.shields.io/github/actions/workflow/status/fsantibanezleal/CAOS_ChargeCascade/ci.yml?branch=main&label=CI)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/actions)
 [![License](https://img.shields.io/github/license/fsantibanezleal/CAOS_ChargeCascade)](LICENSE)
 [![Version](https://img.shields.io/github/v/tag/fsantibanezleal/CAOS_ChargeCascade?label=version&sort=semver)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/tags)
 [![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://chargecascade.fasl-work.com)
 
-**Live: <https://chargecascade.fasl-work.com>** — an interactive workbench for tumbling-mill (SAG / ball / rod)
+**Live: <https://chargecascade.fasl-work.com>**, an interactive workbench for tumbling-mill (SAG / ball / rod)
 charge motion and power draw. From geometry, fill, ball size and the fraction of critical speed to the charge
-regime, the Davis trajectories and the net power — computed live in the browser, in 3D, bilingual (EN/ES),
+regime, the Davis trajectories and the net power, computed live in the browser, in 3D, bilingual (EN/ES),
 light/dark. No application server: static files + client-side compute only.
 
 ## What it computes (the exact engine)
@@ -15,16 +15,16 @@ light/dark. No application server: static files + client-side compute only.
 A dependency-free TypeScript engine (`frontend/src/mill/`) is the single source of physics truth; the App, the
 Experiments table and the offline bake all run the SAME code:
 
-- **Critical speed** `Nc = 42.3/√(D−d)` [rpm] and the dimensionless regime knob `φc = N/Nc` — derived, not fitted.
+- **Critical speed** `Nc = 42.3/√(D−d)` [rpm] and the dimensionless regime knob `φc = N/Nc`, derived, not fitted.
 - **Davis (1919) charge kinematics**: per-shell departure angle `cos α = φc²·r/R` + the ballistic parabola, over 9
   radial shells → shoulder/toe angles, the cataract fan, the centrifuging fraction (exact onset at φc = 1).
 - **Regime classification** in literature φc bands (slumping / cascading / cataracting / centrifuging), with the
   sampled centrifuging fraction as the precise onset detector.
 - **Power draw**: Hogg & Fuerstenau (1972) torque-arm net power with a disclosed calibration (`C_ARM = 0.80`, set so
   the reference 4×6 m ball mill draws ~1.3 MW); the J(1−1.065J) fill term peaks near J ≈ 0.47 and P scales as D^2.5.
-  A calibrated **Morrell-form** is shown alongside as a consistency companion — it is a rescale of the same torque
+  A calibrated **Morrell-form** is shown alongside as a consistency companion, it is a rescale of the same torque
   arm, **not** an independent model; Morrell's real (1996) C-model is cited, not implemented (a documented upgrade).
-- **Bond (1961) specific energy** (kWh/t) — process ENERGY, deliberately kept distinct from charge power; their
+- **Bond (1961) specific energy** (kWh/t), process ENERGY, deliberately kept distinct from charge power; their
   ratio P/W gives the grinding capacity in the Comminution tab.
 
 ## The learned lane (real, measured, guarded)
@@ -45,17 +45,17 @@ in bulk yet (its intended mass-sweep role is documented, not shipped).
 10 synthetic, physically realistic cases in 4 categories (machine / speed sweep / fill / analytic controls), all
 labelled synthetic, baked to committed traces + manifests (`data/derived/`) by the same engine that runs live. The
 controls are exact: **C-CRITICAL** (φc = 1 → the centrifuging fraction turns positive and the regime switches;
-the published torque model is deliberately NOT tapered, so draw power stays high — grinding is what collapses) and
+the published torque model is deliberately NOT tapered, so draw power stays high, grinding is what collapses) and
 **C-EMPTY** (J = 0 → exactly 0 power). A **Custom mill** tab validates any user mill through CONTRACT-1 (the same
 gate as the cases, TS mirroring the Python contract) and runs the exact engine on it.
 
 ## What this is NOT (honesty posture)
 
-- The 3D charge is a **kinematic animation** of the Davis equations — NOT a DEM / N-body solve (a real DEM lane is
+- The 3D charge is a **kinematic animation** of the Davis equations, NOT a DEM / N-body solve (a real DEM lane is
   the documented offline upgrade).
-- The displayed Morrell-form is a **calibrated rescale** of the Hogg–Fuerstenau torque arm — agreement between the
+- The displayed Morrell-form is a **calibrated rescale** of the Hogg–Fuerstenau torque arm, agreement between the
   two curves is a consistency check by construction, not a two-model validation.
-- **No published-mill dataset ships in this build** — no external power cross-check is claimed; the power magnitude
+- **No published-mill dataset ships in this build**, no external power cross-check is claimed; the power magnitude
   is calibrated to one industrial reference point (~1.3 MW).
 - The surrogate is trained on the app's own analytic engine (labels are analytic truth, not measurements).
 
@@ -69,7 +69,7 @@ npm run build        # type-check + production build (artifacts copied by copy-d
 npm test             # engine / inverse / contract tests, incl. the two analytic controls
 
 # offline lane (bake + contracts; optional for running the app)
-./scripts/setup.sh           # or scripts\setup.ps1  — creates .venv-pipeline + .venv (no globals)
+./scripts/setup.sh           # or scripts\setup.ps1 , creates .venv-pipeline + .venv (no globals)
 ./scripts/precompute.sh      # re-bake the 10 cases (or one: ./scripts/precompute.sh K-BALL --seed 7)
 .venv-pipeline/bin/python -m pytest    # contracts, manifests, pipeline smoke
 ./scripts/smoke.sh           # CONTRACT-2 artifact/manifest consistency check

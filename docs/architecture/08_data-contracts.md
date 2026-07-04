@@ -1,6 +1,6 @@
 # The two data contracts
 
-## CONTRACT 1 — ingestion (`io/contract.py`)
+## CONTRACT 1, ingestion (`io/contract.py`)
 
 The *bring-your-own-mill* gate. A record is **accepted** iff it passes; ill-formed records are **rejected** with a
 reason (never silently coerced); plausible-but-extreme records are **flagged** (accepted; the flag travels into the
@@ -23,7 +23,7 @@ Documented in `data/README.md`.
 The honesty flags (`φc ≥ 1` centrifuging, over-speed, high / low fill) are accepted and recorded into the manifest, not
 rejected. The committed sample mill points must pass (a CI test asserts it).
 
-## CONTRACT 2 — artifact (`core/{trace,manifest}.py`)
+## CONTRACT 2, artifact (`core/{trace,manifest}.py`)
 
 The pipeline → web contract. The web loads ONLY manifests + traces + the shared artifacts.
 
@@ -35,6 +35,6 @@ The pipeline → web contract. The web loads ONLY manifests + traces + the share
   byte size, the lane / gate verdict, the CONTRACT-1 flags, the metrics, and an honesty note.
 - **`chargecascade.index/v1`**: the flat inventory of all 10 cases.
 
-A TS mirror — `frontend/src/lib/contract.types.ts` — declares these shapes so a drift **fails `tsc`** (the web and
+A TS mirror, `frontend/src/lib/contract.types.ts`, declares these shapes so a drift **fails `tsc`** (the web and
 pipeline shapes can never diverge silently). `scripts/check_artifacts.py` enforces manifest ↔ artifact consistency
 (existence, byte size, lane == gate verdict).

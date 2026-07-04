@@ -1,12 +1,12 @@
-"""CONTRACT 1 — ingestion (a raw mill operating point -> pipeline). The *bring-your-own-mill* gate.
+"""CONTRACT 1, ingestion (a raw mill operating point -> pipeline). The *bring-your-own-mill* gate.
 
 * ``validate_records`` validates tumbling-mill operating-point rows. This is what the pipeline runs over the case set;
   it proves the gate and carries flags into the manifest.
-* ``validate_mill`` validates a single dropped descriptor (a dict) — the same policy.
+* ``validate_mill`` validates a single dropped descriptor (a dict), the same policy.
 
 A record is ACCEPTED iff it passes; ill-formed records are REJECTED with a reason (never silently coerced); plausible-
 but-honesty-relevant records are FLAGGED (accepted; the flag travels into the manifest). The key flags: a phiC >= 1
-(the charge centrifuges — no grinding), an unusually high fill (> 0.45, above the power peak), a large ball/diameter
+(the charge centrifuges, no grinding), an unusually high fill (> 0.45, above the power peak), a large ball/diameter
 ratio (the (D-d) critical speed matters), and a low fill (< 0.15, ball-on-liner). Documented in data/README.md.
 """
 from __future__ import annotations

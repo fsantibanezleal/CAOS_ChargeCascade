@@ -1,4 +1,4 @@
-# data/ — the data contract + layout
+# data/, the data contract + layout
 
 This folder is governed by the **two data contracts** of ADR-0057, instantiated for ChargeCascade's mill
 operating points.
@@ -8,13 +8,13 @@ operating points.
 | Path | What | Git |
 |---|---|---|
 | `raw/` | private/large source inputs | **git-ignored** (never committed) |
-| `examples/` | `mills.csv` — a tiny standard-format sample that PASSES Contract 1 (clone-verify) | committed |
+| `examples/` | `mills.csv`, a tiny standard-format sample that PASSES Contract 1 (clone-verify) | committed |
 | `derived/<case>/` | the compact, standard-format traces the web replays (`trace.json`) | committed |
 | `derived/manifests/` | per-case `<case>.json` (Contract 2) + the flat `index.json` inventory | committed |
 | `derived/` (root) | `case-results.json` · `cc-learned.json` (learned lineage) · the two `.onnx` models | committed |
 | `demo/` | small deterministic payload for smoke (empty today) | committed |
 
-## CONTRACT 1 — ingestion (mill descriptor → pipeline) — the *bring-your-own-mill* gate
+## CONTRACT 1, ingestion (mill descriptor → pipeline), the *bring-your-own-mill* gate
 
 Defined in `data-pipeline/cclab/io/contract.py` (mirrored live in TS by `frontend/src/mill/contract.ts`, the
 Custom-mill tab). A mill row is **accepted** iff it satisfies the schema; **rejected** with a reason otherwise
@@ -25,8 +25,8 @@ Schema (`examples/mills.csv`):
 
 | Column | Unit | Range | Notes |
 |---|---|---|---|
-| `mill_id` | — | non-empty | identifier |
-| `mill_type` | — | `rod` / `ball` / `sag` / `ag` | outside → reject |
+| `mill_id` | n/a | non-empty | identifier |
+| `mill_type` | n/a | `rod` / `ball` / `sag` / `ag` | outside → reject |
 | `diameter_m` | m | > 0 | inside diameter |
 | `length_m` | m | > 0 | effective length |
 | `fill` | fraction | [0, 0.6] | charge fill J |
@@ -35,17 +35,17 @@ Schema (`examples/mills.csv`):
 | `charge_density` | t/m³ | > 0 | charge bulk density |
 
 **Outlier policy:** missing/empty column → reject · non-numeric / NaN / Inf → reject · out-of-range → reject.
-**Flags** (accepted, recorded): `phi_c ≥ 1` (the charge centrifuges — no grinding) · `phi_c > 0.85` (over-speed;
+**Flags** (accepted, recorded): `phi_c ≥ 1` (the charge centrifuges, no grinding) · `phi_c > 0.85` (over-speed;
 cataract may impact the liner) · `fill > 0.45` (above the power peak) · `fill < 0.15` (ball-on-liner) · large
 ball/diameter ratio (the (D−d) critical speed matters).
 
-## CONTRACT 2 — artifact (pipeline → web)
+## CONTRACT 2, artifact (pipeline → web)
 
 Each pipeline run writes a compact trace (`derived/<case>/trace.json`, schema `chargecascade.trace/v1`) and a
 manifest (`derived/manifests/<case>.json`, schema `chargecascade.manifest/v2`) recording params, seed,
 engine+version, the artifact byte size, the measured **lane/gate** verdict, Contract-1 flags, and the evaluation
 metrics. `frontend/src/lib/contract.types.ts` mirrors these schemas so any drift fails the web build. The web
-loads ONLY these committed artifacts — it never recomputes them (the live lane runs the same TS engine that
+loads ONLY these committed artifacts, it never recomputes them (the live lane runs the same TS engine that
 baked them, so live and baked numbers are identical by construction).
 
 ## Provenance / license

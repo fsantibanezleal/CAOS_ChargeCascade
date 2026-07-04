@@ -1,6 +1,6 @@
 // Power-draw models (the live readout).
 //
-// Hogg & Fuerstenau (1972) — the NET power is the torque to hold the charge's centre of mass offset from the mill
+// Hogg & Fuerstenau (1972), the NET power is the torque to hold the charge's centre of mass offset from the mill
 // axis, with all charge rotating rigidly at omega:  P_net = omega * M * g * arm  (transparent torque-arm physics).
 //   - M [kg]  = rho_c * (pi R^2 L * J)         the charge mass
 //   - omega   = 2*pi*(phiC*Nc)/60              the angular velocity
@@ -11,7 +11,7 @@
 // This makes P ~ rho_c * D^2.5 * L * phiC * (J - 1.065 J^2) * sin(alpha) (first principles: torque ~ rho_c D^3 L J g,
 // omega ~ phiC/sqrt(D)  =>  P ~ D^2.5), every slider visibly moves a term.
 //
-// Bond (1961) — W = 10*Wi*(1/sqrt(P80) - 1/sqrt(F80)) [kWh/t] is a process-ENERGY law (the grinding duty), NOT the
+// Bond (1961), W = 10*Wi*(1/sqrt(P80) - 1/sqrt(F80)) [kWh/t] is a process-ENERGY law (the grinding duty), NOT the
 // charge mechanical power; shown only as a cross-check (it has no phiC/J so it cannot animate the sliders).
 
 import { G, omegaRadS, criticalSpeedRpm } from './criticalspeed.ts';
