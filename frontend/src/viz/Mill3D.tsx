@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { useThemeStore } from '@fasl-work/caos-app-shell';
+import { usePausedViz, useThemeStore } from '@fasl-work/caos-app-shell';
 import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 
 // The interactive 3D tumbling mill. The cylindrical shell (axis along z) rotates; lifter bars carry the charge up;
@@ -34,6 +34,14 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
   // without this the camera would snap back to the default framing every time you change the case or a slider. We save
   // the camera position + orbit target when the scene tears down and restore them when it is recreated.
   const viewRef = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
+
+  // No-compute-bomb (ADR-0059): the kinematic animation is DEFAULT PAUSED and mounts through
+  // usePausedViz, which also halts the rAF when the tab is hidden. The per-frame physics step is
+  // defined inside the scene effect (it closes over the THREE objects) and read here via a ref, so
+  // the hook drives the loop without rebuilding the scene on every render. loop:true because the mill
+  // rotation is a continuous dynamics view; the user still presses Play to start it.
+  const stepRef = useRef<((dtSec: number) => void) | null>(null);
+  const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true });
 
   useEffect(() => {
     const el = ref.current;
@@ -134,11 +142,9 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
     };
     for (let i = 0; i < N; i++) seed(i);
 
-    let raf = 0;
-    const dt = 0.05; // s per frame (a watchable time scale)
-
-    const animate = () => {
-      const d = dt * speedRef.current;        // playback-scaled time step (visual speed; physics unchanged)
+    // ONE frame: advance the kinematics by d seconds and render. Called by the usePausedViz rAF loop
+    // (default paused) via stepRef; it no longer self-perpetuates and no longer autostarts.
+    const step = (d: number) => {
       millGroup.rotation.z += omega * d;
       for (let i = 0; i < N; i++) {
         if (flying[i]) {
@@ -184,7 +190,6 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
       geo.attributes.color.needsUpdate = true;
       controls.update();
       renderer.render(scene, cam);
-      raf = requestAnimationFrame(animate);
     };
 
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -193,17 +198,23 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
     scene.add(new THREE.Points(geo, pMat));
     disposables.push(geo, pMat);
 
-    animate();
+    // hand the per-frame step to the rAF hook, and draw ONE static frame so the paused mill is visible
+    // (not a blank canvas). Orbiting while paused still re-renders via the controls 'change' listener.
+    stepRef.current = step;
+    renderer.render(scene, cam);
+    controls.addEventListener('change', () => renderer.render(scene, cam));
+
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth || W;
       renderer.setSize(w, H);
       cam.aspect = w / H;
       cam.updateProjectionMatrix();
+      renderer.render(scene, cam);
     });
     ro.observe(el);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stepRef.current = null;
       ro.disconnect();
       // save the current view so the next rebuild (op/theme/height change) keeps the user's orbit/zoom
       viewRef.current = { pos: cam.position.clone(), target: controls.target.clone() };
@@ -217,7 +228,12 @@ export function Mill3D({ op, height = 380, speed = 1 }: { op: Operating; height?
   return (
     <div className="cc-canvas-wrap">
       <div ref={ref} style={{ width: '100%', height }} />
-      <div className="cc-canvas-banner">Kinematic charge animation (Davis trajectories) · drag to orbit · NOT a DEM solve</div>
+      <div className="cc-canvas-banner">
+        <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>
+          {viz.playing ? 'Pause' : 'Play'}
+        </button>
+        <span>Kinematic charge animation (Davis trajectories) · drag to orbit · NOT a DEM solve</span>
+      </div>
     </div>
   );
 }
