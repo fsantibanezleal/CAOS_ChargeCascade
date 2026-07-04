@@ -53,15 +53,16 @@ note that `train_mill.py` wrote.
 WASM execution provider, single-threaded; the npm package and the CDN `wasmPaths` are pinned to the same version
 (1.27). There is **ONE global serialization chain for ALL WASM work** (session creation and inference): the two models
 are queried together on every control change; without the chain their concurrent `create()` / `run()` calls race the
-single WASM runtime and throw "Session already started". The loader is **graceful** — if a model is absent it resolves
-to null and the App uses the EXACT engine (which runs live anyway) + shows the honest "pending training" state.
+single WASM runtime and throw "Session already started". The loader is **graceful** — if a model cannot be loaded it
+resolves to null and the App uses the EXACT engine (which runs live anyway) + shows the honest "not loaded" state.
 
 ## Honesty
 
 Held-out numbers (see [model evaluation](../architecture/06_model-evaluation.md)): the **power surrogate ≈ 5.2 %**
 power error vs the exact engine (downstream); the **scenario OOD-AE AUC 0.922**, in-distribution p95 threshold **1.09**
-(an operating point is flagged off-envelope when its ONNX anomaly score exceeds it). The **What-if** tab uses the
-surrogate (instant operating-envelope sweeps); the **Anomaly** tab uses the OOD-AE (the in / off-envelope verdict). The
+(an operating point is flagged off-envelope when its ONNX anomaly score exceeds it). The **What-if** tab runs the
+surrogate live against the exact engine (the error readout; its intended bulk-sweep role is documented but not yet
+exercised by a shipped feature); the **Anomaly** tab uses the OOD-AE (the in / off-envelope verdict). The
 exact engine is the authority — reported whichever way the numbers land. No fabricated win.
 
 > The training / precompute lane is local-only and **never deployed**: `data-pipeline/requirements-precompute.txt`

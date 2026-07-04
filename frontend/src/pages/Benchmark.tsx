@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Callout, useShellLang } from '@fasl-work/caos-app-shell';
 import { loadLearned, type LearnedFile } from '../lib/artifacts.ts';
 
-// Benchmark = the cross-case + learned-model evaluation (this is where the learned held-out metrics live — NOT in the
-// App). The power surrogate is measured DOWNSTREAM against the exact analytic engine; the OOD autoencoder by its AUC.
+// Benchmark = the learned-model evaluation (this is where the learned held-out metrics live — NOT in the App); a
+// cross-case evaluation is a planned extension, not present yet. The power surrogate is measured DOWNSTREAM against
+// the exact analytic engine; the OOD autoencoder by its AUC.
 export default function Benchmark() {
   const es = useShellLang() === 'es';
   const [learned, setLearned] = useState<LearnedFile | null>(null);
@@ -18,8 +19,8 @@ export default function Benchmark() {
 
       <Callout variant="honest" title={es ? 'El motor exacto es la autoridad' : 'The exact engine is the authority'}>
         {es
-          ? 'La física (Davis, Hogg-Fuerstenau, Morrell, Bond) es analítica + transparente. El surrogate de potencia (torch→ONNX) la EMULA para barridos instantáneos del envolvente; se mide DOWNSTREAM por su error de potencia vs el motor exacto en puntos held-out. El autoencoder OOD marca puntos fuera del envolvente. Si el surrogate no es preciso, el benchmark lo dice.'
-          : 'The physics (Davis, Hogg-Fuerstenau, Morrell, Bond) is analytic + transparent. The power surrogate (torch→ONNX) EMULATES it for instant envelope sweeps; it is measured DOWNSTREAM by its power error vs the exact engine on held-out points. The OOD autoencoder flags off-envelope points. If the surrogate is not accurate, the benchmark says so.'}
+          ? 'La física (Davis, Hogg-Fuerstenau, forma Morrell, Bond) es analítica + transparente. El surrogate de potencia (torch→ONNX) la EMULA; se mide DOWNSTREAM por su error de potencia vs el motor exacto en puntos held-out (ninguna funcionalidad publicada lo consume aún en masa). El autoencoder OOD marca puntos fuera del envolvente. Si el surrogate no es preciso, el benchmark lo dice.'
+          : 'The physics (Davis, Hogg-Fuerstenau, Morrell-form, Bond) is analytic + transparent. The power surrogate (torch→ONNX) EMULATES it; it is measured DOWNSTREAM by its power error vs the exact engine on held-out points (no shipped feature consumes it in bulk yet). The OOD autoencoder flags off-envelope points. If the surrogate is not accurate, the benchmark says so.'}
       </Callout>
 
       <h2>{es ? 'Modelos aprendidos (held-out)' : 'Learned models (held-out)'}</h2>
@@ -35,7 +36,7 @@ export default function Benchmark() {
           <LearnedTransparency learned={learned} es={es} />
         </>
       ) : (
-        <p className="cc-note">{es ? 'Modelos aprendidos pendientes — re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned models pending — regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
+        <p className="cc-note">{es ? 'Artefactos de los modelos aprendidos no cargados — este build los incluye; si esto persiste, re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned-model artifacts not loaded — this build ships them; if this persists, regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
       )}
       {learned && <p className="cc-cap">{learned.honesty}</p>}
     </article>
