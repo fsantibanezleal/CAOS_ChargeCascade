@@ -3,8 +3,8 @@ import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 
 // The motion-regime map: fraction of critical speed phiC (x) vs fill J (y), with the slumping / cascading /
 // cataracting / centrifuging bands and a marker at the current operating point. The bands are phiC-driven (Wills &
-// Finch; Napier-Munn et al.). Pure canvas, theme-aware. (The regime names stay in English — the same technical
-// classification the App's pills show raw — only the descriptive axis labels are localised.)
+// Finch; Napier-Munn et al.). Pure canvas, theme-aware. (The regime names stay in English, the same technical
+// classification the App's pills show raw, only the descriptive axis labels are localised.)
 export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: number; height?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);

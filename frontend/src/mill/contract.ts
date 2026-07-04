@@ -1,7 +1,7 @@
 // CONTRACT 1 (ingestion) ported to TS for the live bring-your-own-mill form. Mirrors EXACTLY the reference policy in
 // data-pipeline/cclab/io/contract.py (validate_records / validate_mill): a descriptor is ACCEPTED iff it passes;
 // ill-formed ones are REJECTED with a reason (never silently coerced); plausible-but-honesty-relevant ones are
-// FLAGGED (accepted, the flag travels with it). Keep this in lock-step with the Python — both are the same gate.
+// FLAGGED (accepted, the flag travels with it). Keep this in lock-step with the Python, both are the same gate.
 import type { MillType } from './types.ts';
 
 export const MILL_TYPES: MillType[] = ['rod', 'ball', 'sag', 'ag'];
@@ -44,10 +44,10 @@ export function validateMill(m: MillInput): ContractResult {
   if (bad.length) return { accepted: false, reason: bad.join('; '), flags: [] };
 
   const flags: string[] = [];
-  if (v.phi_c >= 1) flags.push('phi_c >= 1: the outer charge centrifuges — no grinding');
+  if (v.phi_c >= 1) flags.push('phi_c >= 1: the outer charge centrifuges, no grinding');
   else if (v.phi_c > 0.85) flags.push(`phi_c ${v.phi_c.toFixed(2)} > 0.85: over-speed; the cataract may impact the liner above the toe`);
   if (v.fill > FILL_FLAG_HI) flags.push(`fill ${(v.fill * 100).toFixed(0)}% > 45%: above the power peak; charge crowding`);
   if (v.fill > 0 && v.fill < FILL_FLAG_LO) flags.push(`fill ${(v.fill * 100).toFixed(0)}% < 15%: low charge; ball-on-liner impacts`);
-  if (v.ball_top_mm / 1000 >= 0.05 * v.diameter_m) flags.push('large ball/diameter ratio — the (D-d) critical speed matters');
+  if (v.ball_top_mm / 1000 >= 0.05 * v.diameter_m) flags.push('large ball/diameter ratio, the (D-d) critical speed matters');
   return { accepted: true, reason: null, flags };
 }

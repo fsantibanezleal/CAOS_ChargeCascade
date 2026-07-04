@@ -1,8 +1,8 @@
 // The motion regime the user watches transition. Boundaries are approximate labelled bands (they depend on J, liner
-// lift, friction) — verified qualitative ranges (Wills & Finch; Napier-Munn et al., Mineral Comminution Circuits):
+// lift, friction), verified qualitative ranges (Wills & Finch; Napier-Munn et al., Mineral Comminution Circuits):
 //   slumping/surging  phiC <~ 0.4   (charge slips & slumps as a mass)
-//   cascading        ~0.4-0.65      (charge rolls/tumbles down the free surface — abrasion)
-//   cataracting      ~0.65-0.9      (outer media projected in parabolic arcs, impacting the toe — IMPACT breakage)
+//   cascading        ~0.4-0.65      (charge rolls/tumbles down the free surface, abrasion)
+//   cataracting      ~0.65-0.9      (outer media projected in parabolic arcs, impacting the toe, IMPACT breakage)
 //   centrifuging     phiC >= ~0.9   (outer layers pin to the shell; breakage collapses; full at phiC>=1)
 // The '% centrifuging' gauge (the fraction of shells that centrifuge) gives the onset precisely.
 

@@ -5,7 +5,7 @@ import { bondWKwhT, evaluate, type Operating } from '../mill/index.ts';
 // The comminution capacity map: the power-LIMITED throughput T = P_net(phiC,J) / W_bond [t/h] over the phiC x J
 // plane, for the CURRENT ore. Bond's law W = 10*Wi*(1/sqrt(P80)-1/sqrt(F80)) [kWh/t] is the process-energy DUTY (set
 // by the ore + the F80->P80 size reduction; independent of mill speed/fill); the Hogg-Fuerstenau net power IS what
-// varies with phiC and J. Dividing the two gives the tonnage this mill can grind to spec at each operating point —
+// varies with phiC and J. Dividing the two gives the tonnage this mill can grind to spec at each operating point , 
 // the real "where does it grind the most?" answer. The red hatch marks where capacity falls below the target tph
 // (the mill cannot meet the duty there); the marker is the current operating point. Pure canvas, theme-aware.
 export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: number }) {
@@ -41,8 +41,8 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
     const wBond = bondWKwhT(op.oreWi, op.feedF80um, op.prodP80um);
     const NX = 48, NY = 28;
     // capacity grid T[ix][iy] = P_net(phiC, J) / W [t/h]; W is constant over the grid (ore-set). The Hogg-Fuerstenau
-    // torque model is monotone in phiC and is NOT tapered at centrifuging — the engine flags grinding collapse via the
-    // regime instead — so where the charge centrifuges (grinding STOPS, no impact) the raw P/W is not a real capacity:
+    // torque model is monotone in phiC and is NOT tapered at centrifuging, the engine flags grinding collapse via the
+    // regime instead, so where the charge centrifuges (grinding STOPS, no impact) the raw P/W is not a real capacity:
     // those cells are MASKED, and tMax is taken over the grinding region only so the colour scale is honest.
     const cap: number[][] = [];
     const dead: boolean[][] = [];
@@ -79,7 +79,7 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
       for (let iy = 0; iy < NY; iy++) {
         const y = pad.t + ph - (ph * (iy + 1)) / NY;
         if (dead[ix][iy]) {
-          // centrifuging: grinding has stopped — not a viable operating point regardless of the un-tapered power
+          // centrifuging: grinding has stopped, not a viable operating point regardless of the un-tapered power
           ctx.fillStyle = theme === 'dark' ? 'rgba(70,74,86,0.85)' : 'rgba(190,194,204,0.85)';
           ctx.fillRect(x, y, cw + 0.6, chh + 0.6);
           continue;

@@ -1,4 +1,4 @@
-// Downstream evaluation of the trained power surrogate — measured HONESTLY against the exact engine. For each held-out
+// Downstream evaluation of the trained power surrogate, measured HONESTLY against the exact engine. For each held-out
 // in-distribution operating point the surrogate predicts [power, frac-centrifuging]; we compare its power to the EXACT
 // analytic engine's power (the authority). The relative power error is the honest skill number. Then we assemble the
 // final data/derived/cc-learned.json by merging the OOD-AE AUC + honesty that train_mill.py wrote to learned-partial.json.
@@ -14,7 +14,7 @@ const RAW = resolve(ROOT, 'data/raw');
 const DERIVED = resolve(ROOT, 'data/derived');
 const FRONTEND = resolve(ROOT, 'frontend');
 
-// load onnxruntime-web (resolved from frontend/node_modules) — node build, WASM EP, single-threaded, local wasm.
+// load onnxruntime-web (resolved from frontend/node_modules), node build, WASM EP, single-threaded, local wasm.
 const req = createRequire(pathToFileURL(resolve(FRONTEND, 'pkg.js')));
 const ortMod = await import(pathToFileURL(req.resolve('onnxruntime-web')));
 const ort = ortMod.default ?? ortMod;
@@ -53,7 +53,7 @@ if (session) {
     nEval++;
   }
 } else {
-  nEval = ev.length; // no surrogate trained yet — leave the error at 0 and let the App show the pending state
+  nEval = ev.length; // no surrogate trained yet, leave the error at 0 and let the App show the pending state
 }
 
 const meanErr = sumPowErr / Math.max(1, nEval);
@@ -67,7 +67,7 @@ const learned = {
     power_err_std: r4(stdErr),
     cent_err: r4(sumCentErr / Math.max(1, nEval)),
     nEval,
-    // the surrogate's REAL training lineage (from train_mill.py) — so the held-out metric is auditable, not asserted
+    // the surrogate's REAL training lineage (from train_mill.py), so the held-out metric is auditable, not asserted
     ...(partial.surrogateLineage ?? {}),
     scatter,
   },

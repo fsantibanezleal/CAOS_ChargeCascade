@@ -1,4 +1,4 @@
-/* ChargeCascade — app-specific styles on top of @fasl-work/caos-app-shell/styles.css (shell design tokens). */
+/* ChargeCascade, app-specific styles on top of @fasl-work/caos-app-shell/styles.css (shell design tokens). */
 
 .cc-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; align-items: start; }
 @media (max-width: 900px) { .cc-layout { grid-template-columns: 1fr; } }
@@ -43,7 +43,7 @@
 .fq-hist-col i { width: 100%; background: var(--color-accent); border-radius: 2px 2px 0 0; min-height: 1px; }
 .fq-hist-x { font-size: 0.62rem; color: var(--color-fg-faint); margin-top: 0.2rem; }
 
-/* doc pages (shared with the sibling apps) — no page-width override; the shell owns the column */
+/* doc pages (shared with the sibling apps), no page-width override; the shell owns the column */
 .cc-doc-sec { line-height: 1.7; }
 .cc-doc-sec p { margin: 0.6rem 0; }
 .cc-fig { margin: 1.1rem 0; }

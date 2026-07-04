@@ -28,10 +28,10 @@ const BALL: Operating = {
 const c = (over: Partial<Operating>): Operating => ({ ...BALL, ...over });
 
 // Machine presets for the live mill-type selector. Selecting a type loads that machine's CHARACTERISTIC geometry +
-// media + charge density — the fields the engine actually differentiates on (D, L, J, φc, top media, lift, ρc) — so
+// media + charge density, the fields the engine actually differentiates on (D, L, J, φc, top media, lift, ρc), so
 // the critical speed, regime, power and 3D charge all visibly change. Process params (Wi/F80/P80/tph, about the ORE
 // not the machine) are left to the case selector. The ball/sag/rod values equal the K-* cases (one source of truth);
-// AG (autogenous) is the 4th canonical type: no steel media — competent ORE lumps are the grinding media (top size
+// AG (autogenous) is the 4th canonical type: no steel media, competent ORE lumps are the grinding media (top size
 // ~100 mm), so its charge bulk density (~2.7 t/m³) is well below SAG's (~3.0, ore + ~8% steel), giving a distinct,
 // lower-power machine. SI: metres, t/m³, mm.
 export const MILL_PRESETS: Record<MillType, Pick<Operating, 'diameterM' | 'lengthM' | 'fill' | 'phiC' | 'ballTopMm' | 'liftAngleDeg' | 'chargeDensity'>> = {
@@ -87,7 +87,7 @@ export const CASES: CCCase[] = [
   {
     id: 'C-CRITICAL', name: 'Critical-speed limit (phiC = 1)', category: CAT_CONTROL, op: c({ phiC: 1.0 }),
     expectedBand: 'phiC = 1: the outer layer just centrifuges (cos(alpha) = 1 at the top)',
-    validationAnchor: 'the analytic centrifuging onset — fracCentrifuging > 0 at phiC = 1', realOrSynthetic: 'analytic control',
+    validationAnchor: 'the analytic centrifuging onset, fracCentrifuging > 0 at phiC = 1', realOrSynthetic: 'analytic control',
   },
   {
     id: 'C-EMPTY', name: 'Empty mill (J = 0)', category: CAT_CONTROL, op: c({ fill: 0.0 }),

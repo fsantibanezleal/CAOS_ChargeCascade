@@ -1,7 +1,7 @@
 # 05 · The in-app Architecture / "How it works" modal (ADR-0058)
 
 Every CAOS/Faena web app **MUST** ship an in-app **Architecture / "How it works"** modal, opened by an
-always-visible **ⓘ button in the header**. It is the fast visual proof the app is a *real, complete system* — not a
+always-visible **ⓘ button in the header**. It is the fast visual proof the app is a *real, complete system*, not a
 demo. The chrome (button + modal) comes from the shared shell; ChargeCascade supplies only its diagrams + copy.
 
 Binding decision: [`conventions/architecture/0-archetype/ADR-0058-in-app-architecture-modal.md`](../../../conventions/architecture/0-archetype/ADR-0058-in-app-architecture-modal.md)
@@ -9,7 +9,7 @@ Binding decision: [`conventions/architecture/0-archetype/ADR-0058-in-app-archite
 
 ## What ChargeCascade inherits from the archetype
 
-- **Chrome** — `@fasl-work/caos-app-shell` (pinned `^0.1.2` in `frontend/package.json`) exposes the ⓘ button + the
+- **Chrome**, `@fasl-work/caos-app-shell` (pinned `^0.1.2` in `frontend/package.json`) exposes the ⓘ button + the
   `ArchitectureModal`. The shell config gained an `architecture` field; present ⇒ the button appears.
 - **Five themed SVGs** in [`frontend/public/svg/tech/`](../../frontend/public/svg/tech/):
   `01-the-app.svg`, `02-lanes.svg`, `03-web-flow.svg`, `04-the-science.svg`, `05-data-contracts.svg`. Every colour is
@@ -34,8 +34,8 @@ Each tab pairs one SVG from `frontend/public/svg/tech/` with a **bilingual ES/EN
 
 | id | tab | SVG | what it shows |
 |----|-----|-----|----------------|
-| `app` | The app / La app | `01-the-app.svg` | the domain: set D / fill / ball / φc on a SAG·ball·rod mill and watch cascading → cataracting → centrifuging in 3D with live power. The mill engine (`frontend/src/mill/`) recomputes on every control. The 3D charge is a **kinematic animation of the analytic engine — not a DEM solve** (a real DEM trace is the documented offline upgrade). `C-CRITICAL` (φc = 1) and `C-EMPTY` (J = 0) are exact analytic controls. |
-| `lanes` | Lanes — web / offline / compute | `02-lanes.svg` | **web** = the TS engine + Three.js 3D + onnxruntime-web (no server); **offline/compute** = the Python pipeline bakes the cases via `tsx` and `--retrain` (torch) trains the two models → ONNX; **replay** = the committed `data/derived` artifacts overlaid into the SPA, with the typed `contract.types.ts` mirror failing the build on drift. |
+| `app` | The app / La app | `01-the-app.svg` | the domain: set D / fill / ball / φc on a SAG·ball·rod mill and watch cascading → cataracting → centrifuging in 3D with live power. The mill engine (`frontend/src/mill/`) recomputes on every control. The 3D charge is a **kinematic animation of the analytic engine, not a DEM solve** (a real DEM trace is the documented offline upgrade). `C-CRITICAL` (φc = 1) and `C-EMPTY` (J = 0) are exact analytic controls. |
+| `lanes` | Lanes, web / offline / compute | `02-lanes.svg` | **web** = the TS engine + Three.js 3D + onnxruntime-web (no server); **offline/compute** = the Python pipeline bakes the cases via `tsx` and `--retrain` (torch) trains the two models → ONNX; **replay** = the committed `data/derived` artifacts overlaid into the SPA, with the typed `contract.types.ts` mirror failing the build on drift. |
 | `web-flow` | Web-app flow / Flujo de la web | `03-web-flow.svg` | the App recomputes live: the case selector or your own mill + the D / fill / ball / φc / mill-type controls feed the TS engine + the onnxruntime-web models, which feed the workbench (3D mill, trajectory diagram, regime map, power curve, charge cross-section, What-if). |
 | `science` | The science / La ciencia | `04-the-science.svg` | the real algorithm + equations: critical speed `42.3/√(D−d)`, the Davis single-particle departure + parabolic cataract trajectories, and the Hogg-Fuerstenau / Morrell power. |
 | `design` | Data contracts / Contratos de datos | `05-data-contracts.svg` | the two contracts (CONTRACT 1 ingestion `io/contract.py`; CONTRACT 2 artifact manifest/trace) + the lane gate + the 10 cases-by-category. |
@@ -47,4 +47,4 @@ Each tab pairs one SVG from `frontend/public/svg/tech/` with a **bilingual ES/EN
 
 The screenshot-verify step (mandatory before any deploy) **must open the modal and confirm every tab renders its
 diagram (themed, no broken SVG) + its text with no error**, in both light and dark. A product is **not "done"**
-without the ⓘ Architecture modal at full depth — it is a NON-NEGOTIABLE row in the product-quality bar.
+without the ⓘ Architecture modal at full depth, it is a NON-NEGOTIABLE row in the product-quality bar.

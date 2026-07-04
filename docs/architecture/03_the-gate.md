@@ -13,7 +13,7 @@ classify_lane(client_side=True,
 
 A case is **live** iff it is client-side, its runtimes are a subset of the deployed client set
 `{ts-mill, onnxruntime-web}` (`LIVE_RUNTIMES`), a full engine evaluation completes within the interaction budget, and
-its replay trace stays small. At this scale a full `evaluate(op)` — the critical speed, the per-shell Davis sweep, the
-regime classification, the power draw and the power-vs-`φc` curve — is **sub-millisecond** in native TypeScript and the
+its replay trace stays small. At this scale a full `evaluate(op)`, the critical speed, the per-shell Davis sweep, the
+regime classification, the power draw and the power-vs-`φc` curve, is **sub-millisecond** in native TypeScript and the
 trace is a few KB, so **every case runs LIVE in the browser**. The verdict + budgets go into the manifest; the raw
 wall-clock is used for the decision but never stored.

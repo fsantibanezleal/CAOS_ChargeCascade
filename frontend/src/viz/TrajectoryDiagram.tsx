@@ -85,7 +85,7 @@ export function TrajectoryDiagram({ result, diameterM, height = 360 }: { result:
       ctx.font = '12px system-ui, sans-serif';
       ctx.fillText(`${es ? 'hombro' : 'shoulder'} ${result.shoulderDeg.toFixed(0)}°`, sx(outer.departure[0]) + 6, sy(outer.departure[1]) - 6);
     }
-    // axis labels (the regime name stays raw — the same technical classification the App's pills show)
+    // axis labels (the regime name stays raw, the same technical classification the App's pills show)
     ctx.fillStyle = fg;
     ctx.globalAlpha = 0.7;
     ctx.font = '11px system-ui, sans-serif';

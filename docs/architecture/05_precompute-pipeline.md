@@ -13,7 +13,7 @@ avoids ever re-implementing the mill physics in Python.
 | `train` | fit the power surrogate + the scenario OOD-AE → self-contained ONNX (`science/train_mill.py`, torch) |
 | `infer` | evaluate every case through the SAME TS engine (`science/bake_cases.mjs`) → `case-results.json` |
 | `evaluate` | the surrogate's power error vs the exact engine + the OOD AUC (`science/eval_mill.mjs`, run via onnxruntime-web in Node) |
-| `export` | build the compact per-case trace + manifest (CONTRACT 2) — the LIGHT, numpy-only step (`stages/export.py :: build_replay`) |
+| `export` | build the compact per-case trace + manifest (CONTRACT 2), the LIGHT, numpy-only step (`stages/export.py :: build_replay`) |
 
 The `preprocess` / `feature_extraction` / `train` / `infer` / `evaluate` Python stage bodies are docstring stubs that
 defer to the two-language `science/` scripts; `export` is the real light-lane work.
@@ -29,7 +29,7 @@ The **default is light**: the committed `data/derived/case-results.json` + `cc-l
 heavy lane's real outputs, so CI, the contract checks and the replay never need torch or Node. The light lane is
 numpy-only (`data-pipeline/requirements.txt`). `--retrain` regenerates them and needs the heavy
 `.venv-precompute` (`data-pipeline/requirements-precompute.txt`: torch 2.12.1+cpu, onnx 1.22.0, onnxscript 0.7.0,
-numpy 2.1.3) plus Node `tsx` — it is local-only and never deployed.
+numpy 2.1.3) plus Node `tsx`, it is local-only and never deployed.
 
 ```
 bake_cases.mjs ──► data/derived/case-results.json            (per-case evaluate(), baked by the TS engine)
@@ -39,4 +39,4 @@ eval_mill.mjs  ──► data/derived/cc-learned.json              (surrogate po
 pipeline.export──► data/derived/<case>/trace.json + manifests/<case>.json + index.json   (CONTRACT 2)
 ```
 
-Determinism: the light pipeline is a pure function of the committed artifacts — re-running it is byte-identical.
+Determinism: the light pipeline is a pure function of the committed artifacts, re-running it is byte-identical.
