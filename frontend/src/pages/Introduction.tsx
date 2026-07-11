@@ -116,14 +116,14 @@ export default function Introduction() {
         <li>{es ? 'Calcular la potencia (Hogg–Fuerstenau, con la forma Morrell calibrada al lado) y la capacidad.' : 'Compute the power (Hogg–Fuerstenau, with the calibrated Morrell-form alongside) and the capacity.'}</li>
         <li>{es ? 'Animar la carga en 3D y leer potencia · régimen · ángulos · capacidad, todo en vivo.' : 'Animate the charge in 3D and read power · regime · angles · capacity, all live.'}</li>
       </ol>
-      <Refs ids={['wills2016', 'napiermunn1996', 'bond1961']} label="Refs" />
+      <Refs ids={['wills2016', 'napiermunn1996', 'bond1952']} label="Refs" />
 
       <Callout variant="honest" title={es ? 'Qué es exacto y qué es ilustrativo' : 'What is exact and what is illustrative'}>
         {es
           ? 'Las ECUACIONES son exactas y publicadas: la velocidad crítica, el ángulo de partida de Davis, la potencia de Hogg–Fuerstenau y la ley de Bond se transfieren a molinos reales tal cual. La carga 3D es una ANIMACIÓN CINEMÁTICA de esas ecuaciones (las partículas siguen el ángulo de partida + la parábola), NO un solve DEM de N cuerpos, una traza DEM/PEPT real es la mejora offline documentada. La magnitud de potencia está calibrada a potencias industriales reales (~1.3 MW para el molino de bolas de referencia); este build no incluye ningún dataset de molinos publicados, así que no se afirma un cruce externo (un set de anclas comprometido es la mejora documentada). C-CRITICAL (φc = 1) y C-EMPTY (J = 0) son controles exactos que el motor DEBE reproducir.'
-          : 'The EQUATIONS are exact and published: the critical speed, the Davis departure angle, the Hogg–Fuerstenau power and Bond\'s law transfer to real mills as written. The 3D charge is a KINEMATIC ANIMATION of those equations (particles follow the departure angle + the parabola), NOT an N-body DEM solve, a real DEM/PEPT trace is the documented offline upgrade. The power magnitude is calibrated to real industrial power (~1.3 MW for the reference ball mill); no published-mill dataset ships in this build, so no external cross-check is claimed (a committed anchor set is the documented upgrade). C-CRITICAL (φc = 1) and C-EMPTY (J = 0) are exact controls the engine MUST reproduce.'}{' '}<Cite id="bond1961" paren /> <Cite id="morrell1996" paren />
+          : 'The EQUATIONS are exact and published: the critical speed, the Davis departure angle, the Hogg–Fuerstenau power and Bond\'s law transfer to real mills as written. The 3D charge is a KINEMATIC ANIMATION of those equations (particles follow the departure angle + the parabola), NOT an N-body DEM solve, a real DEM/PEPT trace is the documented offline upgrade. The power magnitude is calibrated to real industrial power (~1.3 MW for the reference ball mill); no published-mill dataset ships in this build, so no external cross-check is claimed (a committed anchor set is the documented upgrade). C-CRITICAL (φc = 1) and C-EMPTY (J = 0) are exact controls the engine MUST reproduce.'}{' '}<Cite id="bond1952" paren /> <Cite id="morrell1996" paren />
       </Callout>
-      <Refs ids={['davis1919', 'hoggfuerstenau1972', 'morrell1996', 'bond1961']} label="Refs" />
+      <Refs ids={['davis1919', 'hoggfuerstenau1972', 'morrell1996', 'bond1952']} label="Refs" />
     </article>
   );
 }

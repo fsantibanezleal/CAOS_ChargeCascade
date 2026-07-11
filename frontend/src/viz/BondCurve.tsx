@@ -44,7 +44,7 @@ export function BondCurve({ op, netPowerKw, es }: { op: Operating; netPowerKw: n
         {/* current operating point (P80, W) */}
         <circle cx={lx(op.prodP80um)} cy={ly(wHere)} r={5} fill="#d9a406" stroke="#fff" strokeWidth={1.5} />
         {xticks.map((t) => <text key={t} x={lx(t)} y={H - 18} textAnchor="middle" fill="var(--color-fg-subtle)">{t >= 1000 ? `${t / 1000}mm` : `${t}µm`}</text>)}
-        <text x={W / 2} y={H - 4} textAnchor="middle" fill="var(--color-fg-faint)">{es ? 'P80 producto (más fino →←)  ·  W [kWh/t]' : 'product P80 (finer →←)  ·  W [kWh/t]'}</text>
+        <text x={W / 2} y={H - 4} textAnchor="middle" fill="var(--color-fg-faint)">{es ? 'P80 del producto (menor = más fino)  ·  W [kWh/t]' : 'product P80 (smaller = finer)  ·  W [kWh/t]'}</text>
       </svg>
     </div>
   );

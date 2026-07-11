@@ -51,7 +51,7 @@ export const CASES: CCCase[] = [
     id: 'K-SAG', name: 'SAG mill (large D, short L)', category: CAT_TYPE,
     op: c({ millType: 'sag', diameterM: 10.0, lengthM: 5.0, fill: 0.28, phiC: 0.78, ballTopMm: 125, liftAngleDeg: 38, chargeDensity: 3.0, feedF80um: 100000, prodP80um: 2000, tph: 2000 }),
     expectedBand: 'large diameter "pancake", few large balls + ore as media; cataracting impact at phiC ~ 0.78',
-    validationAnchor: 'power scales as D^3.5; high power on the 10 m mill; SAGMILLING/Doll ballpark', realOrSynthetic: 'synthetic',
+    validationAnchor: 'power scales as D^2.5 (fixed length); high power on the 10 m mill; SAGMILLING/Doll ballpark', realOrSynthetic: 'synthetic',
   },
   {
     id: 'K-ROD', name: 'Rod mill (L > D)', category: CAT_TYPE,

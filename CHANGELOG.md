@@ -3,6 +3,23 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.001], 2026-07-11
+
+### Fixed
+- Honesty vs the engine: the K-SAG case anchor claimed "power scales as D^3.5" and the K-SAG doc said "≈ D^2.5-D^3.5",
+  but the Hogg-Fuerstenau engine (`mill/power.ts`) is exactly D^2.5 at fixed length (ω ∝ D^-0.5, charge mass ∝ D^2,
+  torque arm ∝ D), which the Experiments page already states. Corrected both to D^2.5.
+- Reference integrity: `bond1961` conflated Bond's 1952 "third theory" (Transactions AIME 193) with the 1961
+  British Chemical Engineering paper and linked only a Wikipedia bio. Made it Bond (1952) "The third theory of
+  comminution", Trans. AIME 193, 484-494, linked to the OneMine record (id renamed bond1961 -> bond1952 across the
+  citing pages; the 1961 practical form is noted). Corrected the Hogg & Fuerstenau (1972) page range (418-423 ->
+  418-432) and the Davis (1919) page range (250-296 -> 250-290).
+- Removed the U+2192/U+2190 arrows from the BondCurve axis label (a Felipe AI-tell): "product P80 (smaller = finer)".
+
+### Added
+- Per-panel error boundary (`viz/PanelBoundary.tsx`, mirroring the RotorVitals reference): a crash inside one mill
+  view now renders a small inline message instead of unmounting the whole App.
+
 ## [0.14.000], 2026-07-10
 
 ### Changed

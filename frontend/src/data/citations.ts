@@ -7,7 +7,7 @@ export const CITATIONS: Citation[] = [
   {
     id: 'davis1919',
     label: 'Davis 1919',
-    citation: 'Davis, E.W. (1919). Fine crushing in ball mills. Transactions AIME, 61, 250–296. (The single-particle departure-angle + parabolic-flight charge-motion model.)',
+    citation: 'Davis, E.W. (1919). Fine crushing in ball mills. Transactions AIME, 61, 250–290. (The single-particle departure-angle + parabolic-flight charge-motion model.)',
     url: 'https://www.onemine.org/search?q=Davis%201919%20Fine%20crushing%20in%20ball%20mills',
   },
   {
@@ -19,7 +19,7 @@ export const CITATIONS: Citation[] = [
   {
     id: 'hoggfuerstenau1972',
     label: 'Hogg & Fuerstenau 1972',
-    citation: 'Hogg, R. & Fuerstenau, D.W. (1972). Power relationships for tumbling mills. Transactions SME-AIME, 252, 418–423.',
+    citation: 'Hogg, R. & Fuerstenau, D.W. (1972). Power relationships for tumbling mills. Transactions SME-AIME, 252, 418–432.',
     url: 'https://www.onemine.org/search?q=Hogg%20Fuerstenau%20Power%20relationships%20for%20tumbling%20mills',
   },
   {
@@ -29,10 +29,10 @@ export const CITATIONS: Citation[] = [
     url: 'https://www.smctesting.com/about/publications/power-draw-of-wet-tumbling-mills-and-its-relationship-to-charge-dynamics-part-1-a-continuum-approach-to-mathematical-modelling-of-mill-power-draw',
   },
   {
-    id: 'bond1961',
-    label: 'Bond 1961',
-    citation: 'Bond, F.C. (1952, 1961). The third theory of comminution. Transactions AIME / British Chemical Engineering 6. (W = 10·Wi·(1/√P80 − 1/√F80).)',
-    url: 'https://en.wikipedia.org/wiki/Fred_Chester_Bond',
+    id: 'bond1952',
+    label: 'Bond 1952',
+    citation: 'Bond, F.C. (1952). The third theory of comminution. Transactions AIME 193, 484–494. The Bond work-index law W = 10·Wi·(1/√P80 − 1/√F80); the practical calculation form is restated in Bond (1961), Crushing and grinding calculations, British Chemical Engineering 6.',
+    url: 'https://onemine.org/documents/the-third-theory-of-comminution',
   },
   {
     id: 'napiermunn1996',
