@@ -9,6 +9,7 @@ import { RegimeMap } from '../viz/RegimeMap.tsx';
 import { PowerChart } from '../viz/PowerChart.tsx';
 import { ComminutionMap } from '../viz/ComminutionMap.tsx';
 import { BondCurve } from '../viz/BondCurve.tsx';
+import { PanelBoundary } from '../viz/PanelBoundary.tsx';
 
 const CATS = ['mill type (the machine)', 'speed sweep (the regime transition)', 'fill / charge regime', 'control (analytic anchor)'];
 const MILLS: MillType[] = ['ball', 'sag', 'rod', 'ag'];
@@ -397,7 +398,7 @@ export default function Tool() {
         </div>
       </aside>
       <main className="cc-main">
-        <Tabs tabs={tabs} ariaLabel={es ? 'vistas del molino' : 'mill views'} />
+        <Tabs tabs={tabs.map((t) => ({ ...t, content: <PanelBoundary key={`${caseId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))} ariaLabel={es ? 'vistas del molino' : 'mill views'} />
       </main>
     </div>
   );
