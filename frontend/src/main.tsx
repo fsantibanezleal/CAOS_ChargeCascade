@@ -7,6 +7,7 @@ import '@fasl-work/caos-app-shell/styles.css';
 import './chargecascade.css';
 import { CITATIONS } from './data/citations.ts';
 import { architecture } from './architecture.ts';
+import pkg from '../package.json';
 import Tool from './pages/Tool.tsx';
 import Introduction from './pages/Introduction.tsx';
 import Methodology from './pages/Methodology.tsx';
@@ -27,7 +28,7 @@ const config: ShellConfig = {
     { path: '/benchmark', en: 'Benchmark', es: 'Benchmark' },
   ],
   links: { github: 'https://github.com/fsantibanezleal/CAOS_ChargeCascade' },
-  version: '0.12.003',
+  version: pkg.version,  // single source: frontend/package.json (no drift)
   architecture,
 };
 
