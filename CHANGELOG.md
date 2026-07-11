@@ -3,6 +3,18 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.000], 2026-07-10
+
+### Changed
+- 3D charge viz upgrade: the camera now FITS + centers the mill and the POV PERSISTS across operating-point/theme
+  changes (only Reset view re-fits). The charge is now low-poly INSTANCED SPHERES coloured by speed (solid balls,
+  not flat points), riding the shell to the Davis departure azimuth and flying the parabolic cataract to the toe.
+- Version now derives from `frontend/package.json` (the footer showed a stale hardcoded 0.12.003; fixed the drift).
+
+### Added
+- Bottom viz controls under the 3D charge: animation speed (0.25-4x), ball size (0.5-2.5x), Reset view.
+- Autoplay on load (usePausedViz autoStart) for visual impact; the rAF still halts on a hidden tab (ADR-0059).
+
 ## [0.13.000], 2026-07-04
 
 ### Changed
