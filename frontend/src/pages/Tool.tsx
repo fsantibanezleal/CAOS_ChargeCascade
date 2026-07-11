@@ -22,7 +22,6 @@ export default function Tool() {
   useEffect(() => { setOp(theCase.op); setInvTph(null); }, [theCase]);   // reset the inverse target to the new case's capacity
 
   const r = useMemo(() => evaluate(op), [op]);
-  const [animSpeed, setAnimSpeed] = useState(1);   // 3D-charge animation playback speed (visual only; scoped to that tab)
   const [surr, setSurr] = useState<{ powerKw: number; fracCentrifuging: number } | null>(null);
   const [surrPending, setSurrPending] = useState(true);
   const [ood, setOod] = useState<number | null>(null);
@@ -57,11 +56,7 @@ export default function Tool() {
       content: (
         <div className="cc-vizstack">
           <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastra para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
-          <Mill3D op={op} speed={animSpeed} />
-          {/* playback-speed control, VISUAL only (does not change the physics); scoped to this tab */}
-          <label className="cc-ctl" style={{ maxWidth: 360 }}>{es ? 'velocidad de animación' : 'animation speed'}: {animSpeed === 0 ? (es ? 'pausa' : 'paused') : `${animSpeed.toFixed(2)}×`}
-            <input className="range" type="range" min={0} max={1.5} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
-          </label>
+          <Mill3D op={op} />
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
             <Kpi label="φc" value={op.phiC.toFixed(2)} />

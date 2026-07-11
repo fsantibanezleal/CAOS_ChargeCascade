@@ -67,6 +67,10 @@
 .cc-canvas-wrap canvas { display: block; width: 100%; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); }
 .cc-canvas-banner { position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 0.45rem; background: color-mix(in oklab, var(--color-surface) 88%, transparent); border: 1px solid var(--color-border); border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.68rem; color: var(--color-fg-subtle); pointer-events: none; }
 .cc-canvas-banner .btn { pointer-events: auto; font-size: 0.72rem; padding: 0.15rem 0.55rem; }
+.cc-viz-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); font-size: 0.74rem; color: var(--color-fg-subtle); }
+.cc-viz-controls label { display: inline-flex; align-items: center; gap: 0.4rem; }
+.cc-viz-controls input[type="range"] { width: 96px; vertical-align: middle; }
+.cc-viz-controls b { font-family: var(--font-mono, ui-monospace, monospace); color: var(--color-fg); min-width: 2.4rem; }
 .cc-regime-pill { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; border: 1px solid var(--color-border); }
 .cc-regime-cascading { background: color-mix(in oklab, var(--color-good) 22%, transparent); }
 .cc-regime-cataracting { background: color-mix(in oklab, var(--color-accent) 22%, transparent); }
