@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 300" width="340" height="300" role="img" aria-label="C-EMPTY charge cross-section">
+  <style>
+    :root { --fg:#1f2328; --sub:#6b7682; --shell:#8a95a1; --chg:#6ea8ff; }
+    @media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --sub:#9aa7b4; --shell:#5a6675; --chg:#6ea8ff; } }
+    text { font: 12px system-ui, sans-serif; fill: var(--fg); }
+    .s { font-size: 10px; fill: var(--sub); }
+  </style>
+  <circle cx="150" cy="150" r="110" fill="none" stroke="var(--shell)" stroke-width="2" />
+  
+  
+  
+  <text class="s" x="150" y="154" text-anchor="middle">no charge (J = 0)</text>
+  <text x="150" y="26" text-anchor="middle">Empty mill (J = 0)</text>
+  <text class="s" x="150" y="286" text-anchor="middle">cataracting · φc 0.75 · 0.00 MW</text>
+</svg>

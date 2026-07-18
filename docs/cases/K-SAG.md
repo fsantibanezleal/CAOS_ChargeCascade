@@ -1,5 +1,9 @@
 # K-SAG, SAG mill (large D, short L)
 
+![K-SAG charge cross-section, computed from the engine](assets/K-SAG.svg)
+
+*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/cclab/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
+
 **Category:** mill type (the machine) · **Source of truth:** [`frontend/src/mill/cases.ts`](../../frontend/src/mill/cases.ts) (`K-SAG`) · **synthetic but physically realistic**
 
 **Operating point:** D 10.0 × L 5.0 m · J 28 % · φc 0.78 · top ball 125 mm · sag mill · charge density 3.0 t/m³ · F80 100 000 → P80 2000 µm at 2000 t/h.
