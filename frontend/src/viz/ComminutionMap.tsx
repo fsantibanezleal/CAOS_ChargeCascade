@@ -147,7 +147,7 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
   return (
     <div ref={wrapRef} style={{ position: 'relative' }} className="cc-canvas-wrap">
       <canvas ref={ref} style={{ display: 'block', width: '100%' }} onMouseMove={onMove} onMouseLeave={() => setRead(null)} />
-      {read && <div className="cc-map-readout" style={{ position: 'absolute', left: Math.min(read.x + 12, 440), top: read.y + 12, pointerEvents: 'none' }}>{read.text}</div>}
+      {read && <div className="cc-map-readout" style={{ position: 'absolute', left: Math.min(read.x + 12, (wrapRef.current?.clientWidth ?? 600) - 130), top: read.y + 12, pointerEvents: 'none' }}>{read.text}</div>}
     </div>
   );
 }

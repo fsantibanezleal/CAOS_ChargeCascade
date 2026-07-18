@@ -12,6 +12,12 @@ import { BondCurve } from '../viz/BondCurve.tsx';
 import { PanelBoundary } from '../viz/PanelBoundary.tsx';
 
 const CATS = ['mill type (the machine)', 'speed sweep (the regime transition)', 'fill / charge regime', 'control (analytic anchor)'];
+const CAT_ES: Record<string, string> = {
+  'mill type (the machine)': 'tipo de molino (la máquina)',
+  'speed sweep (the regime transition)': 'barrido de velocidad (la transición de régimen)',
+  'fill / charge regime': 'llenado / régimen de carga',
+  'control (analytic anchor)': 'control (ancla analítica)',
+};
 const MILLS: MillType[] = ['ball', 'sag', 'rod', 'ag'];
 const kw = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(2)} MW` : `${v.toFixed(0)} kW`);
 
@@ -209,9 +215,9 @@ export default function Tool() {
             ) : (
               <>
                 <div className="cc-kpis">
-                  <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : ', '} />
+                  <Kpi label={es ? 'surrogate (potencia)' : 'surrogate (power)'} value={surr ? kw(surr.powerKw) : 'n/a'} />
                   <Kpi label={es ? 'exacto (Hogg-F.)' : 'exact (Hogg-F.)'} value={kw(r.phfKw)} />
-                  <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : ', '} />
+                  <Kpi label={es ? 'error' : 'error'} value={surr ? `${(Math.abs(surr.powerKw - r.phfKw) / Math.max(1, r.phfKw) * 100).toFixed(1)}%` : 'n/a'} />
                 </div>
                 <p className="cc-note">{es ? 'El motor analítico exacto es la autoridad; el surrogate es el carril aprendido medido (su error vs el exacto se muestra en vivo); ninguna funcionalidad publicada lo consume aún en masa.' : 'The exact analytic engine is the authority; the surrogate is the measured learned lane (its error vs the exact engine is shown live); no shipped feature consumes it in bulk yet.'}</p>
               </>
@@ -252,7 +258,7 @@ export default function Tool() {
                   {tgt <= cap.minTph + 0.5 && ` (${es ? 'la velocidad mínima ya lo supera, capacidad de sobra' : 'min speed already exceeds it, spare capacity'})`}
                   {' '}<button className="chip" onClick={() => set('phiC', cap.phiC!)}>{es ? 'aplicar' : 'apply'}</button>
                 </p>
-              ) : <p className="cc-note">, </p>}
+              ) : null}
             </div>
           </div>
         );
@@ -307,10 +313,10 @@ export default function Tool() {
         return (
           <div className="cc-vizstack">
             <div className="cc-plot-t">{es
-              ? 'Trae tu propio molino: describe el punto de operación; CONTRACT-1 (la misma puerta que valida los casos) lo acepta / rechaza con motivo / marca banderas de honestidad. Si se acepta, el motor EXACTO corre sobre tu molino y puedes aplicarlo a todo el workbench.'
-              : 'Bring your own mill: describe the operating point; CONTRACT-1 (the same gate that validates the cases) accepts / rejects it with a reason / raises honesty flags. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
+              ? 'Trae tu propio molino: describe el punto de operación; una comprobación de validez física (la misma que valida los casos) lo acepta o lo rechaza con un motivo y marca advertencias. Si se acepta, el motor EXACTO corre sobre tu molino y puedes aplicarlo a todo el workbench.'
+              : 'Bring your own mill: describe the operating point; a physical-validity check (the same one that validates the cases) accepts or rejects it with a reason and raises warnings. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
             <div className="cc-card">
-              <div className="cc-card-t">{es ? 'Tu molino, CONTRACT-1' : 'Your mill, CONTRACT-1'}</div>
+              <div className="cc-card-t">{es ? 'Tu molino' : 'Your mill'}</div>
               <div className="cc-chips">
                 {MILL_TYPES.map((m) => <button key={m} className={`chip ${custom.mill_type === m ? 'on' : ''}`} onClick={() => setC('mill_type', m)}>{m}</button>)}
               </div>
@@ -358,7 +364,7 @@ export default function Tool() {
           <div className="cc-card-t">{es ? 'Caso' : 'Case'}</div>
           {CATS.map((cat) => (
             <div key={cat} className="cc-catgroup">
-              <div className="cc-catlabel">{cat.split(' (')[0]}</div>
+              <div className="cc-catlabel">{(es ? CAT_ES[cat] : cat).split(' (')[0]}</div>
               <div className="cc-chips">
                 {CASES.filter((cc) => cc.category === cat).map((cc) => (
                   <button key={cc.id} className={`chip ${caseId === cc.id ? 'on' : ''}`} title={cc.name} onClick={() => setCaseId(cc.id)}>{cc.id}</button>

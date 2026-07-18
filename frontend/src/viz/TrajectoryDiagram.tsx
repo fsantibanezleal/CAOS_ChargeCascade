@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import type { MillResult } from '../mill/types.ts';
 
@@ -21,6 +21,26 @@ export function TrajectoryDiagram({ result, diameterM, height = 360 }: { result:
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
+  const [read, setRead] = useState<{ x: number; y: number; text: string } | null>(null);
+
+  // Hover value-readout (interactive-viz rubric): inverse-transform the cursor to a mill radius, read out the
+  // radius fraction r/R and the Davis departure angle of the nearest shell (the engine's per-shell alpha).
+  const onMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const wrap = wrapRef.current; if (!wrap) return;
+    const W = wrap.clientWidth || 600, H = height;
+    const R = diameterM / 2;
+    const cx = W / 2, cy = H * 0.52;
+    const scale = (Math.min(W, H) * 0.42) / R;
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const X = (e.clientX - rect.left - cx) / scale;
+    const Y = (cy - (e.clientY - rect.top)) / scale;
+    const rad = Math.hypot(X, Y);
+    if (rad > R) { setRead(null); return; }
+    let near = result.shells[0];
+    for (const sh of result.shells) if (Math.abs(sh.r - rad) < Math.abs(near.r - rad)) near = sh;
+    const ang = near.centrifuging ? (es ? 'centrifugando' : 'centrifuging') : `${(near.alpha * 180 / Math.PI).toFixed(0)}°`;
+    setRead({ x: e.clientX - rect.left, y: e.clientY - rect.top, text: `r/R ${(rad / R).toFixed(2)} · ${es ? 'partida α' : 'departure α'} ${ang}` });
+  };
 
   useEffect(() => {
     const canvas = ref.current;
@@ -95,8 +115,9 @@ export function TrajectoryDiagram({ result, diameterM, height = 360 }: { result:
   }, [result, diameterM, height, theme, es]);
 
   return (
-    <div ref={wrapRef} className="cc-canvas-wrap">
-      <canvas ref={ref} style={{ display: 'block', width: '100%' }} />
+    <div ref={wrapRef} className="cc-canvas-wrap" style={{ position: 'relative' }}>
+      <canvas ref={ref} style={{ display: 'block', width: '100%' }} onMouseMove={onMove} onMouseLeave={() => setRead(null)} />
+      {read && <div className="cc-map-readout" style={{ position: 'absolute', left: Math.min(read.x + 12, (wrapRef.current?.clientWidth ?? 600) - 130), top: read.y + 12, pointerEvents: 'none' }}>{read.text}</div>}
     </div>
   );
 }
