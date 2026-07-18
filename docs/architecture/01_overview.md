@@ -16,7 +16,7 @@ fill, speed or top ball size, and the 3D animates the same trajectories the engi
 | Lane | Where | Deps | Notes |
 |---|---|---|---|
 | **Live (client-side)** | `frontend/src/mill/` (critical speed + Davis charge + regime + power) + onnxruntime-web (the surrogate + OOD-AE) | web npm | the interactive core; recomputes on every control change, sub-ms |
-| **Offline (precompute)** | `cclab/science/`, Node bake of the SAME TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
+| **Offline (precompute)** | `cclab/science/`, Node bake of the same TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
 | **Replay (light)** | `cclab.pipeline` (numpy) | `data-pipeline/requirements.txt` | reshapes the committed bake → per-case traces + manifests |
 | **API (backend)** | `app/` (FastAPI) | `requirements-api.txt` | DORMANT; activate only on an ADR-0002 trigger |
 
@@ -36,12 +36,12 @@ compact per-case trace) → `data/derived/` (committed) → the `frontend/` App 
 - **Rework (the only per-product surface):** the mill physics engine (`frontend/src/mill/` + the stage bodies), the
   `frontend/` visualisations, and the cases + content + calibration.
 
-## What ChargeCascade is and is NOT
+## What ChargeCascade is and is not
 
 - **Is:** Davis (1919) single-particle charge motion + Hogg & Fuerstenau (1972) net power (plus a calibrated Morrell-form consistency check; the full Morrell 1996 C-model is the documented upgrade) + the
   cascading → cataracting → centrifuging transition rendered in 3D, with an honest surrogate-vs-exact comparison and an
   out-of-envelope flag.
-- **Is NOT:** a DEM / N-body discrete-element solver, the 3D is a kinematic animation of the analytic engine, and a
+- **Is not:** a DEM / N-body discrete-element solver, the 3D is a kinematic animation of the analytic engine, and a
   real DEM / PEPT trace is the documented offline upgrade. The operating points are synthetic-but-realistic (clearly
   labelled), the power magnitude is calibrated to real industrial values, and the `C-*` cases are exact analytic
   controls.

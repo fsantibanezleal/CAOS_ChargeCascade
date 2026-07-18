@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Callout, Refs, useShellLang } from '@fasl-work/caos-app-shell';
 import { loadLearned, type LearnedFile } from '../lib/artifacts.ts';
 
-// Benchmark = the learned-model evaluation (this is where the learned held-out metrics live, NOT in the App); a
-// cross-case evaluation is a planned extension, not present yet. The power surrogate is measured DOWNSTREAM against
+// Benchmark = the learned-model evaluation (this is where the learned held-out metrics live, not in the App); a
+// cross-case evaluation is a planned extension, not present yet. The power surrogate is measured downstream against
 // the exact analytic engine; the OOD autoencoder by its AUC.
 export default function Benchmark() {
   const es = useShellLang() === 'es';
@@ -16,13 +16,13 @@ export default function Benchmark() {
         <h1>Benchmark</h1>
         <p className="lede">{es
           ? 'La evaluación de los modelos aprendidos contra el motor analítico exacto (la autoridad). El surrogate gana su lugar por la velocidad, no por una victoria fabricada.'
-          : 'The evaluation of the learned models against the EXACT analytic engine (the authority). The surrogate earns its place on speed, not a fabricated win.'}</p>
+          : 'The evaluation of the learned models against the exact analytic engine (the authority). The surrogate earns its place on speed, not a fabricated win.'}</p>
       </div>
 
       <Callout variant="honest" title={es ? 'El motor exacto es la autoridad' : 'The exact engine is the authority'}>
         {es
-          ? 'La física (Davis, Hogg-Fuerstenau, forma Morrell, Bond) es analítica + transparente. El surrogate de potencia (torch→ONNX) la EMULA; se mide DOWNSTREAM por su error de potencia vs el motor exacto en puntos held-out (ninguna funcionalidad publicada lo consume aún en masa). El autoencoder OOD marca puntos fuera del envolvente. Si el surrogate no es preciso, el benchmark lo dice.'
-          : 'The physics (Davis, Hogg-Fuerstenau, Morrell-form, Bond) is analytic + transparent. The power surrogate (torch→ONNX) EMULATES it; it is measured DOWNSTREAM by its power error vs the exact engine on held-out points (no shipped feature consumes it in bulk yet). The OOD autoencoder flags off-envelope points. If the surrogate is not accurate, the benchmark says so.'}
+          ? 'La física (Davis, Hogg-Fuerstenau, forma Morrell, Bond) es analítica + transparente. El surrogate de potencia (torch→ONNX) la emula; se mide downstream por su error de potencia vs el motor exacto en puntos held-out (ninguna funcionalidad publicada lo consume aún en masa). El autoencoder OOD marca puntos fuera del envolvente. Si el surrogate no es preciso, el benchmark lo dice.'
+          : 'The physics (Davis, Hogg-Fuerstenau, Morrell-form, Bond) is analytic + transparent. The power surrogate (torch→ONNX) emulates it; it is measured downstream by its power error vs the exact engine on held-out points (no shipped feature consumes it in bulk yet). The OOD autoencoder flags off-envelope points. If the surrogate is not accurate, the benchmark says so.'}
       </Callout>
 
       <h2>{es ? 'Modelos aprendidos (held-out)' : 'Learned models (held-out)'}</h2>
@@ -38,7 +38,7 @@ export default function Benchmark() {
           <LearnedTransparency learned={learned} es={es} />
         </>
       ) : (
-        <p className="cc-note">{es ? 'Artefactos de los modelos aprendidos no cargados, este build los incluye; si esto persiste, re-genéralos con el paso de re-entrenamiento del precómputo. El motor analítico exacto corre en vivo mientras tanto.' : 'Learned-model artifacts not loaded, this build ships them; if this persists, regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
+        <p className="cc-note">{es ? 'Artefactos de los modelos aprendidos no cargados, este build los incluye; si esto persiste, regenerarlos con el paso de re-entrenamiento del precómputo. El motor analítico exacto se ejecuta en vivo mientras tanto.' : 'Learned-model artifacts not loaded, this build ships them; if this persists, regenerate them with the precompute retrain step. The exact analytic engine runs live meanwhile.'}</p>
       )}
       {learned && <p className="cc-cap">{learned.honesty}</p>}
     </article>
@@ -46,7 +46,7 @@ export default function Benchmark() {
 }
 
 // T5, training transparency: the surrogate/AE lineage made auditable (architecture, data design, the predicted-vs-
-// exact scatter on held-out points), so the held-out metric is visibly EARNED, not asserted.
+// exact scatter on held-out points), so the held-out metric is visibly earned, not asserted.
 function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolean }) {
   const s = learned.surrogate, o = learned.ood, d = learned.data;
   const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : 'n/a');
@@ -62,8 +62,8 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
     <div style={{ marginTop: '0.8rem' }}>
       <div className="cc-card-t">{es ? 'Transparencia del entrenamiento (auditable)' : 'Training transparency (auditable)'}</div>
       <p className="cc-note">{es
-        ? 'La métrica held-out de arriba es real y EARNED, no afirmada: aquí está el linaje completo del surrogate (cómo se entrenó) y el scatter predicho-vs-exacto en los puntos held-out.'
-        : 'The held-out metric above is real and EARNED, not asserted: here is the surrogate’s full training lineage (how it was trained) and the predicted-vs-exact scatter on the held-out points.'}</p>
+        ? 'La métrica held-out de arriba es real y demostrada, no afirmada: aquí está el linaje completo del surrogate (cómo se entrenó) y el scatter predicho-vs-exacto en los puntos held-out.'
+        : 'The held-out metric above is real and earned, not asserted: here is the surrogate’s full training lineage (how it was trained) and the predicted-vs-exact scatter on the held-out points.'}</p>
       <div className="cc-twocol" style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <table className="cmp-table" style={{ flex: '1 1 320px' }}>
           <tbody>

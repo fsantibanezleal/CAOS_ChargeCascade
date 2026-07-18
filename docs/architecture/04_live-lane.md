@@ -13,13 +13,13 @@ re-port, no drift.
 | `criticalspeed.ts` | the critical speed `Nc = 42.3/√(D−d)` [rpm], the speed ratio `φc = N/Nc`, and `ω`. The constant `42.3 = (60/2π)·√(2g)` is derived, not fitted |
 | `charge.ts` | the Davis (1919) per-shell departure: a charge element on a radial shell at radius `r` departs where `cos α = ω²r/g = φc²·(r/R)`, then flies a parabola `y = x·tanα − g·x²/(2v²cos²α)` to the toe, the outer shells thrown highest (the cataract fan); the shoulder / toe angles and `fracCentrifuging` (the fraction of shells with `cos α ≥ 1`) |
 | `regime.ts` | the regime classifier with `CASCADE_CATARACT_PHIC = 0.65`; the bands slumping (`φc ≲ 0.4`) / cascading (0.4–0.65) / cataracting (0.65–0.9) / centrifuging (`φc ≳ 0.9`) |
-| `power.ts` | Hogg & Fuerstenau (1972) net power as the torque-arm of the charge centre of mass `P_net = ω·M·g·arm` (from first principles `P ∝ D^2.5`); `morrellFormKw` (a CALIBRATED Morrell-form: the same torque arm rescaled 1.06x, a consistency check, NOT the full C-model; the real C-model's ±9.8% on 82 sets is the documented upgrade, not this function's accuracy); `bondWKwhT` (Bond 1961 process-energy cross-check); `chargeMassT` |
-| `engine.ts` | `evaluate(op) → MillResult`, the single source of physics truth the App reads AND the ground-truth the offline sweep trains the surrogate on (the ChancaDEM pattern) |
+| `power.ts` | Hogg & Fuerstenau (1972) net power as the torque-arm of the charge centre of mass `P_net = ω·M·g·arm` (from first principles `P ∝ D^2.5`); `morrellFormKw` (a calibrated Morrell-form: the same torque arm rescaled 1.06x, a consistency check, not the full C-model; the real C-model's ±9.8% on 82 sets is the documented upgrade, not this function's accuracy); `bondWKwhT` (Bond 1961 process-energy cross-check); `chargeMassT` |
+| `engine.ts` | `evaluate(op) → MillResult`, the single source of physics truth the App reads and the ground-truth the offline sweep trains the surrogate on (the ChancaDEM pattern) |
 | `cases.ts` | the 10 canonical cases (shared by the App and the bake) |
 
 `power.ts` detail: `M = ρc·πR²L·J·1000` [kg], `arm = C_ARM·R·sinα·(1−1.065J)`, with `C_ARM = 0.80` **calibrated** so
 the reference 4.0 × 6.0 m ball mill draws ~1.3 MW. `bondWKwhT` computes `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t], the
-process ENERGY cross-check, NOT the charge power; it has no `φc` or `J`, so it does **not** animate.
+process energy cross-check, not the charge power; it has no `φc` or `J`, so it does **not** animate.
 
 ## The two learned models via onnxruntime-web
 
@@ -30,7 +30,7 @@ mirroring `cclab/model/learned.py`'s `MILL_FEATURES`. Because both models query 
 WASM work (session creation **and** every `run`) goes through **one global serialization chain**, the single-threaded
 runtime is not re-entrant, and without this the two models race and throw `Session already started`.
 
-The loader is **graceful**: if the ONNX are absent (not yet trained) it resolves to `null`, the App uses the EXACT
+The loader is **graceful**: if the ONNX are absent (not yet trained) it resolves to `null`, the App uses the exact
 analytic engine live anyway (it is cheap), and the UI shows the honest "pending training" state instead of fabricating
 numbers.
 

@@ -1,4 +1,4 @@
-// CONTRACT 2 mirror (frontend side). MUST stay in lock-step with the Python schemas in
+// CONTRACT 2 mirror (frontend side). Must stay in lock-step with the Python schemas in
 // data-pipeline/cclab/core/{trace.py, manifest.py}. A drift here makes `tsc` fail -> the contract is enforced at
 // BUILD time (the web cannot ship reading a shape the pipeline does not produce).
 

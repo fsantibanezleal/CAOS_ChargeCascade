@@ -1,5 +1,5 @@
-// The INVERSE problem: given a target, find the fraction of critical speed phiC that achieves it on the EXACT engine.
-// Net power (Hogg-Fuerstenau) is monotone increasing in phiC and is NOT tapered (engine.ts), so a target power, and
+// The inverse problem: given a target, find the fraction of critical speed phiC that achieves it on the exact engine.
+// Net power (Hogg-Fuerstenau) is monotone increasing in phiC and is not tapered (engine.ts), so a target power, and
 // the grinding capacity P_net/W that scales with it, is a clean bisection. The motion regime is a monotone sequence
 // in phiC (slumping → cascading → cataracting → centrifuging), so a target regime is a scan for the phiC band that
 // yields it at the current geometry. The exact engine is the authority here (the ONNX surrogate is only for sweeps).

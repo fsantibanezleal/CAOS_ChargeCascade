@@ -1,5 +1,5 @@
-// Real-data power validation (issue #45, the novel rung): the App's Hogg-Fuerstenau NET power is a first-principles
-// charge-motion model. This module calibrates it to REAL measured industrial power and reports the honest,
+// Real-data power validation (issue #45, the novel rung): the App's Hogg-Fuerstenau net power is a first-principles
+// charge-motion model. This module calibrates it to real measured industrial power and reports the honest,
 // leave-one-out cross-validated error, so the Real-sample lane shows a genuine "how good is the model on real
 // mills" number, not a paper-accuracy claim transplanted onto real data.
 //

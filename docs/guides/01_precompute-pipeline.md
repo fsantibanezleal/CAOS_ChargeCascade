@@ -64,7 +64,7 @@ and `scripts/precompute.sh` wrappers for the default lane; the `--retrain` flag 
 
 What `--retrain` does, in order (see `cclab/pipeline.py::retrain` and `cclab/science/`):
 
-1. **`bake_cases.mjs`**, re-bakes `data/derived/case-results.json` by running the SAME TypeScript mill engine
+1. **`bake_cases.mjs`**, re-bakes `data/derived/case-results.json` by running the same TypeScript mill engine
    (`frontend/src/mill/`) over the 10 cases through `tsx`.
 2. **`gen_train.mjs`**, samples the operating envelope with that same engine to produce the training/eval data
    (`data/raw/mill-train.json`, `mill-eval.json`).

@@ -3,7 +3,7 @@ import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import type { MillResult } from '../mill/types.ts';
 
 // The 2D mill cross-section: the shell circle, the per-radial-shell departure points (the Davis-circle shoulder
-// locus), the cataract free-flight parabolas, and the shoulder/toe. Shows WHY the charge fans out (outer shells
+// locus), the cataract free-flight parabolas, and the shoulder/toe. Shows why the charge fans out (outer shells
 // thrown highest). Pure canvas; reads the engine's computed shells.
 const VIRIDIS = [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]];
 function viridis(t: number): string {

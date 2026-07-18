@@ -1,6 +1,6 @@
 // Live in-browser inference of ChargeCascade's two learned models (onnxruntime-web). GRACEFUL: until they are trained
 // (science/train_mill.py -> power-surrogate.onnx + scenario-ood.onnx) the files are absent; the loader resolves to
-// null and the App uses the EXACT analytic engine (which runs live anyway) + shows the honest "pending training"
+// null and the App uses the exact analytic engine (which runs live anyway) + shows the honest "pending training"
 // state. The surrogate's value is instant operating-envelope sweeps (the What-if tool); the AE is the live anomaly
 // guard. WASM EP, single-threaded; the npm package + CDN wasmPaths pinned to 1.27.
 import * as ort from 'onnxruntime-web';
@@ -13,7 +13,7 @@ ort.env.wasm.numThreads = 1;
 const base = () => import.meta.env.BASE_URL || '/';
 const sessions: Record<string, Promise<ort.InferenceSession | null>> = {};
 
-// ONE global serialization chain for ALL onnxruntime-web work (session creation AND inference). The WASM EP runs
+// one global serialization chain for all onnxruntime-web work (session creation and inference). The WASM EP runs
 // single-threaded and ships TWO models here (the power surrogate + the OOD autoencoder) that the App queries together
 // on every control change; without a global lock their concurrent create()/run() calls race the single WASM runtime
 // and throw "Session already started" / "Session mismatch". Serialising every op end-to-end removes the race.

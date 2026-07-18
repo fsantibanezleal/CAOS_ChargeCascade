@@ -21,7 +21,7 @@ export function evaluate(op: Operating): MillResult {
   const mass = chargeMassT(op.diameterM, op.lengthM, op.fill, op.chargeDensity);
 
   // power vs phiC at the current J, D, L (raw Hogg-Fuerstenau is monotone in phiC; the regime/centrifuging overlay
-  // shows where grinding collapses, we do NOT taper the published torque model)
+  // shows where grinding collapses, we do not taper the published torque model)
   const powerCurve: PowerPoint[] = [];
   for (let i = 0; i <= 30; i++) {
     const p = 0.3 + ((1.05 - 0.3) * i) / 30;
