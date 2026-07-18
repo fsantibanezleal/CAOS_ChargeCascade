@@ -208,7 +208,7 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
       <div ref={ref} style={{ width: '100%', height }} />
       <div className="cc-canvas-banner">
         <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
-        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastra para orbitar, NO es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, not a DEM solve'}</span>
+        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastrar para orbitar, no es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, not a DEM solve'}</span>
       </div>
       <div className="cc-viz-controls">
         <label>{es ? 'velocidad' : 'speed'}

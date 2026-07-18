@@ -107,7 +107,7 @@ export default function Tool() {
       id: 'regime', label: es ? 'Mapa de régimen' : 'Regime map',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'El mapa φc × J con las bandas: slumping → cascading → cataracting → centrifuging. El marcador es tu punto de operación.' : 'The φc × J map with the bands: slumping → cascading → cataracting → centrifuging. The marker is your operating point.'}</div>
+          <div className="cc-plot-t">{es ? 'El mapa φc × J con las bandas: slumping → cascading → cataracting → centrifuging. El marcador es el punto de operación.' : 'The φc × J map with the bands: slumping → cascading → cataracting → centrifuging. The marker is the operating point.'}</div>
           <RegimeMap phiC={op.phiC} fill={op.fill} />
           <p className="cc-note">{es
             ? `Régimen actual: ${r.regime}. Los molinos reales operan φc ≈ 0.65–0.82. Sobre ~0.85 el cataract puede impactar el revestimiento (sobre-velocidad).`
@@ -119,7 +119,7 @@ export default function Tool() {
       id: 'power', label: es ? 'Potencia' : 'Power draw',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'Potencia neta vs φc (Hogg-Fuerstenau + forma Morrell). La banda roja = centrifuging (φc ≥ 1); la línea = tu φc.' : 'Net power vs φc (Hogg-Fuerstenau + Morrell-form). The red band = centrifuging (φc ≥ 1); the line = your φc.'}</div>
+          <div className="cc-plot-t">{es ? 'Potencia neta vs φc (Hogg-Fuerstenau + forma Morrell). La banda roja = centrifuging (φc ≥ 1); la línea = el φc actual.' : 'Net power vs φc (Hogg-Fuerstenau + Morrell-form). The red band = centrifuging (φc ≥ 1); the line = the current φc.'}</div>
           <PowerChart curve={r.powerCurve} phiC={op.phiC} />
           <div className="cc-kpis">
             <Kpi label="Hogg-Fuerstenau" value={kw(r.phfKw)} />
@@ -139,8 +139,8 @@ export default function Tool() {
         return (
           <div className="cc-vizstack">
             <div className="cc-plot-t">{es
-              ? 'Conminución: la ley de Bond fija la ENERGÍA específica W para moler F80→P80; el motor fija la POTENCIA neta. Su cociente P/W es la capacidad de molienda [t/h]. El mapa muestra esa capacidad sobre φc×J. El marcador es tu punto.'
-              : 'Comminution: Bond’s law sets the specific ENERGY W to grind F80→P80; the engine sets the net POWER. Their ratio P/W is the grinding capacity [t/h]. The map shows that capacity over φc×J. The marker is your operating point.'}</div>
+              ? 'Conminución: la ley de Bond fija la energía específica W para moler F80→P80; el motor fija la potencia neta. Su cociente P/W es la capacidad de molienda [t/h]. El mapa muestra esa capacidad sobre φc×J. El marcador es el punto de operación.'
+              : 'Comminution: Bond’s law sets the specific energy W to grind F80→P80; the engine sets the net power. Their ratio P/W is the grinding capacity [t/h]. The map shows that capacity over φc×J. The marker is the operating point.'}</div>
             <ComminutionMap op={op} />
             <div className="cc-cap cc-muted" style={{ display: 'flex', gap: '1.1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
               <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'rgb(232,202,64)', marginRight: 4 }} />{es ? 'mayor capacidad' : 'higher capacity'}</span>
@@ -154,9 +154,9 @@ export default function Tool() {
               <Kpi label={es ? `margen vs objetivo ${op.tph} t/h` : `margin vs target ${op.tph} t/h`} value={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)} t/h`} />
             </div>
             <p className="cc-note">{es
-              ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (sube φc/J o reduce la finura)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene, esos puntos van en gris (el modelo de torque NO se atenúa ahí, por eso no se muestra su P/W como capacidad).`
-              : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops, those points are greyed (the torque model is NOT tapered there, so its P/W is not shown as capacity).`}</p>
-            <div className="cc-plot-t">{es ? 'La ley de Bond: la energía específica sube al moler más fino. La línea es la energía disponible (P/tph); donde corta la curva está el P80 más fino alcanzable.' : 'Bond’s law: the specific energy rises as you grind finer. The line is the available energy (P/tph); where it crosses the curve is the finest P80 achievable.'}</div>
+              ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (subir φc/J o moler más grueso)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene, esos puntos van en gris (el modelo de torque no se atenúa ahí, por eso no se muestra su P/W como capacidad).`
+              : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops, those points are greyed (the torque model is not tapered there, so its P/W is not shown as capacity).`}</p>
+            <div className="cc-plot-t">{es ? 'La ley de Bond: la energía específica sube al moler más fino. La línea es la energía disponible (P/tph); donde corta la curva está el P80 más fino alcanzable.' : 'Bond’s law: the specific energy rises as the product is ground finer. The line is the available energy (P/tph); where it crosses the curve is the finest P80 achievable.'}</div>
             <BondCurve op={op} netPowerKw={r.phfKw} es={es} />
           </div>
         );
@@ -221,11 +221,11 @@ export default function Tool() {
         const regimes: Regime[] = ['cascading', 'cataracting', 'centrifuging'];
         return (
           <div className="cc-vizstack">
-            <div className="cc-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico; aquí corre en vivo junto al exacto, con su error a la vista. Su uso en barridos masivos es una extensión documentada, aún no publicada.' : 'The power surrogate (ONNX) emulates the analytic engine; here it runs live next to the exact engine, with its error in view. Its bulk-sweep use is a documented extension, not yet shipped.'}</div>
+            <div className="cc-plot-t">{es ? 'El surrogate de potencia (ONNX) emula el motor analítico; aquí se ejecuta en vivo junto al exacto, con su error a la vista. Su uso en barridos masivos es una extensión documentada, aún no publicada.' : 'The power surrogate (ONNX) emulates the analytic engine; here it runs live next to the exact engine, with its error in view. Its bulk-sweep use is a documented extension, not yet shipped.'}</div>
             {surrPending ? (
               <div className="cc-pending">
                 <strong>{es ? 'Surrogate: no cargado' : 'Surrogate: not loaded'}</strong>
-                <p>{es ? 'El surrogate entrenado viene en este build (torch → ONNX) pero no se pudo cargar en esta sesión. El motor analítico exacto corre en vivo mientras tanto.' : 'The trained surrogate ships with this build (torch → ONNX) but could not be loaded in this session. The EXACT analytic engine runs live meanwhile.'}</p>
+                <p>{es ? 'El surrogate entrenado viene en este build (torch → ONNX) pero no se pudo cargar en esta sesión. El motor analítico exacto se ejecuta en vivo mientras tanto.' : 'The trained surrogate ships with this build (torch → ONNX) but could not be loaded in this session. The exact analytic engine runs live meanwhile.'}</p>
               </div>
             ) : (
               <>
@@ -240,7 +240,7 @@ export default function Tool() {
 
             <div className="cc-card" style={{ marginTop: '0.4rem' }}>
               <div className="cc-card-t">{es ? 'Inverso: objetivo → φc recomendado (motor exacto)' : 'Inverse: target → recommended φc (exact engine)'}</div>
-              <p className="cc-note">{es ? 'El problema inverso: en lugar de leer la salida de un φc, fija una META y el motor (monótono en φc) resuelve el φc que la cumple a la geometría D/L/J actual.' : 'The inverse problem: instead of reading the output of a φc, set a GOAL and the engine (monotone in φc) solves the φc that meets it at the current D/L/J geometry.'}</p>
+              <p className="cc-note">{es ? 'En lugar de leer la salida de un φc dado, se fija una meta y el motor (monótono en φc) resuelve el φc que la cumple a la geometría D/L/J actual.' : 'Instead of reading the output of a given φc, set a goal and the engine (monotone in φc) solves the φc that meets it at the current D/L/J geometry.'}</p>
 
               {/* by motion regime */}
               <div className="cc-cap cc-muted">{es ? 'por régimen de movimiento' : 'by motion regime'}</div>
@@ -265,7 +265,7 @@ export default function Tool() {
               </label>
               {tgt > cap.maxTph + 0.5 ? (
                 <p className="cc-note" style={{ color: 'var(--color-warn)' }}>
-                  {es ? `fuera de alcance: el techo es ${cap.maxTph.toFixed(0)} t/h a φc ≈ 1.05, sube D/L/J o reduce la finura` : `out of reach: the ceiling is ${cap.maxTph.toFixed(0)} t/h at φc ≈ 1.05, raise D/L/J or coarsen the product`}
+                  {es ? `fuera de alcance: el techo es ${cap.maxTph.toFixed(0)} t/h a φc ≈ 1.05, subir D/L/J o moler más grueso` : `out of reach: the ceiling is ${cap.maxTph.toFixed(0)} t/h at φc ≈ 1.05, raise D/L/J or coarsen the product`}
                 </p>
               ) : cap.phiC != null ? (
                 <p className="cc-note">
@@ -314,7 +314,7 @@ export default function Tool() {
     {
       id: 'custom', label: es ? 'Molino propio' : 'Custom mill',
       content: (() => {
-        // bring-your-own-mill: the CONTRACT-1 gate, live. Validate the descriptor; on accept, run the EXACT engine on
+        // bring-your-own-mill: the CONTRACT-1 gate, live. Validate the descriptor; on accept, run the exact engine on
         // it (carrying the current ore params) and offer to apply it to the whole workbench.
         const cval = validateMill(custom);
         const setC = (k: keyof MillInput, val: number | string) => setCustom((o) => ({ ...o, [k]: val }));
@@ -328,10 +328,10 @@ export default function Tool() {
         return (
           <div className="cc-vizstack">
             <div className="cc-plot-t">{es
-              ? 'Molino definido por el usuario: se describe el punto de operación; una comprobación de validez física (la misma que valida los casos) lo acepta o lo rechaza con un motivo y marca advertencias. Si se acepta, el motor exacto corre sobre tu molino y puedes aplicarlo a todo el workbench.'
-              : 'Bring your own mill: describe the operating point; a physical-validity check (the same one that validates the cases) accepts or rejects it with a reason and raises warnings. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
+              ? 'Molino definido por el usuario: se describe el punto de operación; una comprobación de validez física (la misma que valida los casos) lo acepta o lo rechaza con un motivo y marca advertencias. Si se acepta, el motor exacto se ejecuta sobre el molino y puede aplicarse a todo el workbench.'
+              : 'Bring your own mill: describe the operating point; a physical-validity check (the same one that validates the cases) accepts or rejects it with a reason and raises warnings. If accepted, the exact engine runs on the mill and can be applied to the whole workbench.'}</div>
             <div className="cc-card">
-              <div className="cc-card-t">{es ? 'Tu molino' : 'Your mill'}</div>
+              <div className="cc-card-t">{es ? 'El molino' : 'The mill'}</div>
               <div className="cc-chips">
                 {MILL_TYPES.map((m) => <button key={m} className={`chip ${custom.mill_type === m ? 'on' : ''}`} onClick={() => setC('mill_type', m)}>{m}</button>)}
               </div>
@@ -361,8 +361,8 @@ export default function Tool() {
                   <Kpi label="Nc" value={`${preview.ncRpm.toFixed(1)} rpm`} />
                 </div>
                 <p className="cc-note">{es
-                  ? `El motor exacto sobre tu molino: ${preview.regime}, ${kw(preview.phfKw)}. Aplícalo para ver el 3D, las trayectorias, la potencia y la conminución sobre él (usa el mineral del caso actual).`
-                  : `The exact engine on your mill: ${preview.regime}, ${kw(preview.phfKw)}. Apply it to see the 3D, trajectories, power and comminution on it (using the current case’s ore).`}
+                  ? `El motor exacto sobre el molino: ${preview.regime}, ${kw(preview.phfKw)}. Aplicarlo para ver el 3D, las trayectorias, la potencia y la conminución sobre él (usa el mineral del caso actual).`
+                  : `The exact engine on the mill: ${preview.regime}, ${kw(preview.phfKw)}. Apply it to see the 3D, trajectories, power and comminution on it (using the current case’s ore).`}
                   {' '}<button className="chip" onClick={() => setOp((o) => asOp(o))}>{es ? 'aplicar al workbench' : 'apply to workbench'}</button></p>
               </>
             )}
@@ -383,7 +383,7 @@ export default function Tool() {
           </div>
           <div className="cc-cap cc-muted">{source === 'synthetic'
             ? (es ? 'casos sintéticos + deslizadores' : 'synthetic cases + sliders')
-            : (es ? '22 molinos industriales con potencia medida; dos modelos (HF calibrado + Morrell) se validan contra ellos' : '22 industrial mills with MEASURED power; two models (HF calibrated + Morrell) are validated against them')}</div>
+            : (es ? '22 molinos industriales con potencia medida; dos modelos (HF calibrado + Morrell) se validan contra ellos' : '22 industrial mills with measured power; two models (HF calibrated + Morrell) are validated against them')}</div>
         </div>
         {source === 'synthetic' ? (
         <div className="cc-card">

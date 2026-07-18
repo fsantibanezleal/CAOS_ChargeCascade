@@ -21,14 +21,14 @@ The TS test suite (`node:test` in `frontend/test/mill.test.ts`) pins the engine 
 ## The learned models, held-out, vs the exact engine
 
 Both are trained offline (`science/train_mill.py`, torch) and reported next to the exact engine. The metrics live in
-`data/derived/cc-learned.json` and show on the **Benchmark** page (NOT the App).
+`data/derived/cc-learned.json` and show on the **Benchmark** page (not the App).
 
 | Model | Task | Baseline | Held-out metric (this build) |
 |---|---|---|---|
-| `power-surrogate` | 6 features → [power_kw, frac_centrifuging] | the EXACT analytic engine | **power err 5.2%** (downstream, `eval_mill.mjs`) |
+| `power-surrogate` | 6 features → [power_kw, frac_centrifuging] | the exact analytic engine | **power err 5.2%** (downstream, `eval_mill.mjs`) |
 | `scenario-ood` | features → reconstruction (MSE = OOD score) |, (separates in-envelope vs out-of-envelope) | **AUC 0.922** · in-dist p95 anomaly threshold **1.09** |
 
-**Honesty.** The surrogate's power error (5.2%) is measured DOWNSTREAM in `eval_mill.mjs`: the surrogate ONNX is run in
+**Honesty.** The surrogate's power error (5.2%) is measured downstream in `eval_mill.mjs`: the surrogate ONNX is run in
 Node via onnxruntime-web over the held-out scenarios and its predicted power is compared to the exact engine's. The
 exact analytic engine (Davis / Hogg & Fuerstenau / Morrell / Bond) is **always the authority** and runs live by default;
 the surrogate is the measured learned lane (its intended bulk-sweep role is documented but not yet exercised by a

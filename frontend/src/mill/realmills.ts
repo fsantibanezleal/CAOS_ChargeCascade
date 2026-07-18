@@ -1,13 +1,13 @@
-// The REAL industrial mill anchor set (issue #45): 11 verified mills with MEASURED power draw, each row read from
+// The real industrial mill anchor set (issue #45): 11 verified mills with measured power draw, each row read from
 // a resolving open source (Alex Doll's sagmilling.com survey compilations, IMPC 2016 / Procemin 2013; and the
 // open-access Golpayegani & Rezai 2022 PPMP review reproducing Rajamani et al. 2019). This is the ground truth the
-// power model is validated against: the App's Real-sample lane runs the SAME engine on these mills and reports the
+// power model is validated against: the App's Real-sample lane runs the same engine on these mills and reports the
 // real per-mill error vs the measured value. Provenance + caveats are persisted in CAOS_MANAGE
 // wip/mining-analytics-hub/products/chargecascade/real-anchor-set-2026-07-11.md.
 //
-// POWER BASIS matters and differs by source, so each mill carries it and the comparison is made on that basis:
-//   'motor' (Doll PDCS, measured at the DCS = motor input) -> compare to the model GROSS power.
-//   'net'   (PPMP net power)                                -> compare to the model NET power.
+// Power basis matters and differs by source, so each mill carries it and the comparison is made on that basis:
+//   'motor' (Doll PDCS, measured at the DCS = motor input) -> compare to the model gross power.
+//   'net'   (PPMP net power)                                -> compare to the model net power.
 
 import type { MillType, Operating } from './types.ts';
 
@@ -23,7 +23,7 @@ export interface RealMill {
   jTotal: number;         // total fractional filling
   jBalls: number;         // ball fractional filling (0 for AG)
   rhoOre: number;         // ore/rock density used by the source [t/m3]
-  measuredKw: number;     // MEASURED power draw [kW]
+  measuredKw: number;     // measured power draw [kW]
   basis: PowerBasis;      // the basis of measuredKw
   citation: string;
   url: string;
@@ -48,11 +48,11 @@ export const REAL_MILLS: RealMill[] = [
   { id: 'clarabelle', name: 'Inco Clarabelle AG', type: 'ag', diameterM: 9.45, lengthM: 3.96, pctCritical: 0.776, jTotal: 0.425, jBalls: 0.0, rhoOre: 2.9, measuredKw: 5720, basis: 'motor',
     citation: 'Doll (2016) IMPC 2016, Table 1 row 38 (survey: McDonald & Strong 1992, SME 92-202)', url: 'https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf', note: 'High-filling AG (Jt 42.5%). Drive conversion 0.9014.' },
   { id: 'constancia-sag', name: 'Constancia SAG', type: 'sag', diameterM: 10.97, lengthM: 8.08, pctCritical: 0.72, jTotal: 0.26, jBalls: 0.12, rhoOre: 2.9, measuredKw: 13700, basis: 'net',
-    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'NET power, reported as a RANGE 13.7-15.7 MW; this is the lower bound. Jb not stated (assumed 0.12). Nominal ft dims.' },
+    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'Net power, reported as a range 13.7-15.7 MW; this is the lower bound. Jb not stated (assumed 0.12). Nominal ft dims.' },
   { id: 'constancia-ball', name: 'Constancia ball mill', type: 'ball', diameterM: 7.92, lengthM: 12.34, pctCritical: 0.74, jTotal: 0.32, jBalls: 0.32, rhoOre: 2.9, measuredKw: 13400, basis: 'net',
-    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'NET power 13.4 MW. Ball mill: charge is balls (+ slurry). Nominal ft dims.' },
+    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'Net power 13.4 MW. Ball mill: charge is balls (+ slurry). Nominal ft dims.' },
   { id: 'tongon', name: 'Tongon ball mill', type: 'ball', diameterM: 6.1, lengthM: 9.75, pctCritical: 0.75, jTotal: 0.33, jBalls: 0.33, rhoOre: 2.9, measuredKw: 8000, basis: 'net',
-    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'NET power 8 MW (one sig-fig less precise). Nominal ft dims.' },
+    citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'Net power 8 MW (one sig-fig less precise). Nominal ft dims.' },
   // --- distinct-geometry expansion (issue #64): 11 more verified mills from the full Doll IMPC 2016 Table 1,
   // each a different mill (not a repeat survey), keyed by geometry + Doll row + original survey. NOTE: the OCR of
   // the table shifted some mine-NAME labels by a line; the geometry + power + fill are read-verified, the name is
@@ -60,7 +60,7 @@ export const REAL_MILLS: RealMill[] = [
   { id: 'phoenix-sag', name: "Phoenix SAG", type: 'sag', diameterM: 10.74, lengthM: 5.03, pctCritical: 0.74, jTotal: 0.3, jBalls: 0.13, rhoOre: 2.7, measuredKw: 10965, basis: 'motor',
     citation: "Doll (2016) IMPC 2016 Table 1 row 15 (Phoenix SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 15. 10.74/5.03/0.300/0.130/0.740; rho 2.70 wC 0.75; PDCS 10,965 x conv 1.0000 = Pshell 10,965 (gearless / DCS at shell)." },
   { id: 'lkab-ka3-fag', name: "LKAB KA3 (FAG)", type: 'ag', diameterM: 6.29, lengthM: 5.88, pctCritical: 0.753, jTotal: 0.414, jBalls: 0.0, rhoOre: 4.33, measuredKw: 3857, basis: 'motor',
-    citation: "Doll (2016) IMPC 2016 Table 1 row 20 (LKAB KA3 (FAG))", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 20. 6.29/5.88/0.414/0.000/0.753; rho_charge 4.33 (high, atypical high charge case per paper) wC 0.76; PDCS 3,857 x 0.9456 = 3,647. Fully autogenou" },
+    citation: "Doll (2016) IMPC 2016 Table 1 row 20 (LKAB KA3 (FAG))", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 20. 6.29/5.88/0.414/0.000/0.753; rho_charge 4.33 (high, atypical high charge case per paper) wC 0.76; PDCS 3,857 x 0.9456 = 3,647. Fully autogenous." },
   { id: 'driefontein-rom-sag', name: "Driefontein RoM SAG", type: 'sag', diameterM: 7.45, lengthM: 9.25, pctCritical: 0.76, jTotal: 0.37, jBalls: 0.08, rhoOre: 2.7, measuredKw: 7400, basis: 'motor',
     citation: "Doll (2016) IMPC 2016 Table 1 row 31 (Driefontein RoM SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 31. 7.45/9.25/0.370/0.080/0.760; rho 2.70 wC 0.70; PDCS 7,400 x 0.9310 = 6,889. Low-aspect (L>D) run-of-mine SAG." },
   { id: 'st-ives-sag-sec-crush', name: "St Ives SAG (sec crush)", type: 'sag', diameterM: 7.23, lengthM: 3, pctCritical: 0.749, jTotal: 0.191, jBalls: 0.15, rhoOre: 2.8, measuredKw: 2710, basis: 'motor',

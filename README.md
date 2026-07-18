@@ -13,7 +13,7 @@ light/dark. No application server: static files + client-side compute only.
 ## What it computes (the exact engine)
 
 A dependency-free TypeScript engine (`frontend/src/mill/`) is the single source of physics truth; the App, the
-Experiments table and the offline bake all run the SAME code:
+Experiments table and the offline bake all run the same code:
 
 - **Critical speed** `Nc = 42.3/√(D−d)` [rpm] and the dimensionless regime knob `φc = N/Nc`, derived, not fitted.
 - **Davis (1919) charge kinematics**: per-shell departure angle `cos α = φc²·r/R` + the ballistic parabola, over 9
@@ -24,7 +24,7 @@ Experiments table and the offline bake all run the SAME code:
   the reference 4×6 m ball mill draws ~1.3 MW); the J(1−1.065J) fill term peaks near J ≈ 0.47 and P scales as D^2.5.
   A calibrated **Morrell-form** is shown alongside as a consistency companion, it is a rescale of the same torque
   arm, **not** an independent model; Morrell's real (1996) C-model is cited, not implemented (a documented upgrade).
-- **Bond (1961) specific energy** (kWh/t), process ENERGY, deliberately kept distinct from charge power; their
+- **Bond (1961) specific energy** (kWh/t), process energy, deliberately kept distinct from charge power; their
   ratio P/W gives the grinding capacity in the Comminution tab.
 
 ## The learned lane (real, measured, guarded)
@@ -45,13 +45,13 @@ in bulk yet (its intended mass-sweep role is documented, not shipped).
 10 synthetic, physically realistic cases in 4 categories (machine / speed sweep / fill / analytic controls), all
 labelled synthetic, baked to committed traces + manifests (`data/derived/`) by the same engine that runs live. The
 controls are exact: **C-CRITICAL** (φc = 1 → the centrifuging fraction turns positive and the regime switches;
-the published torque model is deliberately NOT tapered, so draw power stays high, grinding is what collapses) and
+the published torque model is deliberately not tapered, so draw power stays high, grinding is what collapses) and
 **C-EMPTY** (J = 0 → exactly 0 power). A **Custom mill** tab validates any user mill through CONTRACT-1 (the same
 gate as the cases, TS mirroring the Python contract) and runs the exact engine on it.
 
-## What this is NOT (honesty posture)
+## What this is not (honesty posture)
 
-- The 3D charge is a **kinematic animation** of the Davis equations, NOT a DEM / N-body solve (a real DEM lane is
+- The 3D charge is a **kinematic animation** of the Davis equations, not a DEM / N-body solve (a real DEM lane is
   the documented offline upgrade).
 - The displayed Morrell-form is a **calibrated rescale** of the Hogg–Fuerstenau torque arm, agreement between the
   two curves is a consistency check by construction, not a two-model validation.

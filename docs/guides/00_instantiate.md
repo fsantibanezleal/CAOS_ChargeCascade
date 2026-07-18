@@ -2,7 +2,7 @@
 
 ChargeCascade is a product instance of the frozen CAOS product-repo archetype (ADR-0057). The **base**, the
 folder layout, the two data contracts, the staged pipeline + its stage names, the lane gate, the manifest/trace
-shapes, the two-venv split, cases-by-category, and the CI guards, is **NOT re-litigated per product**. Only the
+shapes, the two-venv split, cases-by-category, and the CI guards, is **not re-litigated per product**. Only the
 **core** (the engine + the visualizations + the cases + the content) is product-specific. This guide records how the
 core was filled for ChargeCascade so the pattern is reproducible.
 
@@ -14,7 +14,7 @@ What was specialised on top of the frozen base:
 
 2. **Replace the example engine with the TS mill engine.** ChargeCascade's physics is a native **TypeScript**
    engine, `frontend/src/mill/` (`criticalspeed` · `charge` · `regime` · `power` · `engine` · `cases`), exposing
-   `evaluate(op: Operating) → MillResult`. It runs **in the browser** (live, on every control change) AND **in the
+   `evaluate(op: Operating) → MillResult`. It runs **in the browser** (live, on every control change) and **in the
    Node bake** (via `tsx`) so the offline artifacts are produced by the *same* engine the user sees. There is **no
    in-browser Python runtime and no Python live engine**, `cclab/live.py` is intentionally dormant (it just documents this).
 

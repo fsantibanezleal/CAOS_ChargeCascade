@@ -1,11 +1,11 @@
-// The REAL Morrell (1996) C-model for tumbling-mill gross power (issue #64), the SOTA independent power model,
+// The real Morrell (1996) C-model for tumbling-mill gross power (issue #64), the SOTA independent power model,
 // finally implementable: the two previously-unrecoverable terms were pinned from primary sources and the whole
 // model reproduces the Erdem (2004) cement-mill worked example (gross 1365.04 kW vs published 1365.04).
 //
 // Resolved unknowns (were flagged UNVERIFIED in the v0.16 spec):
 //   z = (1 - Jt)^0.4532            the velocity-profile packing factor (CEEC/SAG-2019, Morrell-affiliated).
 //   kinetic leading constant       cylinder (2*pi)^3 = 8*pi^3; cone 2*pi^3/5. Both cross-validated by the two
-//                                  Erdem chambers needing the SAME charge density to match.
+//                                  Erdem chambers needing the same charge density to match.
 // Sources: Morrell (1996) Trans IMM C105; Erdem, Ergun & Benzer (2004) PPMP 38; Doll (2013) Procemin;
 // Faria/Bueno/Tavares & Morrell (2019) CEEC; SMC Gross Power Calculator help doc. Persisted in CAOS_MANAGE
 // wip/mining-analytics-hub/products/chargecascade/morrell-cmodel-pinned-2026-07-11.md.

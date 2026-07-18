@@ -1,10 +1,10 @@
 # Cases + categories
 
-Each case (`frontend/src/mill/cases.ts`, the SOURCE OF TRUTH; mirrored by `data-pipeline/cclab/cases/mill_cases.py`
-and baked to `data/derived/case-results.json` by `science/bake_cases.mjs` running the SAME engine) declares a
+Each case (`frontend/src/mill/cases.ts`, the source of truth; mirrored by `data-pipeline/cclab/cases/mill_cases.py`
+and baked to `data/derived/case-results.json` by `science/bake_cases.mjs` running the same engine) declares a
 **CATEGORY**, an **operating point** (D × L, J, φc, top-ball), an **expected band** (what a domain reader should see),
-a **validation anchor** (a property the result MUST satisfy), and a **synthetic | analytic-control** flag. The
-**App shows ONE selected case**; **Experiments/Benchmark show cross-case summaries by category** (never mixed into the
+a **validation anchor** (a property the result must satisfy), and a **synthetic | analytic-control** flag. The
+**App shows one selected case**; **Experiments/Benchmark show cross-case summaries by category** (never mixed into the
 App).
 
 All operating points are **synthetic but physically realistic** (typical SAG / ball / rod geometries and speeds,
@@ -16,7 +16,7 @@ regression in the engine is caught immediately.
 | category | axis it varies | cases |
 |---|---|---|
 | **mill type (the machine)** | the machine geometry / media | `K-BALL`, `K-SAG`, `K-ROD` |
-| **speed sweep (the regime transition)** | φc on the SAME base ball mill | `S-CASCADE`, `S-CATARACT`, `S-CENTRIFUGE` |
+| **speed sweep (the regime transition)** | φc on the same base ball mill | `S-CASCADE`, `S-CATARACT`, `S-CENTRIFUGE` |
 | **fill / charge regime** | J on the base ball mill | `D-LOWFILL`, `D-HIGHFILL` |
 | **control (analytic anchor)** | exact-answer oracles | `C-CRITICAL`, `C-EMPTY` |
 

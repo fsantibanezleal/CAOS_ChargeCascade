@@ -25,7 +25,7 @@ rejected. The committed sample mill points must pass (a CI test asserts it).
 
 ## CONTRACT 2, artifact (`core/{trace,manifest}.py`)
 
-The pipeline → web contract. The web loads ONLY manifests + traces + the shared artifacts.
+The pipeline → web contract. The web loads only manifests + traces + the shared artifacts.
 
 - **`chargecascade.trace/v1`** (`core/trace.py`, per case): the mill descriptor, the critical speed (`Nc`, `φc`, `ω`),
   the regime band, the charge geometry (toe / shoulder angles, `frac_centrifuging`), the net power + the power-vs-`φc`
