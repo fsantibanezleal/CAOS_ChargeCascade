@@ -3,6 +3,19 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.004], 2026-07-11
+
+### Fixed (issue #45, adversarial-audit round 1: the verified self-contained findings)
+- The heatmap hover-readout bubble shipped UNSTYLED in v0.14.003 (the .cc-map-readout CSS append silently failed);
+  the style now exists (surface bubble, mono font, themed).
+- Foreign rv-plot class in BondCurve + Benchmark replaced with a defined local .cc-plot (ADR style hygiene).
+- Davis (1919) page range REVERTED to 250-296: the v0.14.001 "fix" to 250-290 was wrong, the standard
+  bibliographic record is Trans. AIME 61, 250-296. The davis1919 link now points at the resolving OneMine
+  document record (verified HTTP 200) instead of a search-query URL that does not return the work.
+- The committed bake data/derived/case-results.json still carried the pre-v0.14.001 "power scales as D^3.5"
+  K-SAG anchor: the Python case mirror was corrected and the bake re-run (deterministic, the diff is exactly the
+  one anchor string, no numeric drift).
+
 ## [0.14.003], 2026-07-11
 
 ### Added (issue #45 quick wins)

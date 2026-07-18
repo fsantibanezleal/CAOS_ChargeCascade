@@ -43,7 +43,7 @@ CASES: list[Case] = [
     Case("K-SAG", "SAG mill (large D, short L)", CAT_TYPE,
          **_ball(mill_type="sag", diameter_m=10.0, length_m=5.0, fill=0.28, phi_c=0.78, ball_top_mm=125.0, charge_density=3.0),
          expected_band="large 'pancake', few large balls + ore as media; cataracting at phiC ~ 0.78",
-         validation_anchor="power scales as D^3.5; SAGMILLING/Doll ballpark"),
+         validation_anchor="power scales as D^2.5 (fixed length); SAGMILLING/Doll ballpark"),
     Case("K-ROD", "Rod mill (L > D)", CAT_TYPE,
          **_ball(mill_type="rod", diameter_m=3.5, length_m=5.5, fill=0.38, phi_c=0.65, ball_top_mm=90.0, charge_density=5.5),
          expected_band="long mill, rods (line contact), run SLOW (cascading) so rods do not break",
