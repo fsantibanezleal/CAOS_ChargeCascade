@@ -1,15 +1,28 @@
 /* ChargeCascade, app-specific styles on top of @fasl-work/caos-app-shell/styles.css (shell design tokens). */
 
-.cc-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; align-items: start; }
-@media (max-width: 900px) { .cc-layout { grid-template-columns: 1fr; } }
-.cc-side { display: flex; flex-direction: column; gap: 0.9rem; }
-.cc-main { min-width: 0; }
+/* The App is a FIXED-HEIGHT workbench: the layout fills the viewport below the shell header down to the footer,
+   so switching tabs never changes the page height. The sidebar scrolls if its cards overflow; the active tab
+   PANEL scrolls internally while the tab bar stays put. (header ~57px + footer ~70px + margins => ~150px offset.) */
+.cc-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; align-items: stretch;
+  height: calc(100dvh - 150px); min-height: 470px; }
+.cc-side { display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; overflow-y: auto; padding-right: 3px; }
+.cc-main { min-width: 0; min-height: 0; display: flex; }
+.cc-main .tabs { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.cc-main .tablist { flex: 0 0 auto; }
+.cc-main .tabpanel { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
+@media (max-width: 900px) {
+  .cc-layout { grid-template-columns: 1fr; height: auto; min-height: 0; }
+  .cc-side { overflow: visible; }
+  .cc-main .tabpanel { overflow: visible; }
+}
 
 .cc-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 0.85rem 0.95rem; }
 .cc-card-t { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-fg-faint); margin-bottom: 0.6rem; }
-.cc-catgroup { margin-bottom: 0.55rem; }
-.cc-catlabel { font-size: 0.72rem; color: var(--color-fg-faint); margin: 0.4rem 0 0.25rem; }
-.cc-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.cc-catgroup { margin-bottom: 0.3rem; }
+.cc-catlabel { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-fg-faint); margin: 0.3rem 0 0.2rem; }
+.cc-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+/* compact chips in the sidebar case/mill selectors (denser use of the 300px column) */
+.cc-side .chip { padding: 0.2rem 0.55rem; font-size: 0.74rem; }
 
 .chip { background: var(--color-surface-2, var(--color-surface)); border: 1px solid var(--color-border); color: var(--color-fg-subtle); border-radius: 999px; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
 .chip:hover { color: var(--color-fg); border-color: var(--color-fg-faint); }

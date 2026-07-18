@@ -3,6 +3,17 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.16.001], 2026-07-11
+
+### Changed (issue #61, Felipe: App layout)
+- The App page is now a FIXED-HEIGHT workbench: the layout fills the viewport below the header down to the footer,
+  and switching tabs no longer changes the page height (the document height is constant across tabs). The tab bar
+  stays put and the active panel scrolls INTERNALLY when its content is tall (e.g. Real validation), instead of
+  the whole page growing/shrinking. Responsive: single column + natural height under 900px. The doc pages are
+  unchanged.
+- Compacted the sidebar Case / mill selectors: smaller chips, uppercase category labels, tighter spacing, so the
+  300px column uses its space well.
+
 ## [0.16.000], 2026-07-11
 
 ### Added (issue #45, the plan build: REAL-sample lane + real-data validation, the novel rung)
