@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Callout, useShellLang } from '@fasl-work/caos-app-shell';
+import { Callout, Refs, useShellLang } from '@fasl-work/caos-app-shell';
 import { loadLearned, type LearnedFile } from '../lib/artifacts.ts';
 
 // Benchmark = the learned-model evaluation (this is where the learned held-out metrics live, NOT in the App); a
@@ -12,10 +12,12 @@ export default function Benchmark() {
 
   return (
     <article className="page-body prose">
-      <h1>Benchmark</h1>
-      <p className="lede">{es
-        ? 'La evaluación de los modelos aprendidos contra el motor analítico EXACTO (la autoridad). El surrogate gana su lugar por la velocidad, no por una victoria fabricada.'
-        : 'The evaluation of the learned models against the EXACT analytic engine (the authority). The surrogate earns its place on speed, not a fabricated win.'}</p>
+      <div className="page-head">
+        <h1>Benchmark</h1>
+        <p className="lede">{es
+          ? 'La evaluación de los modelos aprendidos contra el motor analítico EXACTO (la autoridad). El surrogate gana su lugar por la velocidad, no por una victoria fabricada.'
+          : 'The evaluation of the learned models against the EXACT analytic engine (the authority). The surrogate earns its place on speed, not a fabricated win.'}</p>
+      </div>
 
       <Callout variant="honest" title={es ? 'El motor exacto es la autoridad' : 'The exact engine is the authority'}>
         {es
@@ -47,7 +49,7 @@ export default function Benchmark() {
 // exact scatter on held-out points), so the held-out metric is visibly EARNED, not asserted.
 function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolean }) {
   const s = learned.surrogate, o = learned.ood, d = learned.data;
-  const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : ', ');
+  const kb = (b?: number) => (b != null ? `${(b / 1024).toFixed(1)} kB` : 'n/a');
   const sc = s.scatter ?? [];
   // predicted-vs-exact scatter (kW): points should sit on the y=x diagonal if the surrogate tracks the engine
   const W = 360, H = 240, padL = 44, padB = 34, padT = 12, padR = 12;
@@ -91,6 +93,7 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
           {es ? 'Diseño de datos: ' : 'Data design: '}{d.nTrainPoints} {es ? 'puntos de entrenamiento' : 'training points'} · {d.nEvalInDist} held-out · {d.nOod} OOD · {d.nFeatures} {es ? 'features' : 'features'} · {es ? 'semilla' : 'seed'} {d.seed} · {d.sampling}. {es ? 'Envolvente' : 'Envelope'}: {Object.entries(d.envelope).map(([k, v]) => `${k} [${v[0]}–${v[1]}]`).join(' · ')}.
         </p>
       )}
+      <Refs ids={['hoggfuerstenau1972', 'morrell1996', 'bond1952']} label="Refs" />
     </div>
   );
 }
