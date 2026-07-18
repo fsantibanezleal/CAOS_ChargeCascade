@@ -3,6 +3,26 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.17.000], 2026-07-11
+
+### Added / Fixed (issue #64: correct the real-data caveats)
+- **The real Morrell C-model is now IMPLEMENTED** (`mill/morrell.ts`), correcting the "not implemented" caveat.
+  Both previously-unrecoverable terms were pinned from primary sources (z = (1-Jt)^0.4532; kinetic constant
+  (2*pi)^3) and the model reproduces the Erdem (2004) cement-mill worked example: no-load 41.94/72.35 kW EXACT,
+  and the charge-motion net reproduces 341.97 kW at the published density (0.04%), which cross-validates the whole
+  integral. It runs UNCALIBRATED on the real mills as the independent SOTA reference (mean abs error 16.5%),
+  shown beside the calibrated HF and the measured truth. Honest residual: the Napier-Munn charge-density packing
+  convention is loose by ~+/-10% (Morrell tends to over-predict); the structure + all coefficients are exact.
+- **The verified anchor set grew from 11 to 22 mills** (19 motor-basis + 3 net), correcting the "small anchor"
+  caveat: 11 more DISTINCT-geometry industrial mills read from the full Doll IMPC 2016 Table 1 (Phoenix, LKAB KA3,
+  Driefontein, St Ives, Navachab, Los Bronces line 1, Clarabelle-as-SAG, Santa Rita, Sossego, El Soldado, Cyprus
+  Bagdad), each with its per-row survey citation. The leave-one-out error HELD at 7.6% (was 7.8% on 8), R^2 0.992,
+  confirming the calibration is robust, not curve-fit. (Honest note: the Doll table's mine-NAME labels carry a
+  small OCR one-line-shift risk; the geometry + power + fill are read-verified, and the anchors are distinct.)
+- The Real-validation panel now compares TWO models: HF calibrated (leave-one-out) vs the independent Morrell
+  C-model, both against measured, with a dual scatter (filled = calibrated, hollow = Morrell) and a 22-mill table.
+- **Per-case docs** gained accurate engine-computed charge cross-section SVGs (ADR-0056; `gen_case_svgs.mjs`).
+
 ## [0.16.001], 2026-07-11
 
 ### Changed (issue #61, Felipe: App layout)

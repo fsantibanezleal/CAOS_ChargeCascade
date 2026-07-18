@@ -1,5 +1,9 @@
 # S-CASCADE, Cascading (low speed)
 
+![S-CASCADE charge cross-section, computed from the engine](assets/S-CASCADE.svg)
+
+*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/cclab/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
+
 **Category:** speed sweep (the regime transition) · **Source of truth:** [`frontend/src/mill/cases.ts`](../../frontend/src/mill/cases.ts) (`S-CASCADE` = the base `K-BALL` mill at φc 0.55) · **synthetic but physically realistic**
 
 **Operating point:** the base 4.0 × 6.0 m ball mill (J 35 %, 80 mm) at **φc 0.55**.
