@@ -75,7 +75,7 @@ function LearnedTransparency({ learned, es }: { learned: LearnedFile; es: boolea
             <tr className="matched"><td>{es ? 'OOD-AE' : 'OOD-AE'}</td><td className="mono">{o.arch} · {o.params} {es ? 'parám.' : 'params'} · AUC {o.auc.toFixed(3)} · {kb(o.modelBytes)}</td></tr>
           </tbody>
         </table>
-        <div className="rv-plot" style={{ flex: '0 0 auto', maxWidth: W + 16 }}>
+        <div className="cc-plot" style={{ flex: '0 0 auto', maxWidth: W + 16 }}>
           <div className="cc-cap cc-muted">{es ? 'predicho vs exacto (kW, held-out)' : 'predicted vs exact (kW, held-out)'}</div>
           <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ font: '10px var(--font-sans, system-ui, sans-serif)' }} role="img" aria-label={es ? 'predicho vs exacto' : 'predicted vs exact'}>
             <line x1={sx(0)} y1={sy(0)} x2={sx(hi)} y2={sy(hi)} stroke="var(--color-fg-subtle)" strokeDasharray="4 3" />

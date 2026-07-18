@@ -7,8 +7,8 @@ export const CITATIONS: Citation[] = [
   {
     id: 'davis1919',
     label: 'Davis 1919',
-    citation: 'Davis, E.W. (1919). Fine crushing in ball mills. Transactions AIME, 61, 250–290. (The single-particle departure-angle + parabolic-flight charge-motion model.)',
-    url: 'https://www.onemine.org/search?q=Davis%201919%20Fine%20crushing%20in%20ball%20mills',
+    citation: 'Davis, E.W. (1919). Fine crushing in ball mills. Transactions AIME, 61, 250–296. (The single-particle departure-angle + parabolic-flight charge-motion model.)',
+    url: 'https://onemine.org/documents/fine-crushing-in-ball-mills',
   },
   {
     id: 'rosesullivan1957',
