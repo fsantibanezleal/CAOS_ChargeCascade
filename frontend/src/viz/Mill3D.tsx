@@ -9,8 +9,8 @@ import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 // flies the parabolic free-flight trajectory and lands back at the toe, so the user WATCHES cascading ->
 // cataracting -> centrifuging as they change phiC. Centrifuging shells (cos a >= 1) stay pinned to the shell.
 // Balls are low-poly instanced spheres coloured by speed; the camera fits + centers the mill and the POV PERSISTS
-// across option changes (only Reset view re-fits). DEFAULT PAUSED (no-autoplay rule): a static framed mill is
-// drawn on mount and the user presses Play; the rAF halts on a hidden tab (ADR-0059). KINEMATIC animation of the
+// across option changes (only Reset view re-fits). Autoplays SLOWLY (default 0.05x, Felipe's explicit request:
+// see the charge dynamics clearly); the rAF still halts on a hidden tab (ADR-0059). KINEMATIC animation of the
 // analytic engine's physics, NOT a DEM solve. Pure three.js.
 const G = 9.81;
 const S = 60; // metres -> scene units
@@ -33,12 +33,12 @@ function fitCamera(cam: THREE.PerspectiveCamera, controls: OrbitControls, box: T
   controls.update();
 }
 
-export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; height?: number; speed?: number }) {
+export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
 
-  const [animSpeed, setAnimSpeed] = useState(() => speed || 1.5);
+  const [animSpeed, setAnimSpeed] = useState(() => speed ?? 0.05);
   const [ballSize, setBallSize] = useState(1);
   const speedRef = useRef(animSpeed); speedRef.current = animSpeed;
   const ballSizeRef = useRef(ballSize); ballSizeRef.current = ballSize;
@@ -47,7 +47,7 @@ export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; heigh
   const resetViewRef = useRef<() => void>(() => {});
 
   const stepRef = useRef<((dtSec: number) => void) | null>(null);
-  const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: false });
+  const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: true });
 
   useEffect(() => {
     const el = ref.current;
