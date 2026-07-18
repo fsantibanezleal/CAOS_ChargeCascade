@@ -106,7 +106,7 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
       disposables.push(liftGeo, liftMat);
     }
 
-    // the charge: N balls as instanced low-poly spheres. Each rides the shell then flies the Davis parabola.
+    // the charge: N balls as instanced low-poly spheres. Each rides the shell then flies the Davis parábola.
     const N = 1100;
     const ballGeo = new THREE.IcosahedronGeometry(1, 1); disposables.push(ballGeo);
     const ballMat = new THREE.MeshStandardMaterial({ metalness: 0.55, roughness: 0.4, flatShading: true }); disposables.push(ballMat);

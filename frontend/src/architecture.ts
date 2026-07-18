@@ -77,7 +77,7 @@ export const architecture: ArchitectureConfig = {
       body_en:
         'Tumbling-mill physics, step by step: ① the critical speed Nc = 42.3/√(D−d) and the fraction φc = N/Nc; ② the ' +
         'Davis single-particle model, a charge element on a radial shell at radius r departs the shell at the angle ' +
-        'where cos α = ω²r/g (= φc²·r/R per shell), then flies a parabola y = x·tanα − gx²/(2v²cos²α) to the toe, the ' +
+        'where cos α = ω²r/g (= φc²·r/R per shell), then flies a parábola y = x·tanα − gx²/(2v²cos²α) to the toe, the ' +
         'outer shells thrown highest, the fanned cataract; ③ the regimes cascading / cataracting / centrifuging vs φc ' +
         '(and the % of charge centrifuging when φc → 1); ④ the power, Hogg-Fuerstenau (1972) as the torque-arm of the ' +
         'charge centre of mass (P = ω·M·g·arm, peaking near 45–50% fill), with a CALIBRATED Morrell-form (the same torque arm rescaled 1.06x, NOT the ' +

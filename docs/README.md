@@ -14,7 +14,7 @@ whole engine running live in the browser. Instantiated on the CAOS product-repo 
 
 The physics engine is the **TypeScript code** in [`frontend/src/mill/`](../frontend/src/mill/): the critical speed
 `Nc = 42.3/√(D−d)`, the Davis single-particle departure (a charge element on a radial shell departs where
-`cos α = φc²·(r/R)` then flies a parabola to the toe, the outer shells thrown highest, the cataract fan), the
+`cos α = φc²·(r/R)` then flies a parábola to the toe, the outer shells thrown highest, the cataract fan), the
 slumping → cascading → cataracting → centrifuging regime bands, and Hogg & Fuerstenau net power as the torque-arm of
 the charge centre of mass (with Morrell's C-model form and the Bond energy cross-check). It runs *live in the browser*
 (the App recomputes charge motion + regime + power as you drag diameter / length / fill / speed / ball size) **and** in

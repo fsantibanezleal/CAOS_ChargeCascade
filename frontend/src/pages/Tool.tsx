@@ -92,7 +92,7 @@ export default function Tool() {
       id: 'traj', label: es ? 'Trayectorias' : 'Trajectories',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'Corte transversal: el punto de partida de cada capa radial (cos α = φc²·r/R) + la parábola de cataract. Las capas externas se lanzan más alto → el abanico.' : 'Cross-section: the departure point of each radial shell (cos α = φc²·r/R) + the cataract parabola. The outer shells are thrown highest → the fan.'}</div>
+          <div className="cc-plot-t">{es ? 'Corte transversal: el punto de partida de cada capa radial (cos α = φc²·r/R) + la parábola de cataract. Las capas externas se lanzan más alto → el abanico.' : 'Cross-section: the departure point of each radial shell (cos α = φc²·r/R) + the cataract parábola. The outer shells are thrown highest → the fan.'}</div>
           <TrajectoryDiagram result={r} diameterM={op.diameterM} />
           <div className="cc-kpis">
             <Kpi label={es ? 'hombro (shoulder)' : 'shoulder'} value={`${r.shoulderDeg.toFixed(0)}°`} />

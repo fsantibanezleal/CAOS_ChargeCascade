@@ -16,7 +16,7 @@ A dependency-free TypeScript engine (`frontend/src/mill/`) is the single source 
 Experiments table and the offline bake all run the SAME code:
 
 - **Critical speed** `Nc = 42.3/√(D−d)` [rpm] and the dimensionless regime knob `φc = N/Nc`, derived, not fitted.
-- **Davis (1919) charge kinematics**: per-shell departure angle `cos α = φc²·r/R` + the ballistic parabola, over 9
+- **Davis (1919) charge kinematics**: per-shell departure angle `cos α = φc²·r/R` + the ballistic parábola, over 9
   radial shells → shoulder/toe angles, the cataract fan, the centrifuging fraction (exact onset at φc = 1).
 - **Regime classification** in literature φc bands (slumping / cascading / cataracting / centrifuging), with the
   sampled centrifuging fraction as the precise onset detector.

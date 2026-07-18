@@ -45,7 +45,7 @@ export function chargeGeometry(diameterM: number, ballTopMm: number, omega: numb
 
     // flight until the particle either re-crosses its departure radius on the descending side (lands on the
     // charge/toe) OR reaches the outer shell wall R. The second condition matters: for a near-critical inner
-    // shell the RISING parabola can bulge past its own departure radius toward the wall, and a particle cannot
+    // shell the RISING parábola can bulge past its own departure radius toward the wall, and a particle cannot
     // pass through the steel shell, so the flight ends at the wall. Without it the drawn trajectory pokes OUTSIDE
     // the mill circle in the 2D/3D viz.
     const tApex = vy > 0 ? vy / G : 0;

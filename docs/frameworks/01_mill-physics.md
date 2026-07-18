@@ -30,14 +30,14 @@ Sullivan 1957):
 
 - **cos α = ω²r / g = φc²·(r/R)**  (per shell)
 
-It then free-flights a **parabola** to the toe:
+It then free-flights a **parábola** to the toe:
 
 - y = x·tan α − g·x² / (2·v²·cos²α),  with launch speed `v = ω·r` tangent to the circle
 
 Outer shells (large `r`) depart near the top (small α) and are thrown highest, the cataract fan; inner shells depart
 later. An element with `ω²r/g ≥ 1` never departs → it **centrifuges**. `fracCentrifuging` = the fraction of sampled
 shells (9 radial layers from ~0.5R to the outer reachable radius `R − d/2`) with cos α ≥ 1; the outer-shell α is the
-**shoulder**, and the descending-side landing of the outer parabola is the **toe**. Sampling these shells over a
+**shoulder**, and the descending-side landing of the outer parábola is the **toe**. Sampling these shells over a
 revolution gives the particle cloud the 3D viz animates.
 
 ## 3. Motion regimes (`regime.ts`)
