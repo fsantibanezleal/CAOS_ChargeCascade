@@ -96,4 +96,4 @@ See [STRUCTURE.md](STRUCTURE.md) for the layout in one page and
 ## Versioning
 
 `X.XX.XXX` (see [CHANGELOG.md](CHANGELOG.md)); releases are tagged. Licensed under
-[Apache-2.0](LICENSE).
+[MIT](LICENSE).
