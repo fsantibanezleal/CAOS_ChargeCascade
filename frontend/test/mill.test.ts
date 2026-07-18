@@ -179,3 +179,23 @@ test('no trajectory point leaves the shell wall across a phiC sweep (incl. near-
     }
   }
 });
+
+// Real-data validation (issue #45): the HF net power, calibrated to the 8 Doll motor-basis mills, must generalize
+// to a held-out real mill with a sane, honestly-reported leave-one-out error.
+test('real-mill power calibration is validated by leave-one-out at a sane error', async () => {
+  const { validationStats, allPredictions } = await import('../src/mill/realpower.ts');
+  const { REAL_MILLS } = await import('../src/mill/realmills.ts');
+  const s = validationStats();
+  assert.equal(s.n, 8, 'the 8 Doll motor-basis mills form the calibration set');
+  assert.ok(s.looMeanAbsPct < 12, `LOO mean abs error ${s.looMeanAbsPct.toFixed(1)}% should be under 12% (comparable to published models)`);
+  assert.ok(s.looMaxAbsPct < 25, `LOO worst-case ${s.looMaxAbsPct.toFixed(1)}% under 25%`);
+  assert.ok(s.r2 > 0.9, `motor fit R^2 ${s.r2.toFixed(3)} should exceed 0.9`);
+  assert.ok(s.residSdKw > 0 && s.residSdKw < 2000, 'residual sd is a sane UQ band');
+  // every mill produces a finite prediction + error, on its own basis
+  const preds = allPredictions();
+  assert.equal(preds.length, REAL_MILLS.length);
+  for (const p of preds) {
+    assert.ok(Number.isFinite(p.predicted) && p.predicted > 0, `${p.mill.id} predicted power finite+positive`);
+    assert.ok(Math.abs(p.errPct) < 30, `${p.mill.id} error ${p.errPct.toFixed(1)}% within 30% on real data`);
+  }
+});
