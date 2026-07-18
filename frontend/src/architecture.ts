@@ -17,7 +17,7 @@ export const architecture: ArchitectureConfig = {
         'It is a real physics workbench, not a demo. The TypeScript mill engine recomputes the charge motion ' +
         '+ the regime + the power on every control: the critical speed, the Davis single-particle departure + the ' +
         'parabolic cataract trajectories the 3D viz animates, and the Hogg-Fuerstenau / Morrell power. The 3D charge is ' +
-        'a kinematic animation of the analytic engine, NOT a DEM solve; a real DEM trace is the documented offline ' +
+        'a kinematic animation of the analytic engine, not a DEM solve; a real DEM trace is the documented offline ' +
         'upgrade. C-CRITICAL (φc = 1) and C-EMPTY (J = 0) are exact analytic controls.',
       body_es:
         'ChargeCascade responde "¿cómo muele un molino de tambor?", fija el diámetro, % de llenado, tamaño de bolas y ' +
@@ -26,7 +26,7 @@ export const architecture: ArchitectureConfig = {
         'Es un banco de física real, no un demo. El motor TypeScript recalcula el movimiento de la carga + el ' +
         'régimen + la potencia con cada control: la velocidad crítica, la partida de Davis de partícula única + las ' +
         'trayectorias parabólicas de cataract que anima el 3D, y la potencia Hogg-Fuerstenau / Morrell. La carga 3D es ' +
-        'una animación cinemática del motor analítico, NO un solve DEM; una traza DEM real es la mejora offline ' +
+        'una animación cinemática del motor analítico, no es un solve DEM; una traza DEM real es la mejora offline ' +
         'documentada. C-CRITICAL (φc = 1) y C-EMPTY (J = 0) son controles analíticos exactos.',
     },
     {
@@ -37,14 +37,14 @@ export const architecture: ArchitectureConfig = {
       body_en:
         'Three lanes. WEB (live, in the browser): the TypeScript mill engine recomputes on every ' +
         'control, the Three.js 3D mill animates the charge, and onnxruntime-web runs the power surrogate + the OOD ' +
-        'autoencoder, no server. OFFLINE / COMPUTE (your machine, isolated environment): the Python pipeline bakes the ' +
+        'autoencoder, no server. offline / COMPUTE (your machine, isolated environment): the Python pipeline bakes the ' +
         'canonical case artifacts (the SAME TS engine) and the heavy lane (retrain, torch) trains the two ' +
         'learned models → ONNX. REPLAY: the small committed artifacts are overlaid into the SPA by the data-copy step; ' +
         'the typed contract mirror fails the build if the web and pipeline shapes diverge.',
       body_es:
         'Tres carriles. WEB (en vivo): el motor TypeScript recalcula con cada control, el molino ' +
         '3D de Three.js anima la carga, y onnxruntime-web corre el surrogate de potencia + el autoencoder OOD, sin ' +
-        'servidor. OFFLINE / CÓMPUTO (entorno aislado): el pipeline Python hornea los artefactos canónicos (el MISMO ' +
+        'servidor. offline / CÓMPUTO (entorno aislado): el pipeline Python precalcula los artefactos canónicos (el MISMO ' +
         'motor TS) y el carril pesado (retrain, torch) entrena los dos modelos → ONNX. REPLAY: los ' +
         'artefactos versionados se superponen con el paso de copia de datos; el espejo de contrato tipado ' +
         'rompe el build si la web y el pipeline divergen.',

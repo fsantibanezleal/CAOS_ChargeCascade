@@ -61,7 +61,7 @@ export default function Experiments() {
       <text x="466" y="158" fontSize="10.5" fill="var(--color-fg)">{es ? 'salida: el surrogate + el autoencoder OOD' : 'output: the surrogate + the OOD autoencoder'}</text>
       <rect x="450" y="232" width="390" height="104" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" strokeWidth="2" strokeDasharray="6 4" />
       <text x="466" y="256" fontSize="13" fontWeight="700" fill="var(--color-bad)">{es ? 'PRUEBA · held-out' : 'TEST · held-out'}</text>
-      <text x="466" y="278" fontSize="10.5" fill="var(--color-fg-faint)">{es ? 'molinos NUNCA vistos en entrenamiento' : 'mills NEVER seen in training'}</text>
+      <text x="466" y="278" fontSize="10.5" fill="var(--color-fg-faint)">{es ? 'molinos nunca vistos en entrenamiento' : 'mills NEVER seen in training'}</text>
       <text x="466" y="300" fontSize="10.5" fill="var(--color-fg)">{es ? 'error surrogate vs exacto: 5.2% medio, ±12.5% σ' : 'surrogate vs exact error: 5.2% mean, ±12.5% σ'}</text>
       <text x="466" y="320" fontSize="10.5" fill="var(--color-fg)">{es ? 'el AE marca el molino exótico (OOD, AUC ≈ 0.92)' : 'the AE flags the exotic mill (OOD, AUC ≈ 0.92)'}</text>
     </svg>
@@ -158,7 +158,7 @@ export default function Experiments() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'Los 10 casos, horneados por el MISMO motor exacto que corre en vivo. Cada fila lleva la velocidad crítica, φc, el régimen, la potencia neta, el % centrifugando y la masa de carga, los números son idénticos a los que el App muestra al seleccionar el caso, por construcción.'
+            ? 'Los 10 casos, precalculados por el MISMO motor exacto que corre en vivo. Cada fila lleva la velocidad crítica, φc, el régimen, la potencia neta, el % centrifugando y la masa de carga, los números son idénticos a los que el App muestra al seleccionar el caso, por construcción.'
             : 'The 10 cases, baked by the SAME exact engine that runs live. Each row carries the critical speed, φc, the regime, the net power, the % centrifuging and the charge mass, the numbers are identical to what the App shows when you select the case, by construction.'}</p>
           {rows == null ? <p className="cc-note">{es ? 'cargando…' : 'loading…'}</p> : (
             <table className="cmp-table">
@@ -199,7 +199,7 @@ export default function Experiments() {
       <div className="page-head prose">
         <h1>{es ? 'Experimentos' : 'Experiments'}</h1>
         <p className="lede">{es
-          ? 'Cuatro pruebas separadas (consistencia de potencia, transición de régimen aislada, controles analíticos exactos, skill held-out del surrogate) + los 10 casos horneados por el mismo motor.'
+          ? 'Cuatro pruebas separadas (consistencia de potencia, transición de régimen aislada, controles analíticos exactos, skill held-out del surrogate) + los 10 casos precalculados por el mismo motor.'
           : 'Four separate tests (power consistency, isolated regime transition, exact analytic controls, surrogate held-out skill) + the 10 cases baked by the same engine.'} <InlineMath tex="\varphi_c=N/N_c" /></p>
       </div>
       <Tabs tabs={tabs} ariaLabel={es ? 'experimentos' : 'experiments'} />

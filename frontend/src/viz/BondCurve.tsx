@@ -67,7 +67,7 @@ export function BondCurve({ op, netPowerKw, es }: { op: Operating; netPowerKw: n
         </p>
       )}
       <p className="cc-cap" style={{ marginTop: '0.2rem' }}>
-        {es ? 'P80 del producto (menor = más fino), eje log. Donde la línea punteada cruza la curva de Bond está el P80 más fino alcanzable con la potencia y el tonelaje actuales. Arrastra para hacer zoom; doble clic para restablecer.' : 'Product P80 (smaller = finer), log axis. Where the dashed line crosses the Bond curve is the finest P80 achievable at the current power and throughput. Drag to zoom; double-click to reset.'}
+        {es ? 'P80 del producto (menor = más fino), eje log. Donde la línea punteada cruza la curva de Bond está el P80 más fino alcanzable con la potencia y el tonelaje actuales. Arrastrar para hacer zoom; doble clic para restablecer.' : 'Product P80 (smaller = finer), log axis. Where the dashed line crosses the Bond curve is the finest P80 achievable at the current power and throughput. Drag to zoom; double-click to reset.'}
       </p>
     </div>
   );

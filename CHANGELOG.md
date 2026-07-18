@@ -3,6 +3,18 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.17.001], 2026-07-11
+
+### Fixed (language quality, EN + ES)
+- Removed the "horneado" calque (literal translation of "baked"; nonsense in Spanish) across UI and docs; now
+  "precalculado / precálculo".
+- Converted the informal second-person "tú" address to impersonal/infinitive register (Arrastrar, Al pasar el
+  cursor, Molino definido por el usuario, etc.).
+- Removed emphasis-by-capitalization in prose (invisible, offline, medida, exacto, única, mismo motor).
+- Removed the misplaced Wills & Finch citation from the client-side/CDN architecture paragraph (a mineral-
+  processing textbook does not support a web-architecture claim).
+- Replaced the declarative "El problema es que la carga es INVISIBLE" with the plain fact.
+
 ## [0.17.000], 2026-07-11
 
 ### Added / Fixed (issue #64: correct the real-data caveats)
