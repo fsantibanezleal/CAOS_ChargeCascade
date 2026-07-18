@@ -3,6 +3,19 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.005], 2026-07-11
+
+### Fixed (issue #50, Felipe: a line drawn outside the mill)
+- Charge-motion diagram (Trajectories) + Introduction "The mill" overview: a cataract curve was drawn OUTSIDE the
+  shell circle. Two causes, both fixed:
+  - Engine (mill/charge.ts): the ballistic free-flight only ended AFTER apex, so a near-critical inner shell's
+    RISING parabola bulged past the outer wall R and the 2D/3D viz drew it outside the shell. The flight now also
+    ends at the wall (a particle cannot pass through the steel shell), and the sampled trajectory is clamped onto
+    R. New engine test asserts NO trajectory point exceeds R across a phiC sweep including near-critical (worst
+    case now exactly 1.0000 R, was > 1). 18/18 tests pass.
+  - Introduction SVG: the hand-drawn cataract path ended 56 px from the shell center on a 44 px-radius shell.
+    Redrawn (shoulder -> over -> toe) with every point inside r=44 (verified by sampling the Bezier, max 40.5).
+
 ## [0.14.004], 2026-07-11
 
 ### Fixed (issue #45, adversarial-audit round 1: the verified self-contained findings)
