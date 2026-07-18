@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 
 // The motion-regime map: fraction of critical speed phiC (x) vs fill J (y), with the slumping / cascading /
@@ -10,6 +10,23 @@ export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: nu
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
+  const [read, setRead] = useState<{ x: number; y: number; text: string } | null>(null);
+
+  // Hover value-readout (interactive-viz rubric): cursor to (phiC, J) + the phiC-driven regime band under it.
+  const onMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const wrap = wrapRef.current; if (!wrap) return;
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const W = wrap.clientWidth || 600, H = height;
+    const pad = { l: 44, r: 16, t: 16, b: 36 };
+    const PHI_MIN = 0.3, PHI_MAX = 1.15;
+    const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    if (mx < pad.l || mx > W - pad.r || my < pad.t || my > H - pad.b) { setRead(null); return; }
+    const phiC = PHI_MIN + ((mx - pad.l) / pw) * (PHI_MAX - PHI_MIN);
+    const j = (1 - (my - pad.t) / ph) * 0.6;
+    const regime = phiC < 0.4 ? 'slumping' : phiC < 0.65 ? 'cascading' : phiC < 0.9 ? 'cataracting' : 'centrifuging';
+    setRead({ x: mx, y: my, text: `φc ${phiC.toFixed(2)} · J ${(j * 100).toFixed(0)}% · ${regime}` });
+  };
 
   useEffect(() => {
     const canvas = ref.current;
@@ -83,8 +100,9 @@ export function RegimeMap({ phiC, fill, height = 320 }: { phiC: number; fill: nu
   }, [phiC, fill, height, theme, es]);
 
   return (
-    <div ref={wrapRef} className="cc-canvas-wrap">
-      <canvas ref={ref} style={{ display: 'block', width: '100%' }} />
+    <div ref={wrapRef} style={{ position: 'relative' }} className="cc-canvas-wrap">
+      <canvas ref={ref} style={{ display: 'block', width: '100%' }} onMouseMove={onMove} onMouseLeave={() => setRead(null)} />
+      {read && <div className="cc-map-readout" style={{ position: 'absolute', left: Math.min(read.x + 12, 440), top: read.y + 12, pointerEvents: 'none' }}>{read.text}</div>}
     </div>
   );
 }
