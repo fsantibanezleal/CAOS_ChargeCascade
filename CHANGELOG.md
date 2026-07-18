@@ -3,6 +3,27 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.16.000], 2026-07-11
+
+### Added (issue #45, the plan build: REAL-sample lane + real-data validation, the novel rung)
+- **First-level Synthetic | Real mill source selector** in the App (the Faena real-artifacts-live pattern). In Real
+  mode you pick from 11 VERIFIED industrial mills with MEASURED power draw (Cadia Hill 40 ft SAG 19.3 MW,
+  Meadowbank, Fimiston, Yanacocha, LKAB AG, Porgera, Los Bronces, Clarabelle AG, Constancia SAG + ball, Tongon),
+  each row read from a resolving open source (Alex Doll's sagmilling.com IMPC 2016 / Procemin 2013 survey
+  compilations; Golpayegani & Rezai 2022 PPMP review), with the per-mill citation, power basis and caveat shown
+  in-app. All tools run on the real survey point.
+- **Real-data validation (the novel rung, `mill/realpower.ts` + `viz/RealValidation.tsx`):** the App's
+  first-principles Hogg-Fuerstenau net power is CALIBRATED to the 8 Doll motor-basis mills (measured = a + b*HFnet)
+  and its skill is reported by LEAVE-ONE-OUT cross-validation (train without each mill, predict it): mean 7.8%,
+  max 17%, R^2 0.994, +-1.1 MW (1.96 sigma) prediction band. A predicted-vs-measured scatter (y=x line + band,
+  motor vs net colour-coded, the picked mill highlighted, hover readout) + the full 11-mill error table. This
+  kills the deep-audit crit-4 FAIL (no real data integrated).
+- Honesty (surfaced in the panel): the HF power is calibrated to real measured power and its error is the real
+  leave-one-out number, NOT a paper accuracy transplanted onto real data. The 3 PPMP mills are net-basis (HF net
+  compared directly). Morrell's full continuum C-model still needs the Napier-Munn (1996) textbook (the Z packing
+  function + the kinetic-energy coefficient are unrecoverable from open sources), the documented upgrade; it is
+  NOT shipped as a fabricated model.
+
 ## [0.15.002], 2026-07-11
 
 ### Fixed (Felipe, live)
