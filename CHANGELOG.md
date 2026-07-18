@@ -3,6 +3,15 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.002], 2026-07-11
+
+### Changed
+- BondCurve is now an INTERACTIVE uPlot chart (interactive-visualization rubric, Tier-A): log-x P80 sweep with
+  crosshair + live legend readout (P80, Bond W, available energy, operating point), drag-zoom + double-click
+  reset, theme-aware; the off-scale abundant-spare-energy case keeps its honest note under the chart. Replaces
+  the static SVG. Fixed en route: uPlot log axes pass null for unlabelled minor splits, the axis formatter now
+  guards it.
+
 ## [0.14.001], 2026-07-11
 
 ### Fixed
