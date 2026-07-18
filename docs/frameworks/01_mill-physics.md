@@ -2,7 +2,7 @@
 
 The science. ChargeCascade implements the published tumbling-mill charge-motion and power equations exactly
 ([`frontend/src/mill/`](../../frontend/src/mill/)). It is dependency-free TypeScript: it runs live in the browser on
-every control change, AND runs in the Node bake (via `tsx`) to label the surrogate's training set, the SAME code is
+every control change, and runs in the Node bake (via `tsx`) to label the surrogate's training set, the same code is
 the App's physics truth and the offline ground truth (the ChancaDEM `engine.ts` pattern). `evaluate(op)` →
 `MillResult` is sub-millisecond, no Pyodide, no backend.
 
@@ -65,16 +65,16 @@ axis, with the charge rotating rigidly at ω (transparent torque-arm physics):
 - arm = **C_ARM·R·sin α·(1 − 1.065·J)** , the CoM horizontal offset
 
 The `J·(1 − 1.065J)` shape peaks the power near **J ≈ 0.47** (the classic "power peaks at ~45–50 % fill").
-`C_ARM = 0.80` is **CALIBRATED** so the reference 4.0 × 6.0 m ball mill draws ~1.3 MW (industrial ball-mill power) , 
+`C_ARM = 0.80` is **calibrated** so the reference 4.0 × 6.0 m ball mill draws ~1.3 MW (industrial ball-mill power),
 labelled as a calibration, the same honesty posture as ChancaDEM's qualitatively-calibrated chamber. Substituting the
 scalings (torque ∝ ρc·D³·L·J·g, ω ∝ φc/√D) gives the first-principles result **P ∝ D^2.5** (so the 10 m SAG draws the
 most power), and every slider visibly moves a term.
 
-**Morrell (1996) C-model**, shown as a calibrated FORM: the same torque-arm driven by a charge-shape effective lift
+**Morrell (1996) C-model**, shown as a calibrated form: the same torque-arm driven by a charge-shape effective lift
 angle derived from the shoulder + toe geometry (bounded to a physical 25–45°), sitting just above Hogg-Fuerstenau on
 typical mills. The published C-model agrees with measured gross power to ±9.8 % on 82 industrial datasets.
 
-**Bond (1961)**, `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t] is the process-**ENERGY** law (the grinding duty), NOT the
+**Bond (1961)**, `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t] is the process-**energy** law (the grinding duty), not the
 charge mechanical power. It carries no φc or J, so it does **not** animate the sliders; it is shown only as a
 cross-check (and an implied power `W·tph`).
 

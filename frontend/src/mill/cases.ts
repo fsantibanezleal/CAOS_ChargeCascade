@@ -1,7 +1,7 @@
-// ChargeCascade cases by CATEGORY. The App shows ONE selected case; Experiments/Benchmark show cross-case summaries.
-// The operating points are SYNTHETIC but physically realistic (typical SAG/ball/rod mill geometries + speeds), clearly
-// labelled; the controls (C-) are exact analytic anchors. This is the SOURCE OF TRUTH for the cases; the Node bake
-// (science/bake_cases.mjs) runs the SAME engine over it, and data-pipeline/cclab/cases/mill_cases.py mirrors the ids.
+// ChargeCascade cases by category. The App shows one selected case; Experiments/Benchmark show cross-case summaries.
+// The operating points are synthetic but physically realistic (typical SAG/ball/rod mill geometries + speeds), clearly
+// labelled; the controls (C-) are exact analytic anchors. This is the source of truth for the cases; the Node bake
+// (science/bake_cases.mjs) runs the same engine over it, and data-pipeline/cclab/cases/mill_cases.py mirrors the ids.
 
 import type { MillType, Operating } from './types.ts';
 
@@ -27,11 +27,11 @@ const BALL: Operating = {
 };
 const c = (over: Partial<Operating>): Operating => ({ ...BALL, ...over });
 
-// Machine presets for the live mill-type selector. Selecting a type loads that machine's CHARACTERISTIC geometry +
+// Machine presets for the live mill-type selector. Selecting a type loads that machine's characteristic geometry +
 // media + charge density, the fields the engine actually differentiates on (D, L, J, φc, top media, lift, ρc), so
-// the critical speed, regime, power and 3D charge all visibly change. Process params (Wi/F80/P80/tph, about the ORE
+// the critical speed, regime, power and 3D charge all visibly change. Process params (Wi/F80/P80/tph, about the ore
 // not the machine) are left to the case selector. The ball/sag/rod values equal the K-* cases (one source of truth);
-// AG (autogenous) is the 4th canonical type: no steel media, competent ORE lumps are the grinding media (top size
+// AG (autogenous) is the 4th canonical type: no steel media, competent ore lumps are the grinding media (top size
 // ~100 mm), so its charge bulk density (~2.7 t/m³) is well below SAG's (~3.0, ore + ~8% steel), giving a distinct,
 // lower-power machine. SI: metres, t/m³, mm.
 export const MILL_PRESETS: Record<MillType, Pick<Operating, 'diameterM' | 'lengthM' | 'fill' | 'phiC' | 'ballTopMm' | 'liftAngleDeg' | 'chargeDensity'>> = {
@@ -56,7 +56,7 @@ export const CASES: CCCase[] = [
   {
     id: 'K-ROD', name: 'Rod mill (L > D)', category: CAT_TYPE,
     op: c({ millType: 'rod', diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.62, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5, tph: 80 }),
-    expectedBand: 'long mill, rods (line contact), run SLOW (cascading) so rods do not tangle/break',
+    expectedBand: 'long mill, rods (line contact), run slow (cascading) so rods do not tangle/break',
     validationAnchor: 'low phiC -> cascading regime; no cataracting', realOrSynthetic: 'synthetic',
   },
   {

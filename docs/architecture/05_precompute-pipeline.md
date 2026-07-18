@@ -1,6 +1,6 @@
 # The precompute pipeline (two-language)
 
-ChargeCascade's offline lane is **two-language** (like FragmentIQ / CoreLog / PitForge): the heavy science is the SAME
+ChargeCascade's offline lane is **two-language** (like FragmentIQ / CoreLog / PitForge): the heavy science is the same
 TypeScript engine the browser runs, driven from Node via `tsx`; Python only orchestrates + reshapes + trains. This
 avoids ever re-implementing the mill physics in Python.
 
@@ -11,7 +11,7 @@ avoids ever re-implementing the mill physics in Python.
 | `preprocess` | validate the cases' mill descriptors through CONTRACT 1 (`io/contract.py`) |
 | `feature_extraction` | assemble the learned-model training data: a sampled SAG / ball / rod envelope EVALUATED by the exact engine → `6 features → [power_kw, frac_centrifuging]` labels (`science/gen_train.mjs`) |
 | `train` | fit the power surrogate + the scenario OOD-AE → self-contained ONNX (`science/train_mill.py`, torch) |
-| `infer` | evaluate every case through the SAME TS engine (`science/bake_cases.mjs`) → `case-results.json` |
+| `infer` | evaluate every case through the same TS engine (`science/bake_cases.mjs`) → `case-results.json` |
 | `evaluate` | the surrogate's power error vs the exact engine + the OOD AUC (`science/eval_mill.mjs`, run via onnxruntime-web in Node) |
 | `export` | build the compact per-case trace + manifest (CONTRACT 2), the LIGHT, numpy-only step (`stages/export.py :: build_replay`) |
 
