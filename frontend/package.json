@@ -1,7 +1,7 @@
 {
   "name": "chargecascade-frontend",
   "private": true,
-  "version": "0.15.000",
+  "version": "0.15.001",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",

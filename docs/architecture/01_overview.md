@@ -38,7 +38,7 @@ compact per-case trace) → `data/derived/` (committed) → the `frontend/` App 
 
 ## What ChargeCascade is and is NOT
 
-- **Is:** Davis (1919) single-particle charge motion + Hogg & Fuerstenau (1972) / Morrell (1996) power draw + the
+- **Is:** Davis (1919) single-particle charge motion + Hogg & Fuerstenau (1972) net power (plus a calibrated Morrell-form consistency check; the full Morrell 1996 C-model is the documented upgrade) + the
   cascading → cataracting → centrifuging transition rendered in 3D, with an honest surrogate-vs-exact comparison and an
   out-of-envelope flag.
 - **Is NOT:** a DEM / N-body discrete-element solver, the 3D is a kinematic animation of the analytic engine, and a
