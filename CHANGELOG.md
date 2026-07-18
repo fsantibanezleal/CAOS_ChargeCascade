@@ -3,6 +3,15 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.14.003], 2026-07-11
+
+### Added (issue #45 quick wins)
+- Hover value-readout on both canvas maps (interactive-viz rubric): the Regime map reads out (phiC, J, regime
+  band) and the Comminution map inverse-transforms the cursor, evaluates the SAME engine at that point and reads
+  out (phiC, J, power-limited capacity t/h), honestly reporting "centrifuging (no grinding)" on collapsed cells.
+- The 3D charge animation speed now goes down to 0.05x in 0.05 steps (was min 0.25x), so the departure-parabola
+  dynamics can be watched slowly (Felipe's ask).
+
 ## [0.14.002], 2026-07-11
 
 ### Changed
