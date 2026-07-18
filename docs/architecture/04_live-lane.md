@@ -13,7 +13,7 @@ re-port, no drift.
 | `criticalspeed.ts` | the critical speed `Nc = 42.3/√(D−d)` [rpm], the speed ratio `φc = N/Nc`, and `ω`. The constant `42.3 = (60/2π)·√(2g)` is derived, not fitted |
 | `charge.ts` | the Davis (1919) per-shell departure: a charge element on a radial shell at radius `r` departs where `cos α = ω²r/g = φc²·(r/R)`, then flies a parabola `y = x·tanα − g·x²/(2v²cos²α)` to the toe, the outer shells thrown highest (the cataract fan); the shoulder / toe angles and `fracCentrifuging` (the fraction of shells with `cos α ≥ 1`) |
 | `regime.ts` | the regime classifier with `CASCADE_CATARACT_PHIC = 0.65`; the bands slumping (`φc ≲ 0.4`) / cascading (0.4–0.65) / cataracting (0.65–0.9) / centrifuging (`φc ≳ 0.9`) |
-| `power.ts` | Hogg & Fuerstenau (1972) net power as the torque-arm of the charge centre of mass `P_net = ω·M·g·arm` (from first principles `P ∝ D^2.5`); `morrellFormKw` (Morrell 1996 C-model as a calibrated form, ±9.8% on 82 data sets); `bondWKwhT` (Bond 1961 process-energy cross-check); `chargeMassT` |
+| `power.ts` | Hogg & Fuerstenau (1972) net power as the torque-arm of the charge centre of mass `P_net = ω·M·g·arm` (from first principles `P ∝ D^2.5`); `morrellFormKw` (a CALIBRATED Morrell-form: the same torque arm rescaled 1.06x, a consistency check, NOT the full C-model; the real C-model's ±9.8% on 82 sets is the documented upgrade, not this function's accuracy); `bondWKwhT` (Bond 1961 process-energy cross-check); `chargeMassT` |
 | `engine.ts` | `evaluate(op) → MillResult`, the single source of physics truth the App reads AND the ground-truth the offline sweep trains the surrogate on (the ChancaDEM pattern) |
 | `cases.ts` | the 10 canonical cases (shared by the App and the bake) |
 

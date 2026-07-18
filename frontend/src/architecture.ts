@@ -80,8 +80,8 @@ export const architecture: ArchitectureConfig = {
         'where cos α = ω²r/g (= φc²·r/R per shell), then flies a parabola y = x·tanα − gx²/(2v²cos²α) to the toe, the ' +
         'outer shells thrown highest, the fanned cataract; ③ the regimes cascading / cataracting / centrifuging vs φc ' +
         '(and the % of charge centrifuging when φc → 1); ④ the power, Hogg-Fuerstenau (1972) as the torque-arm of the ' +
-        'charge centre of mass (P = ω·M·g·arm, peaking near 45–50% fill), with the Morrell (1996) C-model as the SOTA ' +
-        'comparison and Bond as the process-energy cross-check.\n\n' +
+        'charge centre of mass (P = ω·M·g·arm, peaking near 45–50% fill), with a CALIBRATED Morrell-form (the same torque arm rescaled 1.06x, NOT the ' +
+        'full C-model, which is the documented upgrade) as the consistency comparison and Bond as the process-energy cross-check.\n\n' +
         'The analytic engine is the authority. The learned lane: a power surrogate for instant operating-envelope ' +
         'sweeps, measured DOWNSTREAM against the exact engine, and an OOD autoencoder that flags off-envelope (over-' +
         'speed / near-centrifuging) operating points; both run client-side as ONNX, never as a black box.',
@@ -92,7 +92,7 @@ export const architecture: ArchitectureConfig = {
         'las capas externas lanzadas más alto, el abanico de cataract; ③ los regímenes cascading / cataracting / ' +
         'centrifuging vs φc (y el % de carga centrifugando cuando φc → 1); ④ la potencia, Hogg-Fuerstenau (1972) como ' +
         'el brazo de torque del centro de masa de la carga (P = ω·M·g·brazo, máxima cerca del 45–50% de llenado), con ' +
-        'el C-model de Morrell (1996) como comparación SOTA y Bond como cruce de energía de proceso.\n\n' +
+        'una forma Morrell CALIBRADA (el mismo brazo de torque reescalado 1.06x, NO el C-model completo, que es la mejora documentada) como comparación de consistencia y Bond como cruce de energía de proceso.\n\n' +
         'El motor analítico es la autoridad. El carril aprendido: un surrogate de potencia para barridos instantáneos ' +
         'del envolvente, medido DOWNSTREAM contra el motor exacto, y un autoencoder OOD que marca puntos fuera del ' +
         'envolvente (sobre-velocidad / casi-centrifugando); ambos corren en el cliente como ONNX, nunca como caja negra.',
