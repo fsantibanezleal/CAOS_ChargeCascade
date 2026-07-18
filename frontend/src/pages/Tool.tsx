@@ -8,6 +8,9 @@ import { TrajectoryDiagram } from '../viz/TrajectoryDiagram.tsx';
 import { RegimeMap } from '../viz/RegimeMap.tsx';
 import { PowerChart } from '../viz/PowerChart.tsx';
 import { ComminutionMap } from '../viz/ComminutionMap.tsx';
+import { RealValidation } from '../viz/RealValidation.tsx';
+import { REAL_MILLS, realMillToOperating } from '../mill/realmills.ts';
+import { predictionFor } from '../mill/realpower.ts';
 import { BondCurve } from '../viz/BondCurve.tsx';
 import { PanelBoundary } from '../viz/PanelBoundary.tsx';
 
@@ -23,10 +26,18 @@ const kw = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(2)} MW` : `${v.toFi
 
 export default function Tool() {
   const es = useShellLang() === 'es';
+  const [source, setSource] = useState<'synthetic' | 'real'>('synthetic');
   const [caseId, setCaseId] = useState('K-BALL');
+  const [realMillId, setRealMillId] = useState(REAL_MILLS[0].id);
+  const realMill = useMemo(() => REAL_MILLS.find((m) => m.id === realMillId)!, [realMillId]);
   const theCase = useMemo(() => caseById(caseId), [caseId]);
   const [op, setOp] = useState<Operating>(theCase.op);
-  useEffect(() => { setOp(theCase.op); setInvTph(null); }, [theCase]);   // reset the inverse target to the new case's capacity
+  // In synthetic mode op follows the picked case; in real mode it follows the picked real mill (all tools then run
+  // on the real survey point). Editing sliders is a live what-if from that starting point.
+  useEffect(() => {
+    if (source === 'synthetic') { setOp(theCase.op); setInvTph(null); }
+    else { setOp(realMillToOperating(realMill)); setInvTph(null); }
+  }, [source, theCase, realMill]);
 
   const r = useMemo(() => evaluate(op), [op]);
   const [surr, setSurr] = useState<{ powerKw: number; fracCentrifuging: number } | null>(null);
@@ -58,6 +69,10 @@ export default function Tool() {
     [lo, (lo + hi) / 2, hi].map((v) => ({ v, p: evaluate({ ...op, [k]: v }) }));
 
   const tabs = [
+    ...(source === 'real' ? [{
+      id: 'realval', label: es ? 'Validación real' : 'Real validation',
+      content: <RealValidation mill={realMill} es={es} />,
+    }] : []),
     {
       id: 'charge3d', label: es ? 'Carga 3D' : '3D charge',
       content: (
@@ -361,6 +376,17 @@ export default function Tool() {
     <div className="page-body cc-layout">
       <aside className="cc-side">
         <div className="cc-card">
+          <div className="cc-card-t">{es ? 'Fuente' : 'Source'}</div>
+          <div className="cc-chips">
+            <button className={`chip ${source === 'synthetic' ? 'on' : ''}`} onClick={() => setSource('synthetic')}>{es ? 'Sintético' : 'Synthetic'}</button>
+            <button className={`chip ${source === 'real' ? 'on' : ''}`} onClick={() => setSource('real')}>{es ? 'Molino real' : 'Real mill'}</button>
+          </div>
+          <div className="cc-cap cc-muted">{source === 'synthetic'
+            ? (es ? 'casos sintéticos + deslizadores' : 'synthetic cases + sliders')
+            : (es ? '11 molinos industriales con potencia MEDIDA; el modelo se valida contra ellos' : '11 industrial mills with MEASURED power; the model is validated against them')}</div>
+        </div>
+        {source === 'synthetic' ? (
+        <div className="cc-card">
           <div className="cc-card-t">{es ? 'Caso' : 'Case'}</div>
           {CATS.map((cat) => (
             <div key={cat} className="cc-catgroup">
@@ -375,7 +401,23 @@ export default function Tool() {
           <div className="cc-cap">{theCase.name}</div>
           <div className="cc-cap cc-muted">{theCase.realOrSynthetic} · {theCase.expectedBand}</div>
         </div>
+        ) : (
         <div className="cc-card">
+          <div className="cc-card-t">{es ? 'Molino real' : 'Real mill'}</div>
+          <div className="cc-chips">
+            {REAL_MILLS.map((m) => (
+              <button key={m.id} className={`chip ${realMillId === m.id ? 'on' : ''}`} title={m.name} onClick={() => setRealMillId(m.id)}>{m.name.split(' ')[0]}</button>
+            ))}
+          </div>
+          <div className="cc-cap">{realMill.name} · {realMill.diameterM}×{realMill.lengthM} m · {(realMill.pctCritical * 100).toFixed(0)}% crit · J {(realMill.jTotal * 100).toFixed(0)}%</div>
+          {(() => { const pr = predictionFor(realMill); return (
+            <div className="cc-cap cc-muted">{es ? 'medida' : 'measured'} {(pr.measured / 1000).toFixed(1)} MW · {es ? 'modelo' : 'model'} {(pr.predicted / 1000).toFixed(1)} MW · {pr.errPct >= 0 ? '+' : ''}{pr.errPct.toFixed(0)}% ({realMill.basis})</div>
+          ); })()}
+          <div className="cc-cap cc-muted" style={{ marginTop: '0.3rem' }}><a href={realMill.url} target="_blank" rel="noreferrer">{realMill.citation}</a></div>
+          <div className="cc-cap cc-muted">{realMill.note}</div>
+        </div>
+        )}
+        {source === 'synthetic' && <div className="cc-card">
           <div className="cc-card-t">{es ? 'Tipo de molino (preset)' : 'Mill type (preset)'}</div>
           <div className="cc-chips">
             {MILLS.map((m) => (
@@ -401,10 +443,10 @@ export default function Tool() {
           <div className="cc-cap cc-muted">{es
             ? 'el pill clasifica por bandas de φc (banda centrifuging desde ~0.9); el inicio exacto es φc = 1, ver "% centrifugando"'
             : 'the pill classifies by φc band (centrifuging band from ~0.9); the exact onset is φc = 1, see "% centrifuging"'}</div>
-        </div>
+        </div>}
       </aside>
       <main className="cc-main">
-        <Tabs tabs={tabs.map((t) => ({ ...t, content: <PanelBoundary key={`${caseId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))} ariaLabel={es ? 'vistas del molino' : 'mill views'} />
+        <Tabs tabs={tabs.map((t) => ({ ...t, content: <PanelBoundary key={`${source}-${caseId}-${realMillId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))} ariaLabel={es ? 'vistas del molino' : 'mill views'} />
       </main>
     </div>
   );
