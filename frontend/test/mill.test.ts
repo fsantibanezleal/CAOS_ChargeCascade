@@ -186,7 +186,7 @@ test('real-mill power calibration is validated by leave-one-out at a sane error'
   const { validationStats, allPredictions } = await import('../src/mill/realpower.ts');
   const { REAL_MILLS } = await import('../src/mill/realmills.ts');
   const s = validationStats();
-  assert.equal(s.n, 8, 'the 8 Doll motor-basis mills form the calibration set');
+  assert.ok(s.n >= 18, 'the Doll motor-basis mills form the calibration set (expanded to 19)');
   assert.ok(s.looMeanAbsPct < 12, `LOO mean abs error ${s.looMeanAbsPct.toFixed(1)}% should be under 12% (comparable to published models)`);
   assert.ok(s.looMaxAbsPct < 25, `LOO worst-case ${s.looMaxAbsPct.toFixed(1)}% under 25%`);
   assert.ok(s.r2 > 0.9, `motor fit R^2 ${s.r2.toFixed(3)} should exceed 0.9`);
@@ -194,8 +194,36 @@ test('real-mill power calibration is validated by leave-one-out at a sane error'
   // every mill produces a finite prediction + error, on its own basis
   const preds = allPredictions();
   assert.equal(preds.length, REAL_MILLS.length);
+  assert.ok(preds.length >= 21, 'anchor expanded');
   for (const p of preds) {
     assert.ok(Number.isFinite(p.predicted) && p.predicted > 0, `${p.mill.id} predicted power finite+positive`);
     assert.ok(Math.abs(p.errPct) < 30, `${p.mill.id} error ${p.errPct.toFixed(1)}% within 30% on real data`);
   }
+});
+
+// Morrell C-model (issue #64): must reproduce the Erdem (2004) cement-mill worked example (validates the whole
+// integral structure + the (2*pi)^3 kinetic coefficient), and give a sane independent error on the real mills.
+test('Morrell C-model reproduces the Erdem worked example (no-load exact) + sane real-mill error', async () => {
+  const { morrellPower } = await import('../src/mill/morrell.ts');
+  const { morrellMeanAbsPct } = await import('../src/mill/realpower.ts');
+  // no-load reproduces Erdem's two chambers to <0.1% (independently fixes D, phi, geometry)
+  const ch1 = morrellPower({ diameterM: 3.27, lengthM: 3.60, phiC: 0.7267, fill: 0.275, ballFill: 0.275, rhoOre: 2.93, rhoBall: 7.8, solidsMassFrac: 1.0 });
+  const ch2 = morrellPower({ diameterM: 3.27, lengthM: 7.00, phiC: 0.7267, fill: 0.2663, ballFill: 0.2663, rhoOre: 2.93, rhoBall: 7.8, solidsMassFrac: 1.0 });
+  assert.ok(Math.abs(ch1.noLoadKw - 41.94) < 0.1, `Erdem ch1 no-load ${ch1.noLoadKw.toFixed(2)} vs 41.94`);
+  assert.ok(Math.abs(ch2.noLoadKw - 72.35) < 0.1, `Erdem ch2 no-load ${ch2.noLoadKw.toFixed(2)} vs 72.35`);
+  // charge-motion net scales LINEARLY with rho_c; at the published fitted density 4.209 it must reproduce 341.97
+  const net1AtFit = ch1.netKw * (4.209 / ch1.rhoC);
+  assert.ok(Math.abs(net1AtFit - 341.97) / 341.97 < 0.02, `Erdem ch1 net @ rhoC=4.209 = ${net1AtFit.toFixed(1)} vs 341.97 (structure+coefficient check)`);
+  // the uncalibrated Morrell error on the real mills is sane (comparable to the published ~9% benchmark)
+  const me = morrellMeanAbsPct();
+  assert.ok(me < 18, `Morrell mean abs error on real mills ${me.toFixed(1)}% under 18%`);
+});
+
+test('the expanded real anchor keeps a robust leave-one-out error', async () => {
+  const { validationStats, allPredictions } = await import('../src/mill/realpower.ts');
+  const s = validationStats();
+  assert.ok(s.n >= 18, `motor-basis anchor grew to ${s.n} mills (was 8)`);
+  assert.ok(s.looMeanAbsPct < 10, `LOO mean ${s.looMeanAbsPct.toFixed(1)}% stays under 10% on the larger set`);
+  assert.ok(s.r2 > 0.95, `R^2 ${s.r2.toFixed(3)} stays high`);
+  assert.ok(allPredictions().length >= 21, 'total anchor >= 21 mills');
 });

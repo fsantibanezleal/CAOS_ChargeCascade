@@ -53,6 +53,32 @@ export const REAL_MILLS: RealMill[] = [
     citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'NET power 13.4 MW. Ball mill: charge is balls (+ slurry). Nominal ft dims.' },
   { id: 'tongon', name: 'Tongon ball mill', type: 'ball', diameterM: 6.1, lengthM: 9.75, pctCritical: 0.75, jTotal: 0.33, jBalls: 0.33, rhoOre: 2.9, measuredKw: 8000, basis: 'net',
     citation: 'Golpayegani & Rezai (2022) PPMP 58(4):151600, Table 1 (repro. Rajamani et al. 2019)', url: 'https://doi.org/10.37190/ppmp/151600', note: 'NET power 8 MW (one sig-fig less precise). Nominal ft dims.' },
+  // --- distinct-geometry expansion (issue #64): 11 more verified mills from the full Doll IMPC 2016 Table 1,
+  // each a different mill (not a repeat survey), keyed by geometry + Doll row + original survey. NOTE: the OCR of
+  // the table shifted some mine-NAME labels by a line; the geometry + power + fill are read-verified, the name is
+  // per Doll's row and carries that small shift risk. All motor (PDCS) basis. ---
+  { id: 'phoenix-sag', name: "Phoenix SAG", type: 'sag', diameterM: 10.74, lengthM: 5.03, pctCritical: 0.74, jTotal: 0.3, jBalls: 0.13, rhoOre: 2.7, measuredKw: 10965, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 15 (Phoenix SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 15. 10.74/5.03/0.300/0.130/0.740; rho 2.70 wC 0.75; PDCS 10,965 x conv 1.0000 = Pshell 10,965 (gearless / DCS at shell)." },
+  { id: 'lkab-ka3-fag', name: "LKAB KA3 (FAG)", type: 'ag', diameterM: 6.29, lengthM: 5.88, pctCritical: 0.753, jTotal: 0.414, jBalls: 0.0, rhoOre: 4.33, measuredKw: 3857, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 20 (LKAB KA3 (FAG))", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 20. 6.29/5.88/0.414/0.000/0.753; rho_charge 4.33 (high, atypical high charge case per paper) wC 0.76; PDCS 3,857 x 0.9456 = 3,647. Fully autogenou" },
+  { id: 'driefontein-rom-sag', name: "Driefontein RoM SAG", type: 'sag', diameterM: 7.45, lengthM: 9.25, pctCritical: 0.76, jTotal: 0.37, jBalls: 0.08, rhoOre: 2.7, measuredKw: 7400, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 31 (Driefontein RoM SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 31. 7.45/9.25/0.370/0.080/0.760; rho 2.70 wC 0.70; PDCS 7,400 x 0.9310 = 6,889. Low-aspect (L>D) run-of-mine SAG." },
+  { id: 'st-ives-sag-sec-crush', name: "St Ives SAG (sec crush)", type: 'sag', diameterM: 7.23, lengthM: 3, pctCritical: 0.749, jTotal: 0.191, jBalls: 0.15, rhoOre: 2.8, measuredKw: 2710, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 32 (St Ives SAG (sec crush))", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 32. 7.23/3.00/0.191/0.150/0.749; rho 2.80 wC 0.70; PDCS 2,710 x 0.9310 = 2,523. Secondary-crush feed mode." },
+  { id: 'navachab-sag', name: "Navachab SAG", type: 'sag', diameterM: 4.71, lengthM: 9.49, pctCritical: 0.889, jTotal: 0.4, jBalls: 0.097, rhoOre: 2.84, measuredKw: 3034, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 35 (Navachab SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 35. 4.71/9.49/0.400/0.097/0.889; rho 2.84 wC 0.73; PDCS 3,034 x 0.9310 = 2,825. Very low-aspect (L~2D), high mill speed (0.889)." },
+  { id: 'los-bronces-sag-1', name: "Los Bronces SAG 1", type: 'sag', diameterM: 8.26, lengthM: 4.19, pctCritical: 0.747, jTotal: 0.237, jBalls: 0.127, rhoOre: 2.59, measuredKw: 3917, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 36 (Los Bronces SAG 1)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 36. 8.26/4.19/0.237/0.127/0.747; rho 2.59 wC 0.65; PDCS 3,917 x 0.9361 = 3,667. Distinct from row 37 LB Confluencia (different mill, D=12.20)." },
+  { id: 'inco-clarabelle-sag', name: "Inco Clarabelle SAG", type: 'sag', diameterM: 9.45, lengthM: 3.96, pctCritical: 0.749, jTotal: 0.32, jBalls: 0.08, rhoOre: 2.75, measuredKw: 6803, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 39 (Inco Clarabelle SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 39. 9.45/3.96/0.320/0.080/0.749; rho 2.75 wC 0.72; PDCS 6,803 x 0.9014 = 6,132. Clarabelle in SABC (ball-charged) mode." },
+  { id: 'santa-rita-ag', name: "Santa Rita AG", type: 'ag', diameterM: 9.15, lengthM: 5, pctCritical: 0.75, jTotal: 0.332, jBalls: 0.0, rhoOre: 3.24, measuredKw: 6667, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 42 (Santa Rita AG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 42. 9.15/5.00/0.332/0.000/0.750; rho 3.24 wC 0.70; PDCS 6,667 x 0.9312 = 6,208. Fully autogenous (Jballs=0)." },
+  { id: 'sossego-sag', name: "Sossego SAG", type: 'sag', diameterM: 11.28, lengthM: 6.4, pctCritical: 0.769, jTotal: 0.28, jBalls: 0.149, rhoOre: 2.86, measuredKw: 16635, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 43 (Sossego SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 43. 11.28/6.40/0.280/0.149/0.769; rho 2.86 wC 0.70; PDCS 16,635 x 0.9600 = 15,970." },
+  { id: 'el-soldado-sag', name: "El Soldado SAG", type: 'sag', diameterM: 10.06, lengthM: 5.18, pctCritical: 0.767, jTotal: 0.262, jBalls: 0.186, rhoOre: 2.7, measuredKw: 11062, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 44 (El Soldado SAG)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 44. 10.06/5.18/0.262/0.186/0.767; rho 2.70 wC 0.77; PDCS 11,062 x 0.9456 = 10,460." },
+  { id: 'cyprus-bagdad-ag-1-2', name: "Cyprus Bagdad AG 1,2", type: 'ag', diameterM: 9.45, lengthM: 3.35, pctCritical: 0.73, jTotal: 0.27, jBalls: 0.0, rhoOre: 2.7, measuredKw: 3297, basis: 'motor',
+    citation: "Doll (2016) IMPC 2016 Table 1 row 47 (Cyprus Bagdad AG 1,2)", url: "https://sagmilling.com/articles/29/view/IMPC2016-AlexDoll-SAG%20data%20set.pdf", note: "Row 47. 9.45/3.35/0.270/0.000/0.730; rho 2.70 wC 0.70; PDCS 3,297 x 0.9219 = 3,039. Autogenous mill (Jballs=0)." },
 ];
 
 /** Morrell total charge bulk density [t/m3] from the filling split (eps=0.4 voidage, U=1 slurry-filled voids,

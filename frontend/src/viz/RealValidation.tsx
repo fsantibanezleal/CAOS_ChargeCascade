@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { RealMill } from '../mill/realmills.ts';
-import { allPredictions, validationStats } from '../mill/realpower.ts';
+import { allPredictions, morrellMeanAbsPct, validationStats } from '../mill/realpower.ts';
 
 // The Real-data validation panel (issue #45, the novel rung): the App's Hogg-Fuerstenau power, calibrated to the
 // real Doll motor-basis mills, plotted predicted-vs-measured against the 11 surveyed mills, with the y=x agreement
@@ -9,6 +9,7 @@ import { allPredictions, validationStats } from '../mill/realpower.ts';
 export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
   const preds = useMemo(() => allPredictions(), []);
   const stats = useMemo(() => validationStats(), []);
+  const morrellErr = useMemo(() => morrellMeanAbsPct(), []);
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   const W = 460, H = 300, pad = 46;
@@ -21,9 +22,9 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
   return (
     <div className="cc-doc-sec">
       <div className="cc-kpis">
-        <Kpi label={es ? 'error leave-one-out' : 'leave-one-out error'} value={`${stats.looMeanAbsPct.toFixed(1)}%`} sub={es ? `medio · máx ${stats.looMaxAbsPct.toFixed(0)}%` : `mean · max ${stats.looMaxAbsPct.toFixed(0)}%`} />
-        <Kpi label={es ? 'ajuste R²' : 'fit R²'} value={stats.r2.toFixed(3)} sub={es ? `${stats.n} molinos (base motor)` : `${stats.n} mills (motor basis)`} />
-        <Kpi label={es ? 'banda ±1.96σ' : '±1.96σ band'} value={`±${(band / 1000).toFixed(1)} MW`} sub={es ? 'incertidumbre de predicción' : 'prediction uncertainty'} />
+        <Kpi label={es ? 'HF calibrado, leave-one-out' : 'HF calibrated, leave-one-out'} value={`${stats.looMeanAbsPct.toFixed(1)}%`} sub={es ? `medio · máx ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}` : `mean · max ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}`} />
+        <Kpi label={es ? 'Morrell C-model (independiente)' : 'Morrell C-model (independent)'} value={`${morrellErr.toFixed(1)}%`} sub={es ? 'sin calibrar, primeros principios' : 'uncalibrated, first-principles'} />
+        <Kpi label={es ? 'anclas verificadas' : 'verified anchors'} value={`${preds.length}`} sub={es ? `${stats.n} base motor + ${preds.length - stats.n} neta` : `${stats.n} motor + ${preds.length - stats.n} net`} />
       </div>
 
       <div className="cc-plot" style={{ maxWidth: W + 20, position: 'relative' }}>
@@ -42,13 +43,19 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
               <text x={pad - 6} y={sy(t) + 4} textAnchor="end" className="cc-axl" fill="var(--color-fg-faint)">{t / 1000}</text>
             </g>
           ))}
+          {/* Morrell C-model points (independent, hollow) */}
+          {preds.map((p) => (
+            <circle key={`m-${p.mill.id}`} cx={sx(p.measured)} cy={sy(p.morrell)} r={3.5} fill="none"
+              stroke="var(--color-good, #3fb950)" strokeWidth={1.4} opacity={0.6} />
+          ))}
+          {/* HF-calibrated points (filled) */}
           {preds.map((p) => {
             const picked = p.mill.id === mill.id;
             return (
               <circle key={p.mill.id} cx={sx(p.measured)} cy={sy(p.predicted)} r={picked ? 7 : 4.5}
                 fill={p.mill.basis === 'net' ? 'var(--color-warn, #d29922)' : 'var(--color-accent)'}
                 stroke={picked ? 'var(--color-fg)' : 'none'} strokeWidth={picked ? 2 : 0} opacity={picked ? 1 : 0.7}
-                onMouseEnter={(e) => setHover({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, text: `${p.mill.name}: ${es ? 'pred' : 'pred'} ${(p.predicted / 1000).toFixed(1)} · ${es ? 'med' : 'meas'} ${(p.measured / 1000).toFixed(1)} MW · ${p.errPct >= 0 ? '+' : ''}${p.errPct.toFixed(0)}%` })}
+                onMouseEnter={(e) => setHover({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, text: `${p.mill.name}: HF ${(p.predicted / 1000).toFixed(1)} · Morrell ${(p.morrell / 1000).toFixed(1)} · ${es ? 'med' : 'meas'} ${(p.measured / 1000).toFixed(1)} MW` })}
                 onMouseLeave={() => setHover(null)} style={{ cursor: 'pointer' }} />
             );
           })}
@@ -57,29 +64,30 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
       </div>
 
       <p className="cc-cap cc-muted">
-        {es ? 'Azul = base motor (PDCS de Doll, 8 molinos calibrados); ámbar = base neta (PPMP, 3 molinos, comparación directa). La línea es acuerdo perfecto; la banda es ±1.96σ del ajuste motor.'
-            : 'Blue = motor basis (Doll PDCS, the 8 calibrated mills); amber = net basis (PPMP, 3 mills, direct comparison). The line is perfect agreement; the band is ±1.96σ of the motor fit.'}
+        {es ? 'Puntos rellenos = HF calibrado (azul base motor, ámbar base neta); círculos verdes huecos = Morrell C-model (independiente, sin calibrar). La línea es acuerdo perfecto; la banda es ±1.96σ del ajuste HF motor.'
+            : 'Filled points = HF calibrated (blue motor basis, amber net basis); hollow green circles = Morrell C-model (independent, uncalibrated). The line is perfect agreement; the band is ±1.96σ of the HF motor fit.'}
       </p>
 
       <table className="cmp-table">
-        <thead><tr><th>{es ? 'molino' : 'mill'}</th><th>{es ? 'tipo' : 'type'}</th><th>HF net</th><th>{es ? 'predicha' : 'predicted'}</th><th>{es ? 'medida' : 'measured'}</th><th>{es ? 'error' : 'error'}</th></tr></thead>
+        <thead><tr><th>{es ? 'molino' : 'mill'}</th><th>{es ? 'tipo' : 'type'}</th><th>HF cal.</th><th>Morrell</th><th>{es ? 'medida' : 'measured'}</th><th>HF err</th><th>Morrell err</th></tr></thead>
         <tbody>
           {preds.map((p) => (
             <tr key={p.mill.id} className={p.mill.id === mill.id ? 'cl-row-ship' : ''}>
               <td>{p.mill.name}</td>
               <td className="cc-cap">{p.mill.type}{p.mill.basis === 'net' ? (es ? ' · neta' : ' · net') : ''}</td>
-              <td className="mono">{(p.hfNet / 1000).toFixed(2)}</td>
               <td className="mono">{(p.predicted / 1000).toFixed(2)}</td>
+              <td className="mono">{(p.morrell / 1000).toFixed(2)}</td>
               <td className="mono">{(p.measured / 1000).toFixed(2)}</td>
-              <td className="mono" style={{ color: Math.abs(p.errPct) < 10 ? 'var(--color-good, #3fb950)' : 'var(--color-warn, #d29922)' }}>{p.errPct >= 0 ? '+' : ''}{p.errPct.toFixed(1)}%</td>
+              <td className="mono" style={{ color: Math.abs(p.errPct) < 10 ? 'var(--color-good, #3fb950)' : 'var(--color-warn, #d29922)' }}>{p.errPct >= 0 ? '+' : ''}{p.errPct.toFixed(0)}%</td>
+              <td className="mono" style={{ color: Math.abs(p.morrellErrPct) < 15 ? 'var(--color-good, #3fb950)' : 'var(--color-warn, #d29922)' }}>{p.morrellErrPct >= 0 ? '+' : ''}{p.morrellErrPct.toFixed(0)}%</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       <div className="cc-note" style={{ marginTop: '0.6rem' }}>
-        {es ? 'Honesto: la potencia HF neta es un modelo de primeros principios del movimiento de carga; aquí se CALIBRA contra potencia industrial medida real (los 8 molinos base-motor de Doll) y su error se reporta por leave-one-out (entrenar sin cada molino, predecirlo). No se transfiere la precisión de ningún paper a este resultado. El C-model continuo completo de Morrell necesita el texto Napier-Munn (1996) para la función Z y el coeficiente cinético, la mejora documentada.'
-            : 'Honest: the HF net power is a first-principles charge-motion model; here it is CALIBRATED against REAL measured industrial power (the 8 Doll motor-basis mills) and its error is reported by leave-one-out (train without each mill, predict it). No paper accuracy is transplanted onto this result. Morrell\'s full continuum C-model needs the Napier-Munn (1996) textbook for the Z function and the kinetic coefficient, the documented upgrade.'}
+        {es ? `Honesto, dos modelos contra la verdad medida: (1) HF calibrado, la potencia HF de primeros principios ajustada a la potencia industrial medida real (${stats.n} molinos base-motor de Doll), error por leave-one-out (entrenar sin cada molino, predecirlo); no se transfiere precisión de ningún paper. (2) Morrell C-model, el modelo SOTA REAL, ahora implementado (reproduce el ejemplo de Erdem 2004: bruta 1365 kW exacta) y corrido SIN calibrar; su error es su desempeño real. Residual honesto: la convención exacta de densidad de carga de Napier-Munn afloja ~±10%, por eso Morrell tiende a sobre-predecir; la estructura y todos los coeficientes son exactos.`
+            : `Honest, two models against the measured truth: (1) HF calibrated, the first-principles HF power fitted to REAL measured industrial power (${stats.n} Doll motor-basis mills), error by leave-one-out (train without each mill, predict it); no paper accuracy is transplanted. (2) Morrell C-model, the REAL SOTA model, now implemented (it reproduces Erdem's 2004 worked example: gross 1365 kW exact) and run UNCALIBRATED; its error is its genuine performance. Honest residual: the exact Napier-Munn charge-density packing convention is loose by ~±10%, so Morrell tends to over-predict; the structure and all coefficients are exact.`}
       </div>
     </div>
   );

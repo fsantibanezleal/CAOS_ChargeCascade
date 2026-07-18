@@ -1,5 +1,9 @@
 # K-BALL, Ball mill (the reference)
 
+![K-BALL charge cross-section, computed from the engine](assets/K-BALL.svg)
+
+*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/cclab/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
+
 **Category:** mill type (the machine) · **Source of truth:** [`frontend/src/mill/cases.ts`](../../frontend/src/mill/cases.ts) (`K-BALL`, the base operating point every `S-*` / `D-*` / `C-*` case overrides) · **synthetic but physically realistic**
 
 **Operating point:** D 4.0 × L 6.0 m · J 35 % · φc 0.75 · top ball 80 mm · ball mill · charge density 4.8 t/m³ · ore Wi 14 kWh/t, F80 2000 → P80 150 µm at 120 t/h.

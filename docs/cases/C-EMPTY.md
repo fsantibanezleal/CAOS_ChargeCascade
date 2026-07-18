@@ -1,5 +1,9 @@
 # C-EMPTY, Empty mill (J = 0)
 
+![C-EMPTY charge cross-section, computed from the engine](assets/C-EMPTY.svg)
+
+*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/cclab/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
+
 **Category:** control (analytic anchor) · **Source of truth:** [`frontend/src/mill/cases.ts`](../../frontend/src/mill/cases.ts) (`C-EMPTY` = the base `K-BALL` mill at J 0) · **analytic control** (exact-answer oracle)
 
 **Operating point:** the base 4.0 × 6.0 m ball mill (φc 0.75, 80 mm) at **J = 0** (no charge).
