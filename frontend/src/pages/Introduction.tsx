@@ -32,7 +32,9 @@ export default function Introduction() {
             <circle className="shell" cx="100" cy="118" r="44" />
             <path className="toe" d="M100,118 L100,162 A44,44 0 0,1 60,132 Z" />
             <circle className="ball" cx="76" cy="108" r="3.5" /><circle className="ball" cx="90" cy="128" r="3.5" /><circle className="ball" cx="112" cy="134" r="3.5" />
-            <path className="cat" d="M124,108 C150,82 162,104 152,140" />
+            {/* cataract flight: departs the shoulder (upper right, on the shell), arcs over and lands on the toe
+                (lower left). Every point stays INSIDE the r=44 shell (verified by sampling the Bezier). */}
+            <path className="cat" d="M122,84 C110,78 84,150 72,146" />
             <text className="s" x="26" y="186">{es ? 'D · L · J(llenado) · bola d · φc' : 'D · L · J(fill) · ball d · φc'}</text>
             <rect className="bx" x="222" y="22" width="180" height="150" rx="10" />
             <text className="t" x="236" y="44">{es ? 'La física' : 'The physics'}</text>

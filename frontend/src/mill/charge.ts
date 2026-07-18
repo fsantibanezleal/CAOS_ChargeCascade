@@ -43,7 +43,11 @@ export function chargeGeometry(diameterM: number, ballTopMm: number, omega: numb
     const vx = -v * Math.cos(alpha); // CCW rotation lifts on +x and throws up-and-over toward -x
     const vy = v * Math.sin(alpha);
 
-    // flight until the parabola re-crosses its departure radius on the descending side
+    // flight until the particle either re-crosses its departure radius on the descending side (lands on the
+    // charge/toe) OR reaches the outer shell wall R. The second condition matters: for a near-critical inner
+    // shell the RISING parabola can bulge past its own departure radius toward the wall, and a particle cannot
+    // pass through the steel shell, so the flight ends at the wall. Without it the drawn trajectory pokes OUTSIDE
+    // the mill circle in the 2D/3D viz.
     const tApex = vy > 0 ? vy / G : 0;
     let tLand = 0;
     const dt = 0.01;
@@ -51,12 +55,18 @@ export function chargeGeometry(diameterM: number, ballTopMm: number, omega: numb
       const x = dep[0] + vx * t;
       const y = dep[1] + vy * t - 0.5 * G * t * t;
       tLand = t;
-      if (t > tApex && Math.hypot(x, y) >= r) break;
+      const rad = Math.hypot(x, y);
+      if (rad >= R) break;                       // hit the shell wall
+      if (t > tApex && rad >= r) break;          // landed back on the charge/toe at the departure radius
     }
     const traj: [number, number][] = [];
     for (let j = 0; j <= nTraj; j++) {
       const t = (j / nTraj) * tLand;
-      traj.push([dep[0] + vx * t, dep[1] + vy * t - 0.5 * G * t * t]);
+      let x = dep[0] + vx * t;
+      let y = dep[1] + vy * t - 0.5 * G * t * t;
+      const rad = Math.hypot(x, y);
+      if (rad > R) { x *= R / rad; y *= R / rad; } // clamp the final sample exactly onto the wall (never outside)
+      traj.push([x, y]);
     }
     shells.push({ r, alpha, centrifuging: false, departure: dep, trajectory: traj });
 

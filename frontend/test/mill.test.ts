@@ -162,3 +162,20 @@ test('validateMill FLAGS plausible-but-honesty-relevant descriptors (accepted + 
   const bigball = validateMill({ ...base, ball_top_mm: 300, diameter_m: 5 });
   assert.ok(bigball.accepted && bigball.flags.some((f) => /ball\/diameter/i.test(f))); // d >= 0.05 D
 });
+
+// Regression (issue #50): no cataract trajectory may be drawn OUTSIDE the shell wall. Before the fix, a
+// near-critical inner shell's rising parabola bulged past R and the 2D/3D viz drew a line outside the mill.
+test('no trajectory point leaves the shell wall across a phiC sweep (incl. near-critical)', async () => {
+  const { chargeGeometry } = await import('../src/mill/charge.ts');
+  for (const D of [4, 8, 10]) {
+    const R = D / 2;
+    const Ncrit = 42.305 / Math.sqrt(D);
+    for (let phiC = 0.4; phiC <= 1.05; phiC += 0.05) {
+      const omega = (phiC * Ncrit / 60) * 2 * Math.PI;
+      const g = chargeGeometry(D, 80, omega, 9, 20);
+      for (const sh of g.shells) for (const [X, Y] of sh.trajectory) {
+        assert.ok(Math.hypot(X, Y) <= R + 1e-6, `D=${D} phiC=${phiC.toFixed(2)}: trajectory point at radius ${Math.hypot(X, Y).toFixed(3)} exceeds R=${R}`);
+      }
+    }
+  }
+});
