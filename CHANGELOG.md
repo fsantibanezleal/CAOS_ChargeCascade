@@ -3,6 +3,20 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.15.001], 2026-07-11
+
+### Fixed (issue #45, adversarial-audit round 3: docs consistency)
+- Morrell overclaims swept: the in-app Architecture modal (architecture.ts), docs/architecture/01_overview.md and
+  docs/architecture/04_live-lane.md described the implemented power as "Morrell (1996) C-model" / attached the
+  real C-model's +-9.8%-on-82-sets validation to `morrellFormKw`. Corrected everywhere to the truth (a CALIBRATED
+  Morrell-form: the same Hogg-Fuerstenau torque arm rescaled 1.06x, a consistency check; the full C-model is the
+  documented upgrade), matching what the Methodology/Experiments pages already state.
+- Stale viz docs (docs/frameworks/02_viz.md): BondCurve is now listed as uPlot (it became interactive in v0.14.002,
+  the doc still credited only PowerChart); the shell version reference `^0.1.2` corrected to `^0.3.0`; the removed
+  `ReferenceList` primitive replaced with `Refs` in the doc-kit list.
+- K-ROD case doc updated for the phiC 0.62 change (was 0.65): now reads phiC 0.62, ~704 kW, cascading, consistent
+  with the rebaked artifact and the engine.
+
 ## [0.15.000], 2026-07-11
 
 ### Fixed (issue #45, adversarial-audit round 2: honesty/claims + UI/ADR)
