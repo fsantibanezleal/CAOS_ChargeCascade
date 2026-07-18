@@ -383,7 +383,7 @@ export default function Tool() {
           </div>
           <div className="cc-cap cc-muted">{source === 'synthetic'
             ? (es ? 'casos sintéticos + deslizadores' : 'synthetic cases + sliders')
-            : (es ? '11 molinos industriales con potencia MEDIDA; el modelo se valida contra ellos' : '11 industrial mills with MEASURED power; the model is validated against them')}</div>
+            : (es ? '22 molinos industriales con potencia MEDIDA; dos modelos (HF calibrado + Morrell) se validan contra ellos' : '22 industrial mills with MEASURED power; two models (HF calibrated + Morrell) are validated against them')}</div>
         </div>
         {source === 'synthetic' ? (
         <div className="cc-card">

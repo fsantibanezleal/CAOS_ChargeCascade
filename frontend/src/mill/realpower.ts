@@ -13,14 +13,27 @@
 // separate tool, so it cannot drift from the data.
 
 import { evaluate } from './engine.ts';
+import { morrellPower } from './morrell.ts';
 import { REAL_MILLS, realMillToOperating, type RealMill } from './realmills.ts';
 
 export interface Prediction {
   mill: RealMill;
   hfNet: number;        // Hogg-Fuerstenau net charge-motion power [kW]
-  predicted: number;    // model prediction on the mill's basis [kW]
+  predicted: number;    // HF-calibrated prediction on the mill's basis [kW]
   measured: number;     // the surveyed value [kW]
-  errPct: number;       // signed relative error (predicted-measured)/measured * 100
+  errPct: number;       // signed relative error of the calibrated HF (predicted-measured)/measured * 100
+  morrell: number;      // the INDEPENDENT (uncalibrated) Morrell C-model prediction on the mill's basis [kW]
+  morrellErrPct: number;
+}
+
+/** The Morrell C-model prediction for a real mill, on its power basis (motor->gross, net->net). Uncalibrated,
+ *  first-principles: the real SOTA reference beside the data-calibrated HF. */
+export function morrellKw(m: RealMill): number {
+  const r = morrellPower({
+    diameterM: m.diameterM, lengthM: m.lengthM, phiC: m.pctCritical, fill: m.jTotal, ballFill: m.jBalls,
+    rhoOre: m.rhoOre, coneAllowanceFrac: m.type === 'ball' ? 0 : 0.05,
+  });
+  return m.basis === 'motor' ? r.grossKw : r.netKw;
 }
 
 interface LinFit { a: number; b: number }
@@ -51,7 +64,18 @@ export function predictKw(m: RealMill): number {
 export function predictionFor(m: RealMill): Prediction {
   const hf = hfNetKw(m);
   const predicted = predictKw(m);
-  return { mill: m, hfNet: hf, predicted, measured: m.measuredKw, errPct: (predicted - m.measuredKw) / m.measuredKw * 100 };
+  const morrell = morrellKw(m);
+  return {
+    mill: m, hfNet: hf, predicted, measured: m.measuredKw,
+    errPct: (predicted - m.measuredKw) / m.measuredKw * 100,
+    morrell, morrellErrPct: (morrell - m.measuredKw) / m.measuredKw * 100,
+  };
+}
+
+/** Mean absolute error of the UNCALIBRATED Morrell C-model over all real mills (its independent skill). */
+export function morrellMeanAbsPct(): number {
+  const p = allPredictions();
+  return p.reduce((s, x) => s + Math.abs(x.morrellErrPct), 0) / p.length;
 }
 
 export function allPredictions(): Prediction[] {
