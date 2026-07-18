@@ -59,7 +59,7 @@ export function BondCurve({ op, netPowerKw, es }: { op: Operating; netPowerKw: n
   }, [es]);
 
   return (
-    <div className="rv-plot" style={{ maxWidth: 520 }}>
+    <div className="cc-plot" style={{ maxWidth: 520 }}>
       <UPlotChart data={data} build={build} height={230} />
       {wAvail >= wMax * 1.05 && (
         <p className="cc-cap" style={{ marginTop: '0.2rem' }}>
