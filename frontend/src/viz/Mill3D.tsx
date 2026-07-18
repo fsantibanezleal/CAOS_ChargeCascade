@@ -11,7 +11,7 @@ import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 // Balls are low-poly instanced spheres coloured by speed; the camera fits + centers the mill and the POV PERSISTS
 // across option changes (only Reset view re-fits). Autoplays SLOWLY (default 0.05x, Felipe's explicit request:
 // see the charge dynamics clearly); the rAF still halts on a hidden tab (ADR-0059). KINEMATIC animation of the
-// analytic engine's physics, NOT a DEM solve. Pure three.js.
+// analytic engine's physics, not a DEM solve. Pure three.js.
 const G = 9.81;
 const S = 60; // metres -> scene units
 const VIRIDIS = [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]];
@@ -208,7 +208,7 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
       <div ref={ref} style={{ width: '100%', height }} />
       <div className="cc-canvas-banner">
         <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
-        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastra para orbitar, NO es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, NOT a DEM solve'}</span>
+        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastra para orbitar, NO es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, not a DEM solve'}</span>
       </div>
       <div className="cc-viz-controls">
         <label>{es ? 'velocidad' : 'speed'}

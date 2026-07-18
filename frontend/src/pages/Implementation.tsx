@@ -9,7 +9,7 @@ export default function Implementation() {
       style={{ fontFamily: 'var(--font-mono)', background: 'var(--color-bg)' }}>
       <title id="cc-arch-t">{es ? 'Arquitectura por capas de cómputo' : 'Compute-tier architecture'}</title>
       <desc id="cc-arch-d">{es
-        ? 'Un motor TypeScript exacto corre en vivo en el navegador (incluido el molino 3D) y, sin cambios, en el horneado offline. Un carril torch→ONNX entrena el surrogate de potencia y el autoencoder OOD. Solo archivos estáticos viajan al CDN.'
+        ? 'Un motor TypeScript exacto corre en vivo en el navegador (incluido el molino 3D) y, sin cambios, en el precálculo offline. Un carril torch→ONNX entrena el surrogate de potencia y el autoencoder OOD. Solo archivos estáticos viajan al CDN.'
         : 'An exact TypeScript engine runs live in the browser (including the 3D mill) and, unchanged, in the offline bake. A torch→ONNX lane trains the power surrogate and the OOD autoencoder. Only static files ship to the CDN.'}</desc>
       <defs>
         <marker id="cc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -29,7 +29,7 @@ export default function Implementation() {
         <g key={i}><rect x="346" y={(y as number) - 16} width="238" height="22" rx="5" fill="var(--color-bg)" stroke="var(--color-border)" />
           <text x="356" y={(y as number)} fontSize="10.5" fill="var(--color-fg)">{t as string}</text></g>
       ))}
-      <text x="346" y="214" fontSize="10" fill="var(--color-fg-subtle)">{es ? 'la ÚNICA fuente de verdad física · determinista' : 'the SINGLE source of physics truth · deterministic'}</text>
+      <text x="346" y="214" fontSize="10" fill="var(--color-fg-subtle)">{es ? 'la única fuente de verdad física · determinista' : 'the SINGLE source of physics truth · deterministic'}</text>
 
       {/* LIVE BROWSER (left) */}
       <rect x="20" y="60" width="280" height="180" rx="10" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1.5" />
@@ -44,10 +44,10 @@ export default function Implementation() {
       <line x1="330" y1="130" x2="302" y2="130" stroke="var(--color-accent)" strokeWidth="2" markerEnd="url(#cc-ar-a)" />
       <text x="300" y="122" fontSize="9.5" fill="var(--color-accent)" textAnchor="end">{es ? 'mismo motor' : 'same engine'}</text>
 
-      {/* OFFLINE BAKE + ONNX LANE (right) */}
+      {/* offline BAKE + ONNX LANE (right) */}
       <rect x="630" y="60" width="270" height="180" rx="10" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1.5" />
-      <text x="646" y="44" fontSize="14" fontWeight="700" fill="var(--color-fg)">{es ? 'Offline · horneado + ONNX' : 'Offline · bake + ONNX'}</text>
-      {[[es ? 'hornea los 10 casos (mismo motor)' : 'bakes the 10 cases (same engine)', 88, 'border'],
+      <text x="646" y="44" fontSize="14" fontWeight="700" fill="var(--color-fg)">{es ? 'Offline · precalculado + ONNX' : 'Offline · bake + ONNX'}</text>
+      {[[es ? 'precalcula los 10 casos (mismo motor)' : 'bakes the 10 cases (same engine)', 88, 'border'],
         [es ? 'muestrea (features → potencia)' : 'samples (features → power)', 120, 'border'],
         [es ? 'entrena surrogate MLP (torch)' : 'trains surrogate MLP (torch)', 152, 'good'],
         [es ? 'entrena autoencoder OOD (torch)' : 'trains OOD autoencoder (torch)', 184, 'good']].map(([t, y, c], i) => (
@@ -83,17 +83,17 @@ export default function Implementation() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'ChargeCascade es un banco de física de conminución que corre por completo en el cliente: no hay servidor de aplicación ni base de datos. Todo lo que el visitante manipula son archivos estáticos servidos desde una red de distribución (CDN), y todo el cómputo ocurre o bien en vivo en el navegador o bien horneado de antemano en artefactos compactos que viajan con la página.'
-            : 'ChargeCascade is a comminution-physics workbench that runs entirely client-side: there is no application server and no database. Everything the visitor manipulates is static files served from a content-delivery network, and all computation happens either live in the browser or baked ahead of time into compact artifacts that ship with the page.'}{' '}<Cite id="wills2016" paren /></p>
+            ? 'ChargeCascade es un banco de física de conminución que corre por completo en el cliente: no hay servidor de aplicación ni base de datos. Todo lo que el visitante manipula son archivos estáticos servidos desde una red de distribución (CDN), y todo el cómputo ocurre o bien en vivo en el navegador o bien precalculado de antemano en artefactos compactos que viajan con la página.'
+            : 'ChargeCascade is a comminution-physics workbench that runs entirely client-side: there is no application server and no database. Everything the visitor manipulates is static files served from a content-delivery network, and all computation happens either live in the browser or baked ahead of time into compact artifacts that ship with the page.'}</p>
           <p>{es
-            ? 'La división es deliberada. El motor de molino es lo bastante barato para correr interactivamente , recalcula la velocidad crítica, el movimiento de la carga, el régimen y la potencia en cada movimiento de control sin esfuerzo perceptible. Lo que es caro , entrenar el surrogate de potencia y el autoencoder OOD sobre miles de configuraciones,  se hace OFFLINE y se entrega como el RESULTADO de ese cómputo (modelos ONNX + sus errores held-out), nunca re-derivado en la página.'
-            : 'The split is deliberate. The mill engine is cheap enough to run interactively, it recomputes the critical speed, the charge motion, the regime and the power on every control move with no perceptible effort. What is expensive, training the power surrogate and the OOD autoencoder over thousands of configurations, is done OFFLINE and shipped as the RESULT of that computation (ONNX models + their held-out errors), never re-derived in the page.'}</p>
+            ? 'La división es deliberada. El motor de molino es lo bastante barato para correr interactivamente , recalcula la velocidad crítica, el movimiento de la carga, el régimen y la potencia en cada movimiento de control sin esfuerzo perceptible. Lo que es caro , entrenar el surrogate de potencia y el autoencoder OOD sobre miles de configuraciones,  se hace offline y se entrega como el resultado de ese cómputo (modelos ONNX + sus errores held-out), nunca re-derivado en la página.'
+            : 'The split is deliberate. The mill engine is cheap enough to run interactively, it recomputes the critical speed, the charge motion, the regime and the power on every control move with no perceptible effort. What is expensive, training the power surrogate and the OOD autoencoder over thousands of configurations, is done offline and shipped as the RESULT of that computation (ONNX models + their held-out errors), never re-derived in the page.'}</p>
           <p>{es
-            ? 'El contrato entre el navegador en vivo y el horneado offline es que CORREN EL MISMO MOTOR. El horneado importa el motor TypeScript exacto sin cambios y evalúa cada caso; el navegador importa el mismo motor y lo evalúa en vivo. Por eso los números que ves en el App, en Experimentos y en los artefactos son idénticos por construcción, no por coincidencia.'
+            ? 'El contrato entre el navegador en vivo y el precálculo offline es que CORREN el mismo motor. El precalculado importa el motor TypeScript exacto sin cambios y evalúa cada caso; el navegador importa el mismo motor y lo evalúa en vivo. Por eso los números que ves en el App, en Experimentos y en los artefactos son idénticos por construcción, no por coincidencia.'
             : 'The contract between the live browser and the offline bake is that they RUN THE SAME ENGINE. The bake imports the exact TypeScript engine unchanged and evaluates each case; the browser imports the same engine and evaluates it live. That is why the numbers you see in the App, in Experiments and in the artifacts are identical by construction, not by coincidence.'}</p>
           <div className="fig-svg">{ArchSVG}</div>
           <p className="muted small">{es
-            ? 'Motor exacto compartido → en vivo en el navegador y en el horneado offline; el carril torch→ONNX produce el surrogate + el AE; el CDN solo entrega archivos.'
+            ? 'Motor exacto compartido → en vivo en el navegador y en el precálculo offline; el carril torch→ONNX produce el surrogate + el AE; el CDN solo entrega archivos.'
             : 'Shared exact engine → live in the browser and in the offline bake; the torch→ONNX lane produces the surrogate + the AE; the CDN only delivers files.'}</p>
           <Refs ids={['wills2016', 'napiermunn1996']} label={refsL} />
         </div>
@@ -105,7 +105,7 @@ export default function Implementation() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'El corazón es una función pura: dada una operación de molino (geometría D, L; llenado J; tamaño de bola d; fracción de velocidad crítica φc; densidad de carga) devuelve un resultado completo , velocidad crítica, ω, los ángulos de partida por capa, las trayectorias, el régimen, la fracción centrifugando, la potencia y la energía de Bond. Es la ÚNICA fuente de verdad física; todo lo demás (el 3D, las pestañas, el horneado) la consume.'
+            ? 'El corazón es una función pura: dada una operación de molino (geometría D, L; llenado J; tamaño de bola d; fracción de velocidad crítica φc; densidad de carga) devuelve un resultado completo , velocidad crítica, ω, los ángulos de partida por capa, las trayectorias, el régimen, la fracción centrifugando, la potencia y la energía de Bond. Es la única fuente de verdad física; todo lo demás (el 3D, las pestañas, el precálculo) la consume.'
             : 'The heart is a pure function: given a mill operation (geometry D, L; fill J; ball size d; fraction of critical speed φc; charge density) it returns a complete result, critical speed, ω, the per-shell departure angles, the trajectories, the regime, the centrifuging fraction, the power and the Bond duty. It is the SINGLE source of physics truth; everything else (the 3D, the tabs, the bake) consumes it.'}</p>
           <p>{es
             ? 'Internamente se organiza en módulos pequeños y verificables: la velocidad crítica (Nc = 42.3/√(D−d), φc, ω), el movimiento de la carga (la partida de Davis cos α = ω²r/g por capa + las parábolas + el shoulder/toe), la clasificación de régimen (las bandas de φc + la fracción centrifugando) y la potencia (Hogg–Fuerstenau, forma Morrell, Bond). Cada módulo corresponde a una sección de la Metodología, y sin dependencias externas: aritmética IEEE-754 pura, así que es determinista y auditable.'
@@ -117,7 +117,7 @@ export default function Implementation() {
             <li><InlineMath tex="\alpha(r)" />, {es ? 'ángulo de partida de Davis por capa de radio r' : 'Davis departure angle per shell of radius r'}; <InlineMath tex="f_{\text{cent}}" />, {es ? 'fracción de capas centrifugando' : 'fraction of shells centrifuging'}.</li>
           </ul>
           <Callout variant="honest" title={es ? 'Una sola verdad, sin duplicación' : 'One truth, no duplication'}>
-            {es ? 'No hay una "versión del navegador" y una "versión del horneado" del cálculo de potencia que pudieran divergir: hay UN motor, importado por ambos. Si el motor estuviera mal, lo estaría en vivo y offline por igual, no hay un camino para esconder un número fabricado.' : 'There is no "browser version" and "bake version" of the power calculation that could drift apart: there is ONE engine, imported by both. If the engine were wrong, it would be wrong live and offline alike, there is no path to hide a fabricated number.'}
+            {es ? 'No hay una "versión del navegador" y una "versión del precálculo" del cálculo de potencia que pudieran divergir: hay UN motor, importado por ambos. Si el motor estuviera mal, lo estaría en vivo y offline por igual, no hay un camino para esconder un número fabricado.' : 'There is no "browser version" and "bake version" of the power calculation that could drift apart: there is ONE engine, imported by both. If the engine were wrong, it would be wrong live and offline alike, there is no path to hide a fabricated number.'}
           </Callout>
           <Refs ids={['wills2016', 'hoggfuerstenau1972']} label={refsL} />
         </div>
@@ -129,7 +129,7 @@ export default function Implementation() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'El molino 3D (Three.js) anima EXACTAMENTE las trayectorias que el motor computa: cada partícula sube con la pared, parte en su ángulo de Davis (cos α = φc²·r/R) y vuela una parábola balística hasta reimpactar en el toe. No es una animación decorativa , es la solución cinemática del motor, renderizada. Sube la velocidad y verás el abanico de cataract abrirse; ponla en φc = 1 y la carga se pega a la pared (centrifugado).'
+            ? 'El molino 3D (Three.js) anima exactaMENTE las trayectorias que el motor computa: cada partícula sube con la pared, parte en su ángulo de Davis (cos α = φc²·r/R) y vuela una parábola balística hasta reimpactar en el toe. No es una animación decorativa , es la solución cinemática del motor, renderizada. Al subir la velocidad se ve el abanico de cataract abrirse; ponla en φc = 1 y la carga se pega a la pared (centrifugado).'
             : 'The 3D mill (Three.js) animates EXACTLY the trajectories the engine computes: each particle rides up with the wall, departs at its Davis angle (cos α = φc²·r/R) and flies a ballistic parabola until it re-impacts at the toe. It is not a decorative animation, it is the engine\'s kinematic solution, rendered. Raise the speed and you watch the cataract fan open; set φc = 1 and the charge pins to the wall (centrifuging).'}{' '}<Cite id="davis1919" paren /></p>
           <p>{es
             ? 'La construcción sigue el patrón establecido (WebGLRenderer + OrbitControls + una nube de partículas instanciadas + dispose limpio al desmontar para no fugar contexto WebGL). Las posiciones de partícula no son aleatorias ni "físicas de juguete": se calculan a partir del ángulo de partida y la ecuación de vuelo libre de cada capa, las mismas ecuaciones de la Metodología.'
@@ -190,7 +190,7 @@ export default function Implementation() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'Dos contratos de datos (validados en Python) definen lo que el sistema acepta. El primero describe un molino + su carga: tipo (SAG / bolas / barras), diámetro D, largo L, llenado J, tamaño de bola d, fracción de velocidad crítica φc y densidad de carga, cada campo con su rango físico y sus guardas de honestidad (rechaza geometrías imposibles en vez de devolver un número sin sentido). El segundo describe un caso: el molino más sus metadatos (nombre, categoría, real-o-sintético) para el horneado.'
+            ? 'Dos contratos de datos (validados en Python) definen lo que el sistema acepta. El primero describe un molino + su carga: tipo (SAG / bolas / barras), diámetro D, largo L, llenado J, tamaño de bola d, fracción de velocidad crítica φc y densidad de carga, cada campo con su rango físico y sus guardas de honestidad (rechaza geometrías imposibles en vez de devolver un número sin sentido). El segundo describe un caso: el molino más sus metadatos (nombre, categoría, real-o-sintético) para el precálculo.'
             : 'Two data contracts (validated in Python) define what the system accepts. The first describes a mill + its charge: type (SAG / ball / rod), diameter D, length L, fill J, ball size d, fraction of critical speed φc and charge density, each field with its physical range and honesty guards (it rejects impossible geometries rather than returning a meaningless number). The second describes a case: the mill plus its metadata (name, category, real-or-synthetic) for the bake.'}</p>
           <p>{es
             ? 'El contrato es lo que permite "trae tu propio molino": un usuario puede ingresar un SAG, un molino de bolas o uno de barras reales y el motor lo evalúa con la misma física, siempre que pase las guardas de rango. La marca real-o-sintético es obligatoria, así cada caso declara honestamente si es un molino industrial publicado o una configuración ilustrativa.'
@@ -212,7 +212,7 @@ export default function Implementation() {
             : 'The engine is verified against analytic oracles, known physics results, not self-references. Ten oracles cover: the critical speed (Nc = 42.3/√(D−d) for a reference mill), the φc = 1 centrifuging onset (the centrifuging fraction turns positive, the regime switches to centrifuging), the J ≈ 0.47 power peak, the P ∝ D^2.5 scaling (doubling D multiplies power by ~5.7), the realistic magnitude (~1.3 MW reference), the zero power at J = 0 and Bond\'s law.'}</p>
           <Equation tex="\text{C-CRITICAL: }\varphi_c\ge1\Rightarrow f_{\text{cent}}>0,\ \text{centrifuging};\quad \text{C-EMPTY: }J=0\Rightarrow P=0;\quad \frac{P(2D)}{P(D)}\approx2^{2.5}\approx5.7" caption={es ? 'tres de los oráculos exactos que la verificación exige al motor (C-CRITICAL sobre la fracción/régimen, no la potencia)' : 'three of the exact oracles the verification holds the engine to (C-CRITICAL on the fraction/regime, not the power)'} />
           <p>{es
-            ? 'El pipeline completo se valida de punta a punta: el linter (ruff) y los tests de los dos contratos (pytest), el horneado de los 10 casos, una verificación de artefactos, una re-ejecución byte-idéntica (la prueba de determinismo: misma entrada → mismos bytes) y el build del frontend. Si cualquiera falla, el release no sale.'
+            ? 'El pipeline completo se valida de punta a punta: el linter (ruff) y los tests de los dos contratos (pytest), el precálculo de los 10 casos, una verificación de artefactos, una re-ejecución byte-idéntica (la prueba de determinismo: misma entrada → mismos bytes) y el build del frontend. Si cualquiera falla, el release no sale.'
             : 'The full pipeline is validated end-to-end: the linter (ruff) and the two contracts\' tests (pytest), the bake of the 10 cases, an artifact check, a byte-identical re-run (the determinism proof: same input → same bytes) and the frontend build. If any fails, the release does not ship.'}</p>
           <Callout variant="honest" title={es ? 'Oráculos, no auto-confirmación' : 'Oracles, not self-confirmation'}>
             {es ? 'Los tests comparan contra resultados de física conocidos a priori (el pico en J≈0.47, el escalado D^2.5), no contra una salida anterior del propio motor. Eso impide que un bug "se confirme a sí mismo": un motor mal escrito falla el oráculo, no lo pasa.' : 'The tests compare against physics results known a priori (the J≈0.47 peak, the D^2.5 scaling), not against a prior output of the engine itself. That keeps a bug from "confirming itself": a wrong engine fails the oracle, it does not pass it.'}
@@ -227,7 +227,7 @@ export default function Implementation() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'El producto se entrega como activos estáticos pre-construidos , HTML, JavaScript, los modelos ONNX, los artefactos horneados,  servidos directamente desde un CDN, sin servidor de aplicación ni base de datos en la ruta de la solicitud. El navegador descarga el bundle una vez y corre el motor + la inferencia ONNX localmente; el único "backend" es la caché de borde del CDN.'
+            ? 'El producto se entrega como activos estáticos pre-construidos , HTML, JavaScript, los modelos ONNX, los artefactos precalculados,  servidos directamente desde un CDN, sin servidor de aplicación ni base de datos en la ruta de la solicitud. El navegador descarga el bundle una vez y corre el motor + la inferencia ONNX localmente; el único "backend" es la caché de borde del CDN.'
             : 'The product ships as pre-built static assets, HTML, JavaScript, the ONNX models, the baked artifacts, served directly from a CDN, with no application server and no database in the request path. The browser fetches the bundle once and runs the engine + ONNX inference locally; the only "backend" is the CDN\'s edge cache.'}</p>
           <p>{es
             ? 'El armazón de aplicación , navegación, tema claro/oscuro, contenido bilingüe (EN/ES), el marco de citas y metodología, el modal de arquitectura ⓘ y el lenguaje visual (paleta, tipografía, convenciones de diagramas),  proviene de un design system compartido reutilizado en la suite de apps de analítica, así que ChargeCascade hereda un armazón consistente y solo aporta su física de dominio y sus artefactos.'
@@ -246,7 +246,7 @@ export default function Implementation() {
       <div className="page-head prose">
         <h1>{es ? 'Implementación' : 'Implementation'}</h1>
         <p className="lede">{es
-          ? 'Un motor TypeScript exacto corre en vivo en el navegador (incluido el 3D) y, sin cambios, en el horneado offline → artefactos compactos. Un carril torch→ONNX produce el surrogate de potencia + el autoencoder OOD. Todo determinista, todo reproducible.'
+          ? 'Un motor TypeScript exacto corre en vivo en el navegador (incluido el 3D) y, sin cambios, en el precálculo offline → artefactos compactos. Un carril torch→ONNX produce el surrogate de potencia + el autoencoder OOD. Todo determinista, todo reproducible.'
           : 'An exact TypeScript engine runs live in the browser (including the 3D) and, unchanged, in the offline bake → compact artifacts. A torch→ONNX lane produces the power surrogate + the OOD autoencoder. All deterministic, all reproducible.'} <InlineMath tex="\varphi_c=N/N_c" /></p>
       </div>
       <Tabs tabs={tabs} ariaLabel={es ? 'implementación' : 'implementation'} />

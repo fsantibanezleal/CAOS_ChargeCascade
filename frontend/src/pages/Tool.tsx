@@ -77,7 +77,7 @@ export default function Tool() {
       id: 'charge3d', label: es ? 'Carga 3D' : '3D charge',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastra para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
+          <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastrar para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
           <Mill3D op={op} />
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
@@ -225,7 +225,7 @@ export default function Tool() {
             {surrPending ? (
               <div className="cc-pending">
                 <strong>{es ? 'Surrogate: no cargado' : 'Surrogate: not loaded'}</strong>
-                <p>{es ? 'El surrogate entrenado viene en este build (torch → ONNX) pero no se pudo cargar en esta sesión. El motor analítico EXACTO corre en vivo mientras tanto.' : 'The trained surrogate ships with this build (torch → ONNX) but could not be loaded in this session. The EXACT analytic engine runs live meanwhile.'}</p>
+                <p>{es ? 'El surrogate entrenado viene en este build (torch → ONNX) pero no se pudo cargar en esta sesión. El motor analítico exacto corre en vivo mientras tanto.' : 'The trained surrogate ships with this build (torch → ONNX) but could not be loaded in this session. The EXACT analytic engine runs live meanwhile.'}</p>
               </div>
             ) : (
               <>
@@ -328,7 +328,7 @@ export default function Tool() {
         return (
           <div className="cc-vizstack">
             <div className="cc-plot-t">{es
-              ? 'Trae tu propio molino: describe el punto de operación; una comprobación de validez física (la misma que valida los casos) lo acepta o lo rechaza con un motivo y marca advertencias. Si se acepta, el motor EXACTO corre sobre tu molino y puedes aplicarlo a todo el workbench.'
+              ? 'Molino definido por el usuario: se describe el punto de operación; una comprobación de validez física (la misma que valida los casos) lo acepta o lo rechaza con un motivo y marca advertencias. Si se acepta, el motor exacto corre sobre tu molino y puedes aplicarlo a todo el workbench.'
               : 'Bring your own mill: describe the operating point; a physical-validity check (the same one that validates the cases) accepts or rejects it with a reason and raises warnings. If accepted, the EXACT engine runs on your mill and you can apply it to the whole workbench.'}</div>
             <div className="cc-card">
               <div className="cc-card-t">{es ? 'Tu molino' : 'Your mill'}</div>
@@ -383,7 +383,7 @@ export default function Tool() {
           </div>
           <div className="cc-cap cc-muted">{source === 'synthetic'
             ? (es ? 'casos sintéticos + deslizadores' : 'synthetic cases + sliders')
-            : (es ? '22 molinos industriales con potencia MEDIDA; dos modelos (HF calibrado + Morrell) se validan contra ellos' : '22 industrial mills with MEASURED power; two models (HF calibrated + Morrell) are validated against them')}</div>
+            : (es ? '22 molinos industriales con potencia medida; dos modelos (HF calibrado + Morrell) se validan contra ellos' : '22 industrial mills with MEASURED power; two models (HF calibrated + Morrell) are validated against them')}</div>
         </div>
         {source === 'synthetic' ? (
         <div className="cc-card">
