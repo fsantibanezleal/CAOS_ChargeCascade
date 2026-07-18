@@ -93,7 +93,7 @@ for (let i = 0; i < 500; i++) {
 writeFileSync(resolve(RAW, 'mill-train.json'), JSON.stringify({ x: X, y: Y, features: [...MILL_FEATURES], outputs: ['power_kw', 'frac_centrifuging'] }));
 writeFileSync(resolve(RAW, 'mill-eval.json'), JSON.stringify({ inDist: evalIn, ood: OUT }));
 // the data-design facts (so the learned-model lineage is auditable: how the training set was sampled). The labels ARE
-// the exact TS engine; the envelope is a Latin-hypercube-style uniform sweep over the operating ranges, fixed seed.
+// the exact TS engine; the envelope is an iid uniform sweep over the operating ranges (fixed-seed mulberry32, no stratification), fixed seed.
 writeFileSync(resolve(RAW, 'train-design.json'), JSON.stringify({
   nTrainPoints: X.length, nEvalInDist: evalIn.length, nOod: OUT.length,
   features: [...MILL_FEATURES], nFeatures: MILL_FEATURES.length, seed: 20260621,

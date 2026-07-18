@@ -34,7 +34,7 @@ export default function Experiments() {
       <title id="cc-ho-t">{es ? 'Protocolo held-out para el surrogate' : 'Held-out protocol for the surrogate'}</title>
       <desc id="cc-ho-d">{es
         ? 'Las configuraciones de molino se parten por molino completo en entrenamiento y prueba; el surrogate se mide contra el motor exacto solo en configuraciones nunca vistas en entrenamiento.'
-        : 'Mill configurations are split by whole mill into train and test; the surrogate is measured against the exact engine only on configurations never seen in training.'}</desc>
+        : 'Train and test are disjoint sets of independently sampled mill configurations; the surrogate is measured against the exact engine only on configurations never seen in training.'}</desc>
       <defs>
         <marker id="cc-ho-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="var(--color-fg-subtle)" /></marker>
@@ -62,7 +62,7 @@ export default function Experiments() {
       <rect x="450" y="232" width="390" height="104" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" strokeWidth="2" strokeDasharray="6 4" />
       <text x="466" y="256" fontSize="13" fontWeight="700" fill="var(--color-bad)">{es ? 'PRUEBA · held-out' : 'TEST · held-out'}</text>
       <text x="466" y="278" fontSize="10.5" fill="var(--color-fg-faint)">{es ? 'molinos NUNCA vistos en entrenamiento' : 'mills NEVER seen in training'}</text>
-      <text x="466" y="300" fontSize="10.5" fill="var(--color-fg)">{es ? 'error del surrogate vs exacto ≈ ±12.5%' : 'surrogate vs exact error ≈ ±12.5%'}</text>
+      <text x="466" y="300" fontSize="10.5" fill="var(--color-fg)">{es ? 'error surrogate vs exacto: 5.2% medio, ±12.5% σ' : 'surrogate vs exact error: 5.2% mean, ±12.5% σ'}</text>
       <text x="466" y="320" fontSize="10.5" fill="var(--color-fg)">{es ? 'el AE marca el molino exótico (OOD, AUC ≈ 0.92)' : 'the AE flags the exotic mill (OOD, AUC ≈ 0.92)'}</text>
     </svg>
   );
@@ -138,8 +138,8 @@ export default function Experiments() {
       content: (
         <div className="prose">
           <p>{es
-            ? 'El surrogate de potencia y el autoencoder OOD se evalúan con una partición sin fuga: las configuraciones de molino se asignan a entrenamiento o prueba por MOLINO COMPLETO, nunca mezclando muestras del mismo molino en ambos lados. El surrogate se mide contra el motor exacto SOLO en molinos que nunca vio. Su error held-out (~±12.5%) se reporta tal cual, no el error de entrenamiento, que sería optimista.'
-            : 'The power surrogate and the OOD autoencoder are evaluated with a leakage-safe split: mill configurations are assigned to train or test by WHOLE MILL, never mixing samples of the same mill on both sides. The surrogate is measured against the exact engine ONLY on mills it never saw. Its held-out error (~±12.5%) is reported as it lands, not the training error, which would be optimistic.'}</p>
+            ? 'El surrogate de potencia y el autoencoder OOD se evalúan con una partición sin fuga: entrenamiento y prueba son conjuntos DISJUNTOS de configuraciones muestreadas de forma independiente (cada punto es un molino distinto); el surrogate se mide contra el motor exacto SOLO en configuraciones que nunca vio. Su error held-out (5.2% medio, ±12.5% σ) se reporta tal cual, no el error de entrenamiento, que sería optimista.'
+            : 'The power surrogate and the OOD autoencoder are evaluated with a leakage-safe split: train and test are DISJOINT sets of independently sampled configurations (each point is a distinct mill); the surrogate is measured against the exact engine ONLY on configurations it never saw. Its held-out error (5.2% mean, ±12.5% σ) is reported as it lands, not the training error, which would be optimistic.'}</p>
           {HeldOutSVG}
           <p className="muted small">{es
             ? 'Partición por molino completo: el surrogate se mide en configuraciones held-out; el AE marca el molino exótico fuera de envolvente.'

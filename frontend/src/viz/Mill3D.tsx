@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { usePausedViz, useThemeStore } from '@fasl-work/caos-app-shell';
+import { usePausedViz, useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 
 // The interactive 3D tumbling mill. The cylindrical shell (axis along z) rotates; lifter bars carry the charge up;
@@ -9,8 +9,9 @@ import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 // flies the parabolic free-flight trajectory and lands back at the toe, so the user WATCHES cascading ->
 // cataracting -> centrifuging as they change phiC. Centrifuging shells (cos a >= 1) stay pinned to the shell.
 // Balls are low-poly instanced spheres coloured by speed; the camera fits + centers the mill and the POV PERSISTS
-// across option changes (only Reset view re-fits). Autoplay on load for visual impact; the rAF still halts on a
-// hidden tab (ADR-0059). KINEMATIC animation of the analytic engine's physics, NOT a DEM solve. Pure three.js.
+// across option changes (only Reset view re-fits). DEFAULT PAUSED (no-autoplay rule): a static framed mill is
+// drawn on mount and the user presses Play; the rAF halts on a hidden tab (ADR-0059). KINEMATIC animation of the
+// analytic engine's physics, NOT a DEM solve. Pure three.js.
 const G = 9.81;
 const S = 60; // metres -> scene units
 const VIRIDIS = [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]];
@@ -35,6 +36,7 @@ function fitCamera(cam: THREE.PerspectiveCamera, controls: OrbitControls, box: T
 export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
+  const es = useShellLang() === 'es';
 
   const [animSpeed, setAnimSpeed] = useState(() => speed || 1.5);
   const [ballSize, setBallSize] = useState(1);
@@ -45,7 +47,7 @@ export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; heigh
   const resetViewRef = useRef<() => void>(() => {});
 
   const stepRef = useRef<((dtSec: number) => void) | null>(null);
-  const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: true });
+  const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: false });
 
   useEffect(() => {
     const el = ref.current;
@@ -205,19 +207,19 @@ export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; heigh
     <div className="cc-canvas-wrap">
       <div ref={ref} style={{ width: '100%', height }} />
       <div className="cc-canvas-banner">
-        <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? 'Pause' : 'Play'}</button>
-        <span>Kinematic charge (Davis trajectories), drag to orbit, NOT a DEM solve</span>
+        <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
+        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastra para orbitar, NO es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, NOT a DEM solve'}</span>
       </div>
       <div className="cc-viz-controls">
-        <label>speed
+        <label>{es ? 'velocidad' : 'speed'}
           <input type="range" min={0.05} max={4} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
           <b>{animSpeed.toFixed(2)}x</b>
         </label>
-        <label>ball size
+        <label>{es ? 'tamaño de bola' : 'ball size'}
           <input type="range" min={0.5} max={2.5} step={0.1} value={ballSize} onChange={(e) => setBallSize(+e.target.value)} />
           <b>{ballSize.toFixed(1)}x</b>
         </label>
-        <button type="button" className="btn" onClick={() => resetViewRef.current()}>Reset view</button>
+        <button type="button" className="btn" onClick={() => resetViewRef.current()}>{es ? 'Restablecer vista' : 'Reset view'}</button>
       </div>
     </div>
   );

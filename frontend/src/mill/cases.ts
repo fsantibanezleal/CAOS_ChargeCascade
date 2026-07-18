@@ -37,7 +37,7 @@ const c = (over: Partial<Operating>): Operating => ({ ...BALL, ...over });
 export const MILL_PRESETS: Record<MillType, Pick<Operating, 'diameterM' | 'lengthM' | 'fill' | 'phiC' | 'ballTopMm' | 'liftAngleDeg' | 'chargeDensity'>> = {
   ball: { diameterM: 4.0, lengthM: 6.0, fill: 0.35, phiC: 0.75, ballTopMm: 80, liftAngleDeg: 35, chargeDensity: 4.8 },
   sag: { diameterM: 10.0, lengthM: 5.0, fill: 0.28, phiC: 0.78, ballTopMm: 125, liftAngleDeg: 38, chargeDensity: 3.0 },
-  rod: { diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.65, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5 },
+  rod: { diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.62, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5 },
   ag: { diameterM: 7.0, lengthM: 4.0, fill: 0.25, phiC: 0.75, ballTopMm: 100, liftAngleDeg: 36, chargeDensity: 2.7 },
 };
 
@@ -55,7 +55,7 @@ export const CASES: CCCase[] = [
   },
   {
     id: 'K-ROD', name: 'Rod mill (L > D)', category: CAT_TYPE,
-    op: c({ millType: 'rod', diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.65, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5, tph: 80 }),
+    op: c({ millType: 'rod', diameterM: 3.5, lengthM: 5.5, fill: 0.38, phiC: 0.62, ballTopMm: 90, liftAngleDeg: 32, chargeDensity: 5.5, tph: 80 }),
     expectedBand: 'long mill, rods (line contact), run SLOW (cascading) so rods do not tangle/break',
     validationAnchor: 'low phiC -> cascading regime; no cataracting', realOrSynthetic: 'synthetic',
   },

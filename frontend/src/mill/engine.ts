@@ -1,5 +1,5 @@
 // The top-level live engine: an Operating point -> a full MillResult. The single source of physics truth the whole
-// app reads, AND the ground-truth the offline LHS sweep samples to train the ONNX surrogate (the ChancaDEM pattern).
+// app reads, AND the ground-truth the offline uniform sweep samples to train the ONNX surrogate (the ChancaDEM pattern).
 // Pure TypeScript, sub-millisecond, no Pyodide, no backend. Recompute on EVERY control change.
 
 import { criticalSpeedRpm, omegaRadS, speedRpm } from './criticalspeed.ts';
