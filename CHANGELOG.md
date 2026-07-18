@@ -3,6 +3,20 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.15.002], 2026-07-11
+
+### Fixed (Felipe, live)
+- Methodology "Charge motion" diagram (the Davis departure fan): both cataract curves were drawn OUTSIDE the shell
+  circle (they ended at x=300/280, ~150 px from a 70 px-radius shell). Redrawn so each departs the shoulder and
+  arcs to the toe, entirely inside r=70 (verified by sampling: max 63.9 / 58.0). The "impact at the toe" label
+  moved to the toe (lower left). This is the third and last hand-drawn diagram with the outside-the-mill artifact
+  (Introduction + Trajectory were fixed in v0.14.005).
+
+### Changed (Felipe, explicit request)
+- The 3D charge animation now DEFAULTS to 0.05x speed AND autoplays on load, so the departure-and-cataract
+  dynamics are visible slowly and immediately. (This overrides the general default-paused rule for this viz on
+  Felipe's instruction; the rAF still halts on a hidden tab.)
+
 ## [0.15.001], 2026-07-11
 
 ### Fixed (issue #45, adversarial-audit round 3: docs consistency)

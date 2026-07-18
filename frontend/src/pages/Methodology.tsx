@@ -76,9 +76,11 @@ export default function Methodology() {
                   <circle className="shell" cx="150" cy="100" r="70" />
                   <path className="toe" d="M150,100 L150,170 A70,70 0 0,1 92,128 Z" />
                   <circle className="ball" cx="108" cy="58" r="4" /><circle className="ball" cx="150" cy="42" r="4" /><circle className="ball" cx="192" cy="58" r="4" />
-                  <path className="cat" d="M192,58 C250,30 300,70 300,150" /><path className="cat" d="M150,42 C210,20 270,60 280,150" style={{ opacity: 0.6 }} />
-                  <text className="s" x="200" y="40">{es ? 'capa externa parte primero' : 'outer shell departs first'}</text>
-                  <text className="s" x="250" y="165">{es ? 'impacto en el toe' : 'impact at the toe'}</text>
+                  {/* cataract flight: departs the shoulder (upper right, on the shell), arcs over and lands on
+                      the toe (lower left). Every point stays INSIDE the r=70 shell (verified by sampling). */}
+                  <path className="cat" d="M192,58 C178,42 130,140 108,150" /><path className="cat" d="M150,42 C140,46 124,134 122,150" style={{ opacity: 0.6 }} />
+                  <text className="s" x="196" y="40">{es ? 'capa externa parte primero' : 'outer shell departs first'}</text>
+                  <text className="s" x="42" y="180">{es ? 'impacto en el toe' : 'impact at the toe'}</text>
                   <text className="s" x="90" y="186">cos α = φc²·r/R · {es ? 'parábola: y = x·tanα − g·x²/(2v²cos²α)' : 'parabola: y = x·tanα − g·x²/(2v²cos²α)'}</text>
                 </svg>
                 <figcaption>{es ? 'Cada capa parte en su propio ángulo de Davis y vuela una parábola; el conjunto es el abanico de cataract.' : 'Each shell departs at its own Davis angle and flies a parabola; the ensemble is the cataract fan.'}</figcaption>
