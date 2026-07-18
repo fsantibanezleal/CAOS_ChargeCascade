@@ -210,7 +210,7 @@ export function Mill3D({ op, height = 380, speed = 1.5 }: { op: Operating; heigh
       </div>
       <div className="cc-viz-controls">
         <label>speed
-          <input type="range" min={0.25} max={4} step={0.25} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
+          <input type="range" min={0.05} max={4} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
           <b>{animSpeed.toFixed(2)}x</b>
         </label>
         <label>ball size

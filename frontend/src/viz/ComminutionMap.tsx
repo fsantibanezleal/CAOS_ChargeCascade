@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import { bondWKwhT, evaluate, type Operating } from '../mill/index.ts';
 
@@ -13,6 +13,29 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
   const wrapRef = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
+  const [read, setRead] = useState<{ x: number; y: number; text: string } | null>(null);
+
+  // Hover value-readout (interactive-viz rubric): inverse-transform the cursor to (phiC, J), evaluate the SAME
+  // engine at that point, and read out the power-limited capacity, or the honest collapsed state.
+  const onMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const wrap = wrapRef.current; if (!wrap) return;
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const W = wrap.clientWidth || 600, H = height;
+    const pad = { l: 46, r: 16, t: 16, b: 36 };
+    const PHI_MIN = 0.3, PHI_MAX = 1.15, J_MAX = 0.6;
+    const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    if (mx < pad.l || mx > W - pad.r || my < pad.t || my > H - pad.b) { setRead(null); return; }
+    const phiC = PHI_MIN + ((mx - pad.l) / pw) * (PHI_MAX - PHI_MIN);
+    const j = (1 - (my - pad.t) / ph) * J_MAX;
+    const r = evaluate({ ...op, phiC, fill: j });
+    const wBond = bondWKwhT(op.oreWi, op.feedF80um, op.prodP80um);
+    const collapsed = r.regime === 'centrifuging' || r.fracCentrifuging > 0.5;
+    const text = collapsed
+      ? `φc ${phiC.toFixed(2)} · J ${(j * 100).toFixed(0)}% · ${es ? 'centrifugado (sin molienda)' : 'centrifuging (no grinding)'}`
+      : `φc ${phiC.toFixed(2)} · J ${(j * 100).toFixed(0)}% · ${wBond > 0 ? (r.phfKw / wBond).toFixed(0) : '0'} t/h`;
+    setRead({ x: mx, y: my, text });
+  };
 
   useEffect(() => {
     const canvas = ref.current;
@@ -122,8 +145,9 @@ export function ComminutionMap({ op, height = 320 }: { op: Operating; height?: n
   }, [op, height, theme, es]);
 
   return (
-    <div ref={wrapRef} className="cc-canvas-wrap">
-      <canvas ref={ref} style={{ display: 'block', width: '100%' }} />
+    <div ref={wrapRef} style={{ position: 'relative' }} className="cc-canvas-wrap">
+      <canvas ref={ref} style={{ display: 'block', width: '100%' }} onMouseMove={onMove} onMouseLeave={() => setRead(null)} />
+      {read && <div className="cc-map-readout" style={{ position: 'absolute', left: Math.min(read.x + 12, 440), top: read.y + 12, pointerEvents: 'none' }}>{read.text}</div>}
     </div>
   );
 }
