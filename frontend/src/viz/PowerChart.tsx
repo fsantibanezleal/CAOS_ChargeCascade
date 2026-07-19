@@ -16,6 +16,7 @@ export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[];
     return {
       width,
       height: h,
+      legend: { show: false }, // the two KPI cards below label both models with live values; uPlot's legend overlapped them
       scales: { x: { time: false }, y: { range: [0, null] as unknown as uPlot.Scale.Range } },
       axes: [
         { label: es ? 'fracción de velocidad crítica φc' : 'fraction of critical speed φc', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
