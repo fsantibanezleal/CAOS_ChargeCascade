@@ -3,6 +3,23 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.18.000], 2026-07-18
+
+### Added (the full Morrell C-model in the live app)
+- The real Morrell (1996) C-model (`mill/morrell.ts`) is now wired into the live synthetic Power tab as an
+  independent, uncalibrated power curve (net + gross), shown beside Hogg-Fuerstenau. Previously the live tab
+  showed only a calibrated Morrell-form (a consistency check by construction); the full C-model was reachable
+  only in the real-mill validation lane. The charge-density control drives the C-model directly (`rhoCOverride`).
+  For the reference 4x6 ball mill the C-model net (1.35 MW) sits just above Hogg-Fuerstenau (1.19 MW), the honest
+  uncalibrated overestimate, and diverges further at high speed. Screenshot-verified in light and dark.
+- Corrected the Methodology "Power" text, which still claimed the full C-model was not implemented in the app.
+
+### Fixed (text quality, EN + ES)
+- OOD threshold corrected from p99 to p95 on the Implementation page (it contradicted the pipeline and every
+  other surface). Lowercased WEB / COMPUTE / REPLAY and the Aceptado / Rechazado status pills; fixed the
+  corre / banco calques; Bond (1961) to Bond (1952) in the README.
+- Removed the redundant uPlot legend on the Power chart (it overlapped the KPI cards).
+
 ## [0.17.001], 2026-07-11
 
 ### Fixed (language quality, EN + ES)
