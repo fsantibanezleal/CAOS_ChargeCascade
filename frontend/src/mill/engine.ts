@@ -6,7 +6,27 @@ import { criticalSpeedRpm, omegaRadS, speedRpm } from './criticalspeed.ts';
 import { chargeGeometry } from './charge.ts';
 import { CASCADE_CATARACT_PHIC, classifyRegime } from './regime.ts';
 import { bondWKwhT, chargeMassT, hoggFuerstenauKw, morrellFormKw } from './power.ts';
+import { morrellPower } from './morrell.ts';
 import type { MillResult, Operating, PowerPoint } from './types.ts';
+
+/** The real Morrell (1996) C-model for the operating point: the full continuum power integral, independent and
+ *  uncalibrated (the density control feeds it directly via rhoCOverride). SAG/AG get Doll's 5% cone allowance. */
+function cModel(op: Operating, phiC: number) {
+  return morrellPower({
+    diameterM: op.diameterM,
+    lengthM: op.lengthM,
+    phiC,
+    fill: op.fill,
+    rhoCOverride: op.chargeDensity,
+    coneAllowanceFrac: op.millType === 'sag' || op.millType === 'ag' ? 0.05 : 0,
+  });
+}
+
+/** C-model net power [kW], or null where the model is out of range (fill 0, extreme phiC): the chart shows a gap. */
+function cModelNetKw(op: Operating, phiC: number): number | null {
+  const net = cModel(op, phiC).netKw;
+  return Number.isFinite(net) && net > 0 ? net : null;
+}
 
 export function evaluate(op: Operating): MillResult {
   const ncRpm = criticalSpeedRpm(op.diameterM, op.ballTopMm);
@@ -17,11 +37,13 @@ export function evaluate(op: Operating): MillResult {
 
   const phfKw = hoggFuerstenauKw(op.diameterM, op.lengthM, op.chargeDensity, op.phiC, op.fill, op.liftAngleDeg);
   const pMorrellKw = morrellFormKw(op.diameterM, op.lengthM, op.chargeDensity, op.phiC, op.fill, geo.shoulderDeg, geo.toeDeg);
+  const cm = cModel(op, op.phiC); // the real Morrell C-model at the operating point
   const bondW = bondWKwhT(op.oreWi, op.feedF80um, op.prodP80um);
   const mass = chargeMassT(op.diameterM, op.lengthM, op.fill, op.chargeDensity);
 
-  // power vs phiC at the current J, D, L (raw Hogg-Fuerstenau is monotone in phiC; the regime/centrifuging overlay
-  // shows where grinding collapses, we do not taper the published torque model)
+  // power vs phiC at the current J, D, L. Two independent models: Hogg-Fuerstenau (rigid-body torque arm) and the
+  // real Morrell C-model (continuum charge shape). Raw curves are monotone in phiC; the regime/centrifuging overlay
+  // shows where grinding collapses (we do not taper the published torque model).
   const powerCurve: PowerPoint[] = [];
   for (let i = 0; i <= 30; i++) {
     const p = 0.3 + ((1.05 - 0.3) * i) / 30;
@@ -31,6 +53,7 @@ export function evaluate(op: Operating): MillResult {
       phiC: p,
       phf: hoggFuerstenauKw(op.diameterM, op.lengthM, op.chargeDensity, p, op.fill, op.liftAngleDeg),
       morrell: morrellFormKw(op.diameterM, op.lengthM, op.chargeDensity, p, op.fill, g2.shoulderDeg, g2.toeDeg),
+      cModel: cModelNetKw(op, p),
     });
   }
 
@@ -54,6 +77,9 @@ export function evaluate(op: Operating): MillResult {
     cascadeCataractPhiC: CASCADE_CATARACT_PHIC,
     phfKw,
     pMorrellKw,
+    pCModelNetKw: Number.isFinite(cm.netKw) && cm.netKw > 0 ? cm.netKw : 0,
+    pCModelGrossKw: Number.isFinite(cm.grossKw) && cm.grossKw > 0 ? cm.grossKw : 0,
+    pCModelNoLoadKw: Number.isFinite(cm.noLoadKw) ? cm.noLoadKw : 0,
     bondWKwhT: bondW,
     bondPowerKw: bondW * op.tph,
     powerCurve,

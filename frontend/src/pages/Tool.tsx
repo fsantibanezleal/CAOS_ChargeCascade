@@ -119,11 +119,11 @@ export default function Tool() {
       id: 'power', label: es ? 'Potencia' : 'Power draw',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'Potencia neta vs φc (Hogg-Fuerstenau + forma Morrell). La banda roja = centrifuging (φc ≥ 1); la línea = el φc actual.' : 'Net power vs φc (Hogg-Fuerstenau + Morrell-form). The red band = centrifuging (φc ≥ 1); the line = the current φc.'}</div>
+          <div className="cc-plot-t">{es ? 'Potencia neta vs φc: dos modelos independientes, Hogg-Fuerstenau (cuerpo rígido) y el C-model de Morrell (1996) (carga como continuo, sin calibrar). La banda roja = centrifuging (φc ≥ 1); la línea = el φc actual.' : 'Net power vs φc: two independent models, Hogg-Fuerstenau (rigid body) and the Morrell (1996) C-model (charge as a continuum, uncalibrated). The red band = centrifuging (φc ≥ 1); the line = the current φc.'}</div>
           <PowerChart curve={r.powerCurve} phiC={op.phiC} />
           <div className="cc-kpis">
             <Kpi label="Hogg-Fuerstenau" value={kw(r.phfKw)} />
-            <Kpi label="Morrell-form" value={kw(r.pMorrellKw)} />
+            <Kpi label={es ? 'Morrell C-model (neto)' : 'Morrell C-model (net)'} value={kw(r.pCModelNetKw)} />
             <Kpi label={es ? 'masa de carga' : 'charge mass'} value={`${r.chargeMassT.toFixed(0)} t`} />
             <Kpi label={es ? 'energía Bond' : 'Bond duty'} value={`${r.bondWKwhT.toFixed(1)} kWh/t`} />
           </div>
@@ -346,9 +346,9 @@ export default function Tool() {
             </div>
 
             {cval.accepted ? (
-              <div className="cc-regime-pill cc-regime-cascading">{es ? 'ACEPTADO' : 'ACCEPTED'} ✓{cval.flags.length > 0 ? ` · ${cval.flags.length} ${es ? 'bandera(s)' : 'flag(s)'}` : ''}</div>
+              <div className="cc-regime-pill cc-regime-cascading">{es ? 'Aceptado' : 'Accepted'} ✓{cval.flags.length > 0 ? ` · ${cval.flags.length} ${es ? 'bandera(s)' : 'flag(s)'}` : ''}</div>
             ) : (
-              <div className="cc-regime-pill cc-regime-centrifuging">{es ? 'RECHAZADO' : 'REJECTED'} ✗, {cval.reason}</div>
+              <div className="cc-regime-pill cc-regime-centrifuging">{es ? 'Rechazado' : 'Rejected'} ✗, {cval.reason}</div>
             )}
             {cval.flags.map((f, i) => <p key={i} className="cc-note" style={{ color: 'var(--color-warn)' }}>⚠ {f}</p>)}
 

@@ -4,17 +4,19 @@ import type uPlot from 'uplot';
 import { UPlotChart, themeColors } from './UPlotChart.tsx';
 import type { PowerPoint } from '../mill/types.ts';
 
-// Power vs fraction-of-critical-speed: the Hogg-Fuerstenau + Morrell-form curves, with the current operating phiC
-// marked and the centrifuging band (phiC >= 1) shaded. Reads kW on hover. The dramatic peak-then-roll-off picture.
+// Power vs fraction-of-critical-speed: two independent models, Hogg-Fuerstenau (rigid-body torque arm) and the real
+// Morrell (1996) C-model (continuum charge shape). The current operating phiC is marked and the centrifuging band
+// (phiC >= 1) is shaded. Reads kW on hover. The C-model line gaps where the model is out of range.
 export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[]; phiC: number; height?: number }) {
   const es = useShellLang() === 'es';
   const x = curve.map((p) => p.phiC);
-  const data = [x, curve.map((p) => p.phf), curve.map((p) => p.morrell)] as unknown as uPlot.AlignedData;
+  const data = [x, curve.map((p) => p.phf), curve.map((p) => p.cModel)] as unknown as uPlot.AlignedData;
   const build = useCallback((width: number, h: number): uPlot.Options => {
     const c = themeColors();
     return {
       width,
       height: h,
+      legend: { show: false }, // the two KPI cards below label both models with live values; uPlot's legend overlapped them
       scales: { x: { time: false }, y: { range: [0, null] as unknown as uPlot.Scale.Range } },
       axes: [
         { label: es ? 'fracción de velocidad crítica φc' : 'fraction of critical speed φc', stroke: c.subtle, grid: { stroke: c.border }, ticks: { stroke: c.border } },
@@ -23,7 +25,7 @@ export function PowerChart({ curve, phiC, height = 260 }: { curve: PowerPoint[];
       series: [
         { label: 'φc' },
         { label: 'Hogg-Fuerstenau', stroke: c.accent, width: 2 },
-        { label: 'Morrell-form', stroke: c.good, width: 2, dash: [5, 3] },
+        { label: es ? 'Morrell C-model (independiente)' : 'Morrell C-model (independent)', stroke: c.good, width: 2, dash: [5, 3] },
       ],
       hooks: {
         draw: [

@@ -35,17 +35,17 @@ export const architecture: ArchitectureConfig = {
       es: 'Carriles, web / offline / cómputo',
       svg: 'svg/tech/02-lanes.svg',
       body_en:
-        'Three lanes. WEB (live, in the browser): the TypeScript mill engine recomputes on every ' +
+        'Three lanes. web (live, in the browser): the TypeScript mill engine recomputes on every ' +
         'control, the Three.js 3D mill animates the charge, and onnxruntime-web runs the power surrogate + the OOD ' +
-        'autoencoder, no server. offline / COMPUTE (your machine, isolated environment): the Python pipeline bakes the ' +
+        'autoencoder, no server. offline / compute (your machine, isolated environment): the Python pipeline bakes the ' +
         'canonical case artifacts (the same TS engine) and the heavy lane (retrain, torch) trains the two ' +
-        'learned models → ONNX. REPLAY: the small committed artifacts are overlaid into the SPA by the data-copy step; ' +
+        'learned models → ONNX. replay: the small committed artifacts are overlaid into the SPA by the data-copy step; ' +
         'the typed contract mirror fails the build if the web and pipeline shapes diverge.',
       body_es:
-        'Tres carriles. WEB (en vivo): el motor TypeScript recalcula con cada control, el molino ' +
+        'Tres carriles. web (en vivo): el motor TypeScript recalcula con cada control, el molino ' +
         '3D de Three.js anima la carga, y onnxruntime-web ejecuta el surrogate de potencia + el autoencoder OOD, sin ' +
-        'servidor. offline / CÓMPUTO (entorno aislado): el pipeline Python precalcula los artefactos canónicos (el mismo ' +
-        'motor TS) y el carril pesado (retrain, torch) entrena los dos modelos → ONNX. REPLAY: los ' +
+        'servidor. offline / cómputo (entorno aislado): el pipeline Python precalcula los artefactos canónicos (el mismo ' +
+        'motor TS) y el carril pesado (retrain, torch) entrena los dos modelos → ONNX. replay: los ' +
         'artefactos versionados se superponen con el paso de copia de datos; el espejo de contrato tipado ' +
         'rompe el build si la web y el pipeline divergen.',
     },
@@ -64,7 +64,7 @@ export const architecture: ArchitectureConfig = {
       body_es:
         'La página App recalcula en vivo: el selector de casos o el molino propio + los controles de diámetro / ' +
         'llenado / tamaño de bolas / φc / tipo alimentan el motor TypeScript y los modelos onnxruntime-web, que ' +
-        'alimentan el banco, el molino 3D, el diagrama de trayectorias, el mapa de regímenes, la curva de potencia, ' +
+        'alimentan el entorno, el molino 3D, el diagrama de trayectorias, el mapa de regímenes, la curva de potencia, ' +
         'el corte de la carga, el surrogate What-if y el guardia de anomalías. Las seis páginas hermanas (App · ' +
         'Introducción · Metodología · Implementación · Experimentos · Benchmark) son idénticas en todo producto CAOS. ' +
         'vite construye el estático; GitHub Pages lo sirve en chargecascade.fasl-work.com.',
@@ -118,7 +118,7 @@ export const architecture: ArchitectureConfig = {
         'centrifugando, sobre-velocidad, llenado alto/bajo), para que la app acepte un molino propio, no solo los casos ' +
         'incluidos. El Contrato 2 (artefacto) define la salida que lee la web (la velocidad crítica, el régimen, el ' +
         'toe/shoulder de la carga, la potencia + la curva potencia-vs-φc, el índice de modelos), espejado por ' +
-        'el contrato tipado. Entre ambos, el pipeline por etapas y determinista corre el lane gate (numpy-light por ' +
+        'el contrato tipado. Entre ambos, el pipeline por etapas y determinista ejecuta el lane gate (numpy-light por ' +
         'defecto, un modo de re-entrenamiento para el carril torch) y escribe un manifest de procedencia, de modo que cada resultado es ' +
         'reproducible y la web nunca diverge en silencio.',
     },
