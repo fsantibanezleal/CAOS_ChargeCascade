@@ -11,7 +11,7 @@
 // This makes P ~ rho_c * D^2.5 * L * phiC * (J - 1.065 J^2) * sin(alpha) (first principles: torque ~ rho_c D^3 L J g,
 // omega ~ phiC/sqrt(D)  =>  P ~ D^2.5), every slider visibly moves a term.
 //
-// Bond (1961), W = 10*Wi*(1/sqrt(P80) - 1/sqrt(F80)) [kWh/t] is a process-energy law (the grinding duty), not the
+// Bond (1952), W = 10*Wi*(1/sqrt(P80) - 1/sqrt(F80)) [kWh/t] is a process-energy law (the grinding duty), not the
 // charge mechanical power; shown only as a cross-check (it has no phiC/J so it cannot animate the sliders).
 
 import { G, omegaRadS, criticalSpeedRpm } from './criticalspeed.ts';
