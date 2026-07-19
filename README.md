@@ -24,7 +24,7 @@ Experiments table and the offline bake all run the same code:
   the reference 4×6 m ball mill draws ~1.3 MW); the J(1−1.065J) fill term peaks near J ≈ 0.47 and P scales as D^2.5.
   A calibrated **Morrell-form** is shown alongside as a consistency companion, it is a rescale of the same torque
   arm, **not** an independent model; Morrell's real (1996) C-model is cited, not implemented (a documented upgrade).
-- **Bond (1961) specific energy** (kWh/t), process energy, deliberately kept distinct from charge power; their
+- **Bond (1952) specific energy** (kWh/t), process energy, deliberately kept distinct from charge power; their
   ratio P/W gives the grinding capacity in the Comminution tab.
 
 ## The learned lane (real, measured, guarded)

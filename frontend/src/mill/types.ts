@@ -33,7 +33,7 @@ export interface Shell {
   trajectory: [number, number][];  // sampled parabolic free-flight points (x,y) [m]
 }
 
-export interface PowerPoint { phiC: number; phf: number; morrell: number; }
+export interface PowerPoint { phiC: number; phf: number; morrell: number; cModel: number | null; }
 
 /** the full result of evaluating one Operating point (CONTRACT-2 mirror). */
 export interface MillResult {
@@ -49,6 +49,9 @@ export interface MillResult {
   cascadeCataractPhiC: number; // the cascade<->cataract band edge
   phfKw: number;               // Hogg & Fuerstenau net power [kW]
   pMorrellKw: number;          // Morrell-form (calibrated) net power [kW]
+  pCModelNetKw: number;        // Morrell (1996) C-model net charge-motion power [kW] (independent, uncalibrated)
+  pCModelGrossKw: number;      // Morrell C-model gross power (motor input = no-load + k*net) [kW]
+  pCModelNoLoadKw: number;     // Morrell C-model no-load power [kW]
   bondWKwhT: number;           // Bond specific energy [kWh/t]
   bondPowerKw: number;         // implied power for the throughput [kW]
   powerCurve: PowerPoint[];    // power vs phiC at the current J,D,L
