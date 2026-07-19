@@ -26,6 +26,8 @@ export interface MorrellInput {
   solidsMassFrac?: number; // slurry solids mass fraction (default 0.72)
   k?: number;             // net->gross calibration (default 1.26)
   coneAllowanceFrac?: number; // if coneLength unknown, add this fraction of P_cyl as the cone (Doll's 5% shortcut)
+  rhoCOverride?: number;  // use this charge bulk density [t/m3] instead of the ore/ball computation (the live tool
+                          // feeds the user's chargeDensity so the density control drives the C-model directly)
 }
 
 export interface MorrellResult {
@@ -60,7 +62,7 @@ export function morrellPower(inp: MorrellInput): MorrellResult {
 
   // charge bulk density
   const rhoPulp = 1 / (Swt / rhoOre + (1 - Swt) / 1.0);
-  const rhoC = (rhoOre * (Jt - JB) * (1 - E) + rhoBall * JB * (1 - E) + rhoPulp * (Jt * E * U)) / Jt;
+  const rhoC = inp.rhoCOverride ?? (rhoOre * (Jt - JB) * (1 - E) + rhoBall * JB * (1 - E) + rhoPulp * (Jt * E * U)) / Jt;
 
   const angleTerm = rhoC * (Math.sin(thetaS) - Math.sin(thetaT)) + rhoPulp * (Math.sin(thetaT) - Math.sin(thetaTO));
 
