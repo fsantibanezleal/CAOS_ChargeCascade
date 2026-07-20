@@ -34,6 +34,28 @@
 .cc-muted { color: var(--color-fg-faint); }
 .cc-note { font-size: 0.86rem; color: var(--color-fg-subtle); line-height: 1.6; }
 
+/* Unit 2: density-convention advanced controls under the Power tab */
+.cc-advanced { margin-top: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; padding: 0.5rem 0.75rem; }
+.cc-advanced > summary { cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--color-fg-subtle); }
+.cc-advanced[open] > summary { margin-bottom: 0.5rem; }
+.cc-ctl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem 1rem; margin: 0.4rem 0; }
+.cc-ctl-grid label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.78rem; color: var(--color-fg-subtle); }
+.cc-ctl-grid input[type="range"] { width: 100%; accent-color: var(--color-accent); }
+.cc-ctl-grid input[type="range"]:disabled { opacity: 0.4; }
+.cc-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--color-fg-subtle); margin-top: 0.3rem; }
+
+/* Unit 4: LOMO leakage-gate badge */
+.cc-gate-badge { display: inline-block; width: 1.15em; height: 1.15em; line-height: 1.15em; text-align: center; border-radius: 50%; font-size: 0.8em; font-weight: 700; margin-right: 0.2rem; }
+.cc-gate-badge.ok { background: var(--color-good, #2ea043); color: #fff; }
+.cc-gate-badge.bad { background: var(--color-bad, #f85149); color: #fff; }
+
+/* Unit 5: conformal UQ reliability row */
+.cc-uq-row { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: baseline; font-size: 0.78rem; color: var(--color-fg-subtle); margin: 0.5rem 0; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; }
+.cc-uq-title { font-weight: 600; color: var(--color-fg); }
+.cc-uq-cell { white-space: nowrap; }
+.cc-uq-ok { color: var(--color-good, #2ea043); font-weight: 700; }
+.cc-uq-bad { color: var(--color-bad, #f85149); font-weight: 700; }
+
 .cc-vizstack { display: flex; flex-direction: column; gap: 0.9rem; }
 .cc-plot-t { font-size: 0.82rem; color: var(--color-fg-subtle); }
 .cc-plot-th { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

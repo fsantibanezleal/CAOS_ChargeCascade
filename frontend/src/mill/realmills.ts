@@ -15,6 +15,9 @@ export type PowerBasis = 'motor' | 'net';
 
 export interface RealMill {
   id: string;
+  siteId?: string;        // physical-mill grouping id: repeat surveys of the SAME mill share a siteId so the
+                          // leave-one-MILL-out cross-validation never lets a mill's surveys straddle a fold.
+                          // Defaults to `id` (each mill is its own site) when a mill appears once.
   name: string;
   type: MillType;
   diameterM: number;      // inside liners

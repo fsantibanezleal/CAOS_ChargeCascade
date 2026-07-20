@@ -3,6 +3,73 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.23.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 5: conformal UQ, jackknife+)
+- New `mill/conformal.ts`: jackknife+ conformal prediction intervals (Barber, Candes, Ramdas & Tibshirani
+  2021, DOI 10.1214/20-AOS1965) on the real-mill power prediction, reusing the leave-one-mill-out residuals. The
+  finite-sample marginal guarantee `P(Y in C(X)) >= 1 - 2*alpha` holds with no distributional assumption. Exact
+  Clopper-Pearson binomial CIs on the empirical coverage (hand-rolled regularized incomplete beta, no deps).
+- Live reliability on the Real validation panel: at 80/90/95% nominal the empirical coverage is 84/95/95% with
+  Clopper-Pearson CIs [60-97 / 74-100 / 74-100 %], each meeting its 1-2*alpha guarantee (green check). A sample
+  interval is shown (Cadia 90%: 17.7-19.7 MW, measured 19.3). New Methodology tab "Uncertainty (conformal)"
+  with the coverage guarantee in KaTeX and the honesty notes (marginal not conditional; small SAG-heavy n).
+- New tests: jackknife+ interval construction, Clopper-Pearson edge cases (k=0, k=n), and the real-mill
+  empirical coverage meeting the finite-sample bound. All 24 tests pass. Screenshot-verified light + dark.
+- Chosen over deep ensembles / MC-dropout (which need a neural net and give no guarantee). Fixed a leftover
+  "corriendo en vivo" calque in the Methodology OOD callout.
+
+## [0.22.000], 2026-07-19
+
+### Changed (SOTA-ladder Unit 4: grouped leave-one-MILL-out + leakage gate)
+- The real-mill validation now uses **leave-one-MILL-out (LOMO)**, grouped by a physical-mill `siteId`, instead
+  of leave-one-row-out: repeat surveys of the same mill (when present) never straddle a fold. A **hard leakage
+  gate** asserts every fold's train and test siteIds stay disjoint, surfaced as a green ✓ badge on the Real
+  validation panel. `validationStats` now reports `nSites` (the LOMO fold count) and `leakageGateOk`.
+- New tests: LOMO fold count matches the distinct-site count, the leakage gate is active, LOMO mean < 10%, and
+  the honest worst-single-mill error (~23% on the current 24-mill set; the plan's 20% target is contingent on
+  the 49-mill Doll expansion). All 23 tests pass.
+- **The 22 -> 49 Doll IMPC 2016 anchor expansion is deferred, not faked**: the 49-survey table lives only in a
+  gated spreadsheet (SurveyTabulation-IMPC2016-v6.ods) and a scanned-image PDF that curl/WebFetch cannot read.
+  Per the no-fabrication rule the 27 additional mills are not invented; the LOMO/gate infrastructure is correct
+  for any n, so the expansion is a pure data-append once the spreadsheet is obtained (recorded in the anchor
+  dossier). Screenshot-verified light + dark.
+
+## [0.21.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 3: Morrell 2004 SMC specific-energy model)
+- New `mill/smc.ts`: the Morrell (2004) SMC-test circuit specific-energy model, verbatim from "Using the SMC
+  Test to Predict Comminution Circuit Performance" (Eqs 1-13). The size-dependent exponent `f(x) = -(0.295 +
+  x/1e6)` generalizes Bond's fixed -0.5; the total `W_T = Wa + Wb + Wc + Wh + Ws` sums the coarse-tumbling,
+  fine-tumbling, crushing, HPGR and size-distribution terms. A separate model from the C-model (CEEC 2019
+  explicitly warns they are confused): the C-model gives power (kW), SMC gives specific energy (kWh/t), and the
+  two compose into a throughput `t/h = P / W_T`.
+- New Methodology tab "Specific energy (SMC)": the verbatim equations in KaTeX, the four indices (Mia/Mib/Mic/
+  Mih), the four-stage circuit SVG, and the throughput composition. The App Comminution tab now shows live SMC
+  KPIs (W_T, C-model gross, SMC-implied capacity) beside the Bond duty. For the default ball mill W_T = 12.9
+  kWh/t; a SAG+ball copper circuit computes ~16.4 kWh/t (realistic). Screenshot-verified light + dark.
+- New tests: f(x) exponent family, W_T sums the stages (Eq 3), HPGR term appears only when requested, finer
+  grind raises Wb, throughput composes finite/positive. All tests pass.
+
+## [0.20.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 2: Morrell cone term + density-convention controls)
+- Explicit Morrell cone term (CEEC Eq 3 / Erdem Eq 4) now activates when a real cone geometry (`coneLengthM`,
+  `trunnionRadiusM`) is supplied; the Doll 5% allowance stays as the documented fallback for the synthetic
+  SAG/AG path where cone geometry is unknown.
+- Density-convention live controls on the Power tab (advanced collapse): bed porosity **E**, void-slurry fill
+  **U**, slurry solids **S**, plus a **dynamic voidage** option (Golpayegani & Rezai 2023, DOI
+  10.1080/25726641.2022.2116363) where E varies with speed and fill. At the defaults (E=0.4, U=1.0, S=0.5) the
+  factor is exactly 1.0, so the C-model curve is unchanged; moving the knobs scales rho_c around the case value,
+  exposing the Napier-Munn convention that drives the model's declared ~10% residual. Moving E 0.40->0.30 raises
+  the reference ball-mill C-model net 1.31->1.53 MW (denser charge), screenshot-verified live in both themes.
+- Overflow discharge adds a slurry-pool term (theta_TO > theta_T); grate and dry drain it (pool term = 0).
+- New tests: cone fraction is a sane single-digit-to-teens %, overflow > grate net, grate == dry, dynamic
+  voidage shifts rho_c <10%, lower porosity -> denser charge. All 22 tests pass.
+- Deep docs (`docs/frameworks/01_mill-physics.md` section 4) rewritten to the verbatim C-model: the pi^3 kinetic
+  and pi gravity terms, the explicit cone term, the density-convention options + dynamic voidage citation, the
+  declared residual. Corrected the stale "Bond 1961" reference to Bond 1952.
+
 ## [0.19.000], 2026-07-19
 
 ### Fixed (SOTA-ladder Unit 1: Morrell kinetic coefficient correction)

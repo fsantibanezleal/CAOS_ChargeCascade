@@ -37,6 +37,12 @@ export interface MorrellInput {
   coneAllowanceFrac?: number; // if coneLength unknown, add this fraction of P_cyl as the cone (Doll's 5% shortcut)
   rhoCOverride?: number;  // use this charge bulk density [t/m3] instead of the ore/ball computation (the live tool
                           // feeds the user's chargeDensity so the density control drives the C-model directly)
+  // --- density-convention controls (Unit 2). Defaults are Morrell's (E=0.4, U=1.0, S=0.5) ---
+  voidageE?: number;      // E, the static porosity of the charge bed (default 0.4)
+  voidFillU?: number;     // U, the fraction of the interstitial voids filled with slurry (default 1.0)
+  slurrySolidsS?: number; // S, the volumetric solids fraction of the slurry (default 0.5)
+  dischargeType?: 'grate' | 'dry' | 'overflow'; // overflow adds a slurry-pool term (theta_TO > theta_T); default 'grate'
+  dynamicVoidage?: boolean; // Golpayegani & Rezai (2023) speed/fill-dependent voidage instead of the static E; default off
 }
 
 export interface MorrellResult {
@@ -58,19 +64,30 @@ export function morrellPower(inp: MorrellInput): MorrellResult {
   const Ld = inp.coneLengthM ?? 0, rt = inp.trunnionRadiusM ?? Math.min(1.0, rm * 0.12);
   const phi = inp.phiC, Jt = inp.fill, JB = inp.ballFill ?? Jt;
   const rhoOre = inp.rhoOre ?? 2.9, rhoBall = inp.rhoBall ?? 7.85, Swt = inp.solidsMassFrac ?? 0.72;
-  const k = inp.k ?? 1.26, E = 0.4, U = 1.0;
+  const k = inp.k ?? 1.26;
+  const U = inp.voidFillU ?? 1.0;
+  // static porosity E, or the Golpayegani & Rezai (2023) dynamic voidage (DOI 10.1080/25726641.2022.2116363):
+  // voidage rises with speed and falls with fill as the charge compacts. The published band is ~0.35-0.45 over
+  // typical SAG operation; the linear surrogate below stays inside it (small residual shift on rho_c, <10%).
+  const E = inp.dynamicVoidage ? Math.min(0.45, Math.max(0.35, 0.40 + 0.12 * (phi - 0.75) - 0.10 * (Jt - 0.30))) : (inp.voidageE ?? 0.4);
   const Nm = (phi * (42.3 / Math.sqrt(D))) / 60;   // rev/s
 
   // charge shape (Apelt/Morrell)
   const phi_c = 0.35 * (3.364 - Jt);
   const thetaT = 2.5307 * (1.2796 - Jt) * (1 - Math.exp(-19.42 * (phi_c - phi))) + Math.PI / 2;
   const thetaS = Math.PI / 2 - (thetaT - Math.PI / 2) * ((0.3386 + 0.1041 * phi_c) + (1.54 - 2.5673 * phi_c) * Jt);
-  const thetaTO = thetaT;                            // grate/dry: slurry-pool term vanishes
+  // overflow discharge carries a slurry pool that extends the toe (theta_TO > theta_T); grate/dry drains it, so
+  // the pool term vanishes (theta_TO = theta_T). The pool advance is a conservative fraction of the toe angle.
+  const thetaTO = inp.dischargeType === 'overflow' ? thetaT + 0.14 * (thetaT - Math.PI / 2) : thetaT;
   const z = Math.pow(1 - Jt, 0.4532);
   const ri = rm * Math.sqrt(Math.max(0, 1 - (2 * Math.PI * Jt) / (2 * Math.PI + thetaS - thetaT)));
 
-  // charge bulk density
-  const rhoPulp = 1 / (Swt / rhoOre + (1 - Swt) / 1.0);
+  // charge bulk density (Napier-Munn convention; E void porosity, U void-slurry fill, S slurry solids fraction).
+  // S is a volumetric-solids fraction; convert to the mass fraction the pulp-density formula uses (falls back to
+  // solidsMassFrac when S is not supplied, preserving the prior behaviour).
+  const S = inp.slurrySolidsS;
+  const Smass = S != null ? (S * rhoOre) / (S * rhoOre + (1 - S) * 1.0) : Swt;
+  const rhoPulp = 1 / (Smass / rhoOre + (1 - Smass) / 1.0);
   const rhoC = inp.rhoCOverride ?? (rhoOre * (Jt - JB) * (1 - E) + rhoBall * JB * (1 - E) + rhoPulp * (Jt * E * U)) / Jt;
 
   const angleTerm = rhoC * (Math.sin(thetaS) - Math.sin(thetaT)) + rhoPulp * (Math.sin(thetaT) - Math.sin(thetaTO));

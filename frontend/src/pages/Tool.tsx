@@ -127,6 +127,26 @@ export default function Tool() {
             <Kpi label={es ? 'masa de carga' : 'charge mass'} value={`${r.chargeMassT.toFixed(0)} t`} />
             <Kpi label={es ? 'energía Bond' : 'Bond duty'} value={`${r.bondWKwhT.toFixed(1)} kWh/t`} />
           </div>
+          <details className="cc-advanced">
+            <summary>{es ? 'Convención de densidad de carga del C-model (avanzado)' : 'C-model charge-density convention (advanced)'}</summary>
+            <p className="cc-note">{es
+              ? 'El residual del C-model (~10%) proviene de la convención de densidad de carga de Napier-Munn, no de una ecuación faltante. Estos controles exponen esa convención: porosidad E, llenado de huecos con pulpa U, sólidos de pulpa S.'
+              : 'The C-model residual (~10%) comes from the Napier-Munn charge-density convention, not a missing equation. These controls expose that convention: bed porosity E, void-slurry fill U, slurry solids S.'}</p>
+            <div className="cc-ctl-grid">
+              <label>E {(op.voidageE ?? 0.4).toFixed(2)}
+                <input type="range" min={0.30} max={0.50} step={0.01} value={op.voidageE ?? 0.4} disabled={!!op.dynamicVoidage}
+                  onChange={(e) => set('voidageE', +e.target.value)} /></label>
+              <label>U {(op.voidFillU ?? 1.0).toFixed(2)}
+                <input type="range" min={0} max={1} step={0.05} value={op.voidFillU ?? 1.0}
+                  onChange={(e) => set('voidFillU', +e.target.value)} /></label>
+              <label>S {(op.slurrySolidsS ?? 0.5).toFixed(2)}
+                <input type="range" min={0.3} max={0.75} step={0.01} value={op.slurrySolidsS ?? 0.5}
+                  onChange={(e) => set('slurrySolidsS', +e.target.value)} /></label>
+            </div>
+            <label className="cc-check"><input type="checkbox" checked={!!op.dynamicVoidage}
+              onChange={(e) => setOp((o) => ({ ...o, dynamicVoidage: e.target.checked }))} />
+              {es ? 'Voidage dinámico (Golpayegani y Rezai 2023)' : 'Dynamic voidage (Golpayegani & Rezai 2023)'}</label>
+          </details>
         </div>
       ),
     },
@@ -153,6 +173,15 @@ export default function Tool() {
               <Kpi label={es ? 'capacidad (P/W)' : 'capacity (P/W)'} value={`${capacity.toFixed(0)} t/h`} />
               <Kpi label={es ? `margen vs objetivo ${op.tph} t/h` : `margin vs target ${op.tph} t/h`} value={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)} t/h`} />
             </div>
+            <div className="cc-kpis">
+              <Kpi label={es ? 'energía SMC W_T (Morrell 2004)' : 'SMC W_T (Morrell 2004)'} value={`${r.smcWkWhT.toFixed(1)} kWh/t`} />
+              <Kpi label={es ? 'gross C-model' : 'C-model gross'} value={kw(r.pCModelGrossKw)} />
+              <Kpi label={es ? 'capacidad SMC (gross/W_T)' : 'SMC capacity (gross/W_T)'} value={`${r.smcTphFromCModel.toFixed(0)} t/h`} />
+              <Kpi label={es ? 'grind P80' : 'grind P80'} value={`${op.prodP80um.toFixed(0)} µm`} />
+            </div>
+            <p className="cc-note">{es
+              ? `El modelo de energía específica de Morrell (2004), el test SMC, es un modelo aparte de Bond: la energía del circuito W_T = ${r.smcWkWhT.toFixed(1)} kWh/t sobre las etapas chancado + SAG + bolas, con el exponente que varía con el tamaño f(x) = −(0.295 + x/10⁶). Compuesto con la potencia bruta del C-model da una capacidad de ${r.smcTphFromCModel.toFixed(0)} t/h. Los índices Mia/Mib aquí se escalan del índice de Bond de la mena; un test SMC real usaría los medidos.`
+              : `Morrell\'s (2004) specific-energy model, the SMC test, is a separate model from Bond: the circuit energy W_T = ${r.smcWkWhT.toFixed(1)} kWh/t over the crush + SAG + ball stages, with the size-dependent exponent f(x) = −(0.295 + x/10⁶). Composed with the C-model gross power it gives a throughput of ${r.smcTphFromCModel.toFixed(0)} t/h. The Mia/Mib indices here scale off the ore\'s Bond work index; a real SMC test would use measured values.`}</p>
             <p className="cc-note">{es
               ? `Balance: capacidad ${capacity.toFixed(0)} t/h vs objetivo ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h de holgura (el molino rinde la tarea)` : `déficit de ${(-margin).toFixed(0)} t/h (subir φc/J o moler más grueso)`}. A φc alto la carga se centrifuga (se pega a la pared, sin impacto) y la molienda se detiene, esos puntos van en gris (el modelo de torque no se atenúa ahí, por eso no se muestra su P/W como capacidad).`
               : `Balance: capacity ${capacity.toFixed(0)} t/h vs target ${op.tph} t/h → ${margin >= 0 ? `${margin.toFixed(0)} t/h of headroom (the mill meets the duty)` : `${(-margin).toFixed(0)} t/h short (raise φc/J or coarsen the product)`}. At high φc the charge centrifuges (pins to the shell, no impact) and grinding stops, those points are greyed (the torque model is not tapered there, so its P/W is not shown as capacity).`}</p>
