@@ -127,6 +127,26 @@ export default function Tool() {
             <Kpi label={es ? 'masa de carga' : 'charge mass'} value={`${r.chargeMassT.toFixed(0)} t`} />
             <Kpi label={es ? 'energía Bond' : 'Bond duty'} value={`${r.bondWKwhT.toFixed(1)} kWh/t`} />
           </div>
+          <details className="cc-advanced">
+            <summary>{es ? 'Convención de densidad de carga del C-model (avanzado)' : 'C-model charge-density convention (advanced)'}</summary>
+            <p className="cc-note">{es
+              ? 'El residual del C-model (~10%) proviene de la convención de densidad de carga de Napier-Munn, no de una ecuación faltante. Estos controles exponen esa convención: porosidad E, llenado de huecos con pulpa U, sólidos de pulpa S.'
+              : 'The C-model residual (~10%) comes from the Napier-Munn charge-density convention, not a missing equation. These controls expose that convention: bed porosity E, void-slurry fill U, slurry solids S.'}</p>
+            <div className="cc-ctl-grid">
+              <label>E {(op.voidageE ?? 0.4).toFixed(2)}
+                <input type="range" min={0.30} max={0.50} step={0.01} value={op.voidageE ?? 0.4} disabled={!!op.dynamicVoidage}
+                  onChange={(e) => set('voidageE', +e.target.value)} /></label>
+              <label>U {(op.voidFillU ?? 1.0).toFixed(2)}
+                <input type="range" min={0} max={1} step={0.05} value={op.voidFillU ?? 1.0}
+                  onChange={(e) => set('voidFillU', +e.target.value)} /></label>
+              <label>S {(op.slurrySolidsS ?? 0.5).toFixed(2)}
+                <input type="range" min={0.3} max={0.75} step={0.01} value={op.slurrySolidsS ?? 0.5}
+                  onChange={(e) => set('slurrySolidsS', +e.target.value)} /></label>
+            </div>
+            <label className="cc-check"><input type="checkbox" checked={!!op.dynamicVoidage}
+              onChange={(e) => setOp((o) => ({ ...o, dynamicVoidage: e.target.checked }))} />
+              {es ? 'Voidage dinámico (Golpayegani y Rezai 2023)' : 'Dynamic voidage (Golpayegani & Rezai 2023)'}</label>
+          </details>
         </div>
       ),
     },

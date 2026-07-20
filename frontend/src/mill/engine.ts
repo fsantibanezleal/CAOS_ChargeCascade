@@ -12,13 +12,31 @@ import type { MillResult, Operating, PowerPoint } from './types.ts';
 /** The real Morrell (1996) C-model for the operating point: the full continuum power integral, independent and
  *  uncalibrated (the density control feeds it directly via rhoCOverride). SAG/AG get Doll's 5% cone allowance. */
 function cModel(op: Operating, phiC: number) {
+  // If a real cone geometry is supplied, use the explicit CEEC Eq 3 cone term; else fall back to Doll's 5%
+  // allowance for the synthetic SAG/AG path where cone geometry is unknown.
+  const hasCone = (op.coneLengthM ?? 0) > 0;
+  // The case's chargeDensity is the BASE rho_c. The density-convention controls apply a RELATIVE adjustment on
+  // top: at the defaults (E=0.4, U=1.0, S=0.5) the factor is 1.0 (rho_c == chargeDensity exactly); moving the
+  // knobs scales rho_c around that base. This exposes the Napier-Munn convention (the ~10% residual) without
+  // needing to reconstruct the ore/ball/steel composition of a synthetic case.
+  const E = op.dynamicVoidage
+    ? Math.min(0.45, Math.max(0.35, 0.40 + 0.12 * (phiC - 0.75) - 0.10 * (op.fill - 0.30)))
+    : (op.voidageE ?? 0.4);
+  const U = op.voidFillU ?? 1.0;
+  const S = op.slurrySolidsS ?? 0.5;
+  // solids/void terms drop out at the defaults; the porosity term (1-E)/(1-0.4) is the dominant lever.
+  const densFactor = ((1 - E) / (1 - 0.4)) * (1 + 0.04 * (U - 1.0)) * (1 + 0.06 * (S - 0.5));
+  const rhoC = op.chargeDensity * densFactor;
   return morrellPower({
     diameterM: op.diameterM,
     lengthM: op.lengthM,
     phiC,
     fill: op.fill,
-    rhoCOverride: op.chargeDensity,
-    coneAllowanceFrac: op.millType === 'sag' || op.millType === 'ag' ? 0.05 : 0,
+    rhoCOverride: rhoC,
+    coneLengthM: op.coneLengthM,
+    trunnionRadiusM: op.trunnionRadiusM,
+    coneAllowanceFrac: !hasCone && (op.millType === 'sag' || op.millType === 'ag') ? 0.05 : 0,
+    dischargeType: op.dischargeType,
   });
 }
 

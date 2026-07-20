@@ -22,6 +22,14 @@ export interface Operating {
   feedF80um: number;     // F80 feed 80%-passing [micron]
   prodP80um: number;     // P80 product 80%-passing [micron]
   tph: number;           // throughput [t/h] (for the Bond implied power)
+  // --- Morrell C-model geometry + density-convention controls (Unit 2, optional) ---
+  coneLengthM?: number;      // L_d, cone axial length for a real SAG/AG cone (0/undefined = flat-ended)
+  trunnionRadiusM?: number;  // r_t, trunnion radius (only used with the explicit cone term)
+  voidageE?: number;         // E, static charge porosity (default 0.4)
+  voidFillU?: number;        // U, void-slurry fill fraction (default 1.0)
+  slurrySolidsS?: number;    // S, slurry volumetric solids fraction (default 0.5)
+  dischargeType?: 'grate' | 'dry' | 'overflow'; // overflow adds the slurry-pool term (default grate)
+  dynamicVoidage?: boolean;  // use Golpayegani & Rezai (2023) speed/fill voidage (default off)
 }
 
 /** one radial shell of the charge: its departure angle + the cataract trajectory it flies. */

@@ -70,11 +70,32 @@ labelled as a calibration, the same honesty posture as ChancaDEM's qualitatively
 scalings (torque ∝ ρc·D³·L·J·g, ω ∝ φc/√D) gives the first-principles result **P ∝ D^2.5** (so the 10 m SAG draws the
 most power), and every slider visibly moves a term.
 
-**Morrell (1996) C-model**, shown as a calibrated form: the same torque-arm driven by a charge-shape effective lift
-angle derived from the shoulder + toe geometry (bounded to a physical 25–45°), sitting just above Hogg-Fuerstenau on
-typical mills. The published C-model agrees with measured gross power to ±9.8 % on 82 industrial datasets.
+**Morrell (1996) C-model** (`morrell.ts`), the full continuum model, implemented with the **verbatim primary-source
+coefficients** (Erdem 2004 Eq 3 / CEEC 2019 Eq 2, Morrell-coauthored). It treats the charge as a continuum between the
+toe and shoulder rather than a rigid body, integrating a gravity term and a kinetic term over the charge crescent.
 
-**Bond (1961)**, `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t] is the process-**energy** law (the grinding duty), not the
+- **Cylinder** `P_cyl = grav + kin`:
+  - `grav = (π·g·L·Nm·rm / 3(rm − z·ri))·(2rm³ − 3z·rm²·ri + ri³(3z − 2))·angleTerm`
+  - `kin  = L·ρc·(π·Nm·rm / (rm − z·ri))³·((rm − z·ri)⁴ − ri⁴(z − 1)⁴)`
+  - the kinetic bracket carries **π, not 2π** (constant π³, not (2π)³); the gravity term carries a leading **π**.
+    A 2026-07-19 correction overturned an earlier (2π)³ pin that only held via a compensating dropped-gravity-π at a
+    wrong charge density while inverting the physics to kinetic-dominated. The verbatim form is **gravity-dominated**
+    (kin/grav ≈ 0.09 at 73 % critical speed) and is the only reading that reproduces Erdem's two chambers at **one**
+    charge density (3.977 vs 3.959 t/m³, 0.46 % apart) and the published gross **1365 kW**.
+  - `z = (1 − Jt)^0.4532` is the velocity-profile packing factor; `ri` the inner charge-surface radius from the
+    shoulder/toe angles (Apelt/Morrell charge-shape sub-equations).
+- **Cone** (real SAG/AG cone geometry, `coneLengthM > 0`): the explicit CEEC Eq 3 / Erdem Eq 4 term, gravity carrying
+  a leading π and the kinetic constant **2π³/5**. When the cone geometry is unknown, a documented **Doll 5 % allowance**
+  (`coneAllowanceFrac`) stands in for the synthetic SAG/AG path.
+- **No-load** `P_noload = 1.68·D^2.05·(φc·(0.667·Ld + L))^0.82`; **gross** `= P_noload + k·(P_cyl + P_cone)`, k = 1.26.
+- **Density convention** (the ~10 % residual): the charge bulk density follows the Napier-Munn convention, exposed as
+  live controls, bed porosity **E** (default 0.4), void-slurry fill **U** (default 1.0), slurry solids **S** (default
+  0.5), and an optional **dynamic voidage** (Golpayegani & Rezai 2023, DOI 10.1080/25726641.2022.2116363) that lets E
+  vary with speed and fill. Overflow discharge adds a **slurry-pool** term (θ_TO > θ_T); grate and dry drain it, so the
+  pool term is zero. The residual is the model's own reported ±9.8 % over 82 industrial datasets, not zero, and is
+  declared, not hidden. The C-model runs **uncalibrated** as an independent curve beside Hogg-Fuerstenau on the Power tab.
+
+**Bond (1952)**, `W = 10·Wi·(1/√P80 − 1/√F80)` [kWh/t] is the process-**energy** law (the grinding duty), not the
 charge mechanical power. It carries no φc or J, so it does **not** animate the sliders; it is shown only as a
 cross-check (and an implied power `W·tph`).
 
@@ -86,5 +107,6 @@ power-vs-φc curve, and the operating flags (over-speed, ball-on-liner, large d/
 sweep (`gen_train.mjs`) labels the surrogate on it. No external dependency.
 
 <a id="refs"></a>
-**References:** Davis 1919 · Rose & Sullivan 1957 · Hogg & Fuerstenau 1972 · Morrell 1996 · Bond 1961 ·
+**References:** Davis 1919 · Rose & Sullivan 1957 · Hogg & Fuerstenau 1972 · Morrell 1996 (Erdem 2004 / CEEC 2019
+verbatim reproductions) · Golpayegani & Rezai 2023 · Bond 1952 ·
 Napier-Munn et al. 1996 (Mineral Comminution Circuits) · Wills & Finch 2016. Full list in the in-app Methodology page.

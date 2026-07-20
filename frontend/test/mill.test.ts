@@ -246,6 +246,37 @@ test('Morrell C-model reproduces the Erdem 2004 two-chamber worked example (verb
   assert.ok(me < 18, `Morrell mean abs error on real mills ${me.toFixed(1)}% under 18%`);
 });
 
+// Unit 2: explicit cone term, discharge pool term, and the density-convention controls.
+test('Morrell cone term is close to Doll 5% allowance; overflow pool > grate; density knobs bounded', async () => {
+  const { morrellPower } = await import('../src/mill/morrell.ts');
+  // a typical industrial SAG (10 m x 5 m) with a real cone geometry vs the Doll 5% allowance fallback
+  const sag = { diameterM: 10.0, lengthM: 5.0, phiC: 0.78, fill: 0.28, rhoCOverride: 3.0 };
+  const withCone = morrellPower({ ...sag, coneLengthM: 1.2, trunnionRadiusM: 1.0 });
+  const withAllowance = morrellPower({ ...sag, coneAllowanceFrac: 0.05 });
+  // the explicit cone term should be the same order as the 5% allowance (both a small fraction of the cylinder)
+  const coneFrac = withCone.coneKw / withCone.cylKw;
+  assert.ok(coneFrac > 0.01 && coneFrac < 0.20, `explicit cone fraction ${(coneFrac * 100).toFixed(1)}% is a sane single-digit-to-teens %`);
+  assert.ok(withAllowance.coneKw > 0, 'the 5% allowance fallback still produces a cone contribution');
+
+  // overflow discharge (slurry pool extends the toe) draws MORE than grate at the same operating point
+  const grate = morrellPower({ ...sag, dischargeType: 'grate' });
+  const overflow = morrellPower({ ...sag, dischargeType: 'overflow' });
+  assert.ok(overflow.netKw > grate.netKw, `overflow net ${overflow.netKw.toFixed(0)} > grate net ${grate.netKw.toFixed(0)} (pool term)`);
+  // grate == dry (both drain the pool): the pool term must be exactly zero for grate
+  const dry = morrellPower({ ...sag, dischargeType: 'dry' });
+  assert.ok(Math.abs(grate.netKw - dry.netKw) < 1e-6, 'grate and dry are identical (no pool term)');
+
+  // dynamic voidage (Golpayegani & Rezai 2023) shifts rho_c by less than 10% vs the static default at a SAG point
+  const staticRho = morrellPower({ diameterM: 10, lengthM: 5, phiC: 0.78, fill: 0.28 }).rhoC;
+  const dynRho = morrellPower({ diameterM: 10, lengthM: 5, phiC: 0.78, fill: 0.28, dynamicVoidage: true }).rhoC;
+  assert.ok(Math.abs(dynRho - staticRho) / staticRho < 0.10, `dynamic voidage rho_c ${dynRho.toFixed(3)} within 10% of static ${staticRho.toFixed(3)}`);
+
+  // the density-convention knobs move the C-model power monotonically and stay physical (denser -> more power)
+  const lowE = morrellPower({ ...sag, rhoCOverride: undefined, voidageE: 0.35 }).rhoC;
+  const highE = morrellPower({ ...sag, rhoCOverride: undefined, voidageE: 0.45 }).rhoC;
+  assert.ok(lowE > highE, `lower porosity E -> denser charge (${lowE.toFixed(3)} > ${highE.toFixed(3)})`);
+});
+
 test('the expanded real anchor keeps a robust leave-one-out error', async () => {
   const { validationStats, allPredictions } = await import('../src/mill/realpower.ts');
   const s = validationStats();

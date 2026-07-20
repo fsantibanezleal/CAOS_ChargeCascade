@@ -3,6 +3,25 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.20.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 2: Morrell cone term + density-convention controls)
+- Explicit Morrell cone term (CEEC Eq 3 / Erdem Eq 4) now activates when a real cone geometry (`coneLengthM`,
+  `trunnionRadiusM`) is supplied; the Doll 5% allowance stays as the documented fallback for the synthetic
+  SAG/AG path where cone geometry is unknown.
+- Density-convention live controls on the Power tab (advanced collapse): bed porosity **E**, void-slurry fill
+  **U**, slurry solids **S**, plus a **dynamic voidage** option (Golpayegani & Rezai 2023, DOI
+  10.1080/25726641.2022.2116363) where E varies with speed and fill. At the defaults (E=0.4, U=1.0, S=0.5) the
+  factor is exactly 1.0, so the C-model curve is unchanged; moving the knobs scales rho_c around the case value,
+  exposing the Napier-Munn convention that drives the model's declared ~10% residual. Moving E 0.40->0.30 raises
+  the reference ball-mill C-model net 1.31->1.53 MW (denser charge), screenshot-verified live in both themes.
+- Overflow discharge adds a slurry-pool term (theta_TO > theta_T); grate and dry drain it (pool term = 0).
+- New tests: cone fraction is a sane single-digit-to-teens %, overflow > grate net, grate == dry, dynamic
+  voidage shifts rho_c <10%, lower porosity -> denser charge. All 22 tests pass.
+- Deep docs (`docs/frameworks/01_mill-physics.md` section 4) rewritten to the verbatim C-model: the pi^3 kinetic
+  and pi gravity terms, the explicit cone term, the density-convention options + dynamic voidage citation, the
+  declared residual. Corrected the stale "Bond 1961" reference to Bond 1952.
+
 ## [0.19.000], 2026-07-19
 
 ### Fixed (SOTA-ladder Unit 1: Morrell kinetic coefficient correction)
