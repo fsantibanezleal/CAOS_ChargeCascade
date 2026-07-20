@@ -15,6 +15,7 @@
 import { evaluate } from './engine.ts';
 import { morrellPower } from './morrell.ts';
 import { REAL_MILLS, realMillToOperating, type RealMill } from './realmills.ts';
+import { coverageReport, jackknifePlusInterval, type ConformalInterval, type CoverageReport } from './conformal.ts';
 
 export interface Prediction {
   mill: RealMill;
@@ -95,6 +96,19 @@ export interface ValidationStats {
 /** the physical-mill grouping id for a row: its siteId, or its own id when it is a single-survey mill. */
 function siteOf(m: RealMill): string {
   return m.siteId ?? m.id;
+}
+
+/** The jackknife+ conformal reliability of the calibrated HF prediction across a range of alpha, plus a sample
+ *  prediction interval, computed live on the motor mills' full-fit residuals (SOTA-ladder Unit 5). */
+export function conformalReliability(alphas: number[] = [0.2, 0.1, 0.05]): { reports: CoverageReport[]; sample: ConformalInterval & { millName: string; measuredKw: number } } {
+  const rows = MOTOR.map((m) => ({ pred: predictKw(m), meas: m.measuredKw, name: m.name }));
+  const yhat = rows.map((r) => r.pred), y = rows.map((r) => r.meas);
+  const absResid = rows.map((r) => Math.abs(r.pred - r.meas));
+  const reports = alphas.map((a) => coverageReport(yhat, y, absResid, a));
+  // a representative interval: the largest mill at 90%
+  const big = rows.reduce((a, b) => (b.meas > a.meas ? b : a), rows[0]);
+  const iv = jackknifePlusInterval(big.pred, absResid.filter((_, i) => rows[i].name !== big.name), 0.1);
+  return { reports, sample: { ...iv, millName: big.name, measuredKw: big.meas } };
 }
 
 /** Leave-one-MILL-out validation of the motor-basis calibration + the fit quality (the model's real-data skill).

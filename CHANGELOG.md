@@ -3,6 +3,22 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.23.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 5: conformal UQ, jackknife+)
+- New `mill/conformal.ts`: jackknife+ conformal prediction intervals (Barber, Candes, Ramdas & Tibshirani
+  2021, DOI 10.1214/20-AOS1965) on the real-mill power prediction, reusing the leave-one-mill-out residuals. The
+  finite-sample marginal guarantee `P(Y in C(X)) >= 1 - 2*alpha` holds with no distributional assumption. Exact
+  Clopper-Pearson binomial CIs on the empirical coverage (hand-rolled regularized incomplete beta, no deps).
+- Live reliability on the Real validation panel: at 80/90/95% nominal the empirical coverage is 84/95/95% with
+  Clopper-Pearson CIs [60-97 / 74-100 / 74-100 %], each meeting its 1-2*alpha guarantee (green check). A sample
+  interval is shown (Cadia 90%: 17.7-19.7 MW, measured 19.3). New Methodology tab "Uncertainty (conformal)"
+  with the coverage guarantee in KaTeX and the honesty notes (marginal not conditional; small SAG-heavy n).
+- New tests: jackknife+ interval construction, Clopper-Pearson edge cases (k=0, k=n), and the real-mill
+  empirical coverage meeting the finite-sample bound. All 24 tests pass. Screenshot-verified light + dark.
+- Chosen over deep ensembles / MC-dropout (which need a neural net and give no guarantee). Fixed a leftover
+  "corriendo en vivo" calque in the Methodology OOD callout.
+
 ## [0.22.000], 2026-07-19
 
 ### Changed (SOTA-ladder Unit 4: grouped leave-one-MILL-out + leakage gate)

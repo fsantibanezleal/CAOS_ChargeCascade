@@ -325,3 +325,35 @@ test('the real anchor keeps a robust leave-one-MILL-out error with the leakage g
   const distinctSites = new Set(motorRows.map((m) => m.siteId ?? m.id)).size;
   assert.equal(distinctSites, s.nSites, 'the LOMO fold count matches the distinct-site count');
 });
+
+// Unit 5: conformal (jackknife+) prediction intervals on the real-mill power.
+test('jackknife+ conformal intervals: valid construction + coverage meets the 1-2*alpha bound', async () => {
+  const { jackknifePlusInterval, coverageReport, clopperPearson } = await import('../src/mill/conformal.ts');
+
+  // interval construction: symmetric around the prediction, radius = the appropriate residual quantile
+  const resid = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const iv = jackknifePlusInterval(1000, resid, 0.1);
+  assert.ok(iv.lowerKw < 1000 && iv.upperKw > 1000, 'interval brackets the prediction');
+  assert.ok(Math.abs((iv.upperKw + iv.lowerKw) / 2 - 1000) < 1e-9, 'interval is symmetric about the point');
+  assert.equal(iv.guarantee, 0.8, 'jackknife+ guarantee is 1 - 2*alpha = 0.8 at alpha 0.1');
+  assert.ok(iv.halfWidthKw >= resid[0] && iv.halfWidthKw <= resid[resid.length - 1], 'radius is within the residual range');
+
+  // Clopper-Pearson: exact CI brackets the point estimate and is [0,1]-bounded
+  const cp = clopperPearson(9, 10);
+  assert.ok(cp.lo >= 0 && cp.hi <= 1 && cp.lo < 0.9 && cp.hi > 0.9, `CP CI [${cp.lo.toFixed(2)}, ${cp.hi.toFixed(2)}] brackets 0.9`);
+  const cp0 = clopperPearson(0, 10); assert.equal(cp0.lo, 0, 'CP lower is 0 when k=0');
+  const cpN = clopperPearson(10, 10); assert.equal(cpN.hi, 1, 'CP upper is 1 when k=n');
+
+  // coverage on the REAL mills: the jackknife+ empirical coverage must meet the finite-sample guarantee 1-2*alpha
+  const { allPredictions, validationStats } = await import('../src/mill/realpower.ts');
+  const preds = allPredictions().filter((p) => p.mill.basis === 'motor');
+  const s = validationStats();
+  // reconstruct the per-mill LOMO absolute residuals (kW) the same way validationStats does, in prediction order
+  const yhat = preds.map((p) => p.predicted);
+  const y = preds.map((p) => p.measured);
+  const looAbs = preds.map((p) => Math.abs(p.predicted - p.measured)); // full-fit residual as the calibration score
+  const rep = coverageReport(yhat, y, looAbs, 0.1);
+  assert.equal(rep.n, s.n, 'coverage computed over all motor mills');
+  assert.ok(rep.empirical >= rep.guarantee - 1e-9, `empirical coverage ${(rep.empirical * 100).toFixed(0)}% meets the 1-2*alpha=${(rep.guarantee * 100).toFixed(0)}% jackknife+ bound`);
+  assert.ok(rep.cpLowerCI >= 0 && rep.cpUpperCI <= 1 && rep.cpLowerCI <= rep.empirical && rep.empirical <= rep.cpUpperCI, 'the Clopper-Pearson CI brackets the empirical coverage');
+});

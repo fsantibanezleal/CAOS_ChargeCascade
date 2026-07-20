@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { RealMill } from '../mill/realmills.ts';
-import { allPredictions, morrellMeanAbsPct, validationStats } from '../mill/realpower.ts';
+import { allPredictions, conformalReliability, morrellMeanAbsPct, validationStats } from '../mill/realpower.ts';
 
 // The Real-data validation panel (issue #45, the novel rung): the App's Hogg-Fuerstenau power, calibrated to the
 // real Doll motor-basis mills, plotted predicted-vs-measured against the 11 surveyed mills, with the y=x agreement
@@ -10,6 +10,7 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
   const preds = useMemo(() => allPredictions(), []);
   const stats = useMemo(() => validationStats(), []);
   const morrellErr = useMemo(() => morrellMeanAbsPct(), []);
+  const uq = useMemo(() => conformalReliability(), []);
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   const W = 460, H = 300, pad = 46;
@@ -31,6 +32,20 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
         {es
           ? ` Validación cruzada dejando un MOLINO fuera (LOMO), agrupada por molino físico: las encuestas repetidas del mismo molino nunca se reparten entre entrenamiento y prueba. Gate de fuga ${stats.leakageGateOk ? 'activo (train/test con sitios disjuntos)' : 'FALLA'}.`
           : ` Leave-one-MILL-out cross-validation, grouped by physical mill: repeat surveys of the same mill never straddle train and test. Leakage gate ${stats.leakageGateOk ? 'active (train/test siteIds disjoint)' : 'FAILING'}.`}</p>
+      <div className="cc-uq-row">
+        <span className="cc-uq-title">{es ? 'UQ conforme (jackknife+):' : 'Conformal UQ (jackknife+):'}</span>
+        {uq.reports.map((r) => (
+          <span key={r.alpha} className="cc-uq-cell">
+            <b>{(r.nominal * 100).toFixed(0)}%</b> {es ? 'nominal' : 'nominal'} →{' '}
+            {(r.empirical * 100).toFixed(0)}% {es ? 'empírico' : 'empirical'}{' '}
+            <span className="cc-muted">[CP {(r.cpLowerCI * 100).toFixed(0)}–{(r.cpUpperCI * 100).toFixed(0)}%]</span>{' '}
+            <span className={r.withinBound ? 'cc-uq-ok' : 'cc-uq-bad'}>{r.withinBound ? '✓' : '✗'} ≥{(r.guarantee * 100).toFixed(0)}%</span>
+          </span>
+        ))}
+        <span className="cc-uq-cell cc-muted">{es
+          ? `p.ej. ${uq.sample.millName} 90%: ${(uq.sample.lowerKw / 1000).toFixed(1)}–${(uq.sample.upperKw / 1000).toFixed(1)} MW (medido ${(uq.sample.measuredKw / 1000).toFixed(1)})`
+          : `e.g. ${uq.sample.millName} 90%: ${(uq.sample.lowerKw / 1000).toFixed(1)}–${(uq.sample.upperKw / 1000).toFixed(1)} MW (measured ${(uq.sample.measuredKw / 1000).toFixed(1)})`}</span>
+      </div>
 
       <div className="cc-plot" style={{ maxWidth: W + 20, position: 'relative' }}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={es ? 'potencia predicha vs medida' : 'predicted vs measured power'}>

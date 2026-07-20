@@ -241,9 +241,25 @@ export default function Methodology() {
                 <figcaption>{es ? 'El AE marca molinos fuera de la envolvente de entrenamiento, donde no se debe confiar en el surrogate.' : 'The AE flags mills outside the training envelope, where the surrogate must not be trusted.'}</figcaption>
               </figure>
               <Callout variant="honest" title={es ? 'Una herramienta de honestidad, medida' : 'An honesty tool, measured'}>
-                {es ? 'El AUC ~0.92 se reporta tal cual, el AE es bueno separando dentro/fuera de envolvente pero no infalible. Es exactamente para eso: convertir una extrapolación silenciosa del surrogate en una advertencia visible. El motor exacto sigue corriendo en vivo y es siempre la autoridad.' : 'The ~0.92 AUC is reported as it lands, the AE is good at separating in/out-of-envelope but not infallible. That is exactly its job: to turn a silent surrogate extrapolation into a visible warning. The exact engine keeps running live and is always the authority.'}
+                {es ? 'El AUC ~0.92 se reporta tal cual, el AE es bueno separando dentro/fuera de envolvente pero no infalible. Es exactamente para eso: convertir una extrapolación silenciosa del surrogate en una advertencia visible. El motor exacto sigue ejecutándose en vivo y es siempre la autoridad.' : 'The ~0.92 AUC is reported as it lands, the AE is good at separating in/out-of-envelope but not infallible. That is exactly its job: to turn a silent surrogate extrapolation into a visible warning. The exact engine keeps running live and is always the authority.'}
               </Callout>
               <Refs ids={['napiermunn1996', 'wills2016']} label="Refs" />
+            </div>
+          ),
+        },
+        // ============================================================ CONFORMAL UQ
+        {
+          id: 'conformal', label: es ? 'Incertidumbre (conforme)' : 'Uncertainty (conformal)',
+          content: (
+            <div className="cc-doc-sec">
+              <p>{es ? 'El C-model de Morrell y la calibración HF dan una predicción puntual de potencia. Una predicción sin banda de incertidumbre no es honesta. La predicción conforme envuelve el modelo con un intervalo que tiene una garantía de cobertura de muestra finita, sin ningún supuesto de distribución.' : 'The Morrell C-model and the HF calibration give a point power prediction. A prediction with no uncertainty band is not honest. Conformal prediction wraps the model with an interval that carries a finite-sample coverage guarantee, with no distributional assumption.'}</p>
+              <p>{es ? 'Se usa jackknife+ (Barber, Candès, Ramdas y Tibshirani 2021), que reutiliza los residuos leave-one-mill-out que ya se calculan. Para una miscobertura objetivo α, jackknife+ garantiza:' : 'We use jackknife+ (Barber, Candès, Ramdas & Tibshirani 2021), which reuses the leave-one-mill-out residuals already computed. For a target miscoverage α, jackknife+ guarantees:'}</p>
+              <Equation tex="\mathbb{P}\big(Y \in \hat C_{n,\alpha}(X)\big) \;\ge\; 1 - 2\alpha" caption={es ? 'la garantía marginal de cobertura de muestra finita de jackknife+ (su peor caso a dos colas; en la práctica la cobertura se acerca a 1 − α)' : 'the jackknife+ finite-sample marginal coverage guarantee (its two-sided worst case; in practice coverage is close to 1 − α)'} />
+              <p>{es ? 'El intervalo es la predicción ± el residuo de rango ⌈(1−α)(n+1)⌉ de los residuos absolutos de calibración. La cobertura empírica se reporta con un intervalo de confianza binomial exacto de Clopper-Pearson, sobre las anclas reales (n pequeño, ~19 molinos, sesgado a SAG).' : 'The interval is the prediction ± the rank-⌈(1−α)(n+1)⌉ residual of the calibration absolute residuals. The empirical coverage is reported with an exact Clopper-Pearson binomial confidence interval, over the real anchors (small n, ~19 mills, SAG-heavy).'}</p>
+              <Callout variant="honest" title={es ? 'Marginal, no condicional; garantía, no promesa' : 'Marginal, not conditional; a guarantee, not a promise'}>
+                {es ? 'La garantía es marginal (promediada sobre la muestra), no condicional a un molino específico. Con n pequeño y sesgado a SAG (una muestra de conveniencia), el intervalo es un prior razonable para un molino nuevo, no una banda certificada por molino. Se elige conforme (jackknife+) por su garantía de muestra finita; los ensembles profundos y MC-dropout necesitan una red neuronal y no dan garantía alguna.' : 'The guarantee is marginal (averaged over the sample), not conditional on a specific mill. With small, SAG-heavy n (a convenience sample), the interval is a reasonable prior for a new mill, not a per-mill certified band. Conformal (jackknife+) is chosen for its finite-sample guarantee; deep ensembles and MC-dropout need a neural net and give no guarantee at all.'}
+              </Callout>
+              <Refs ids={['morrell1996']} label="Refs" />
             </div>
           ),
         },
