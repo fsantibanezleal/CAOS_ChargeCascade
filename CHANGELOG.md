@@ -3,6 +3,25 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.19.000], 2026-07-19
+
+### Fixed (SOTA-ladder Unit 1: Morrell kinetic coefficient correction)
+- Corrected the Morrell C-model cylinder kinetic term from `(2*pi)^3` to the verbatim primary-source `pi^3`
+  (Erdem 2004 Eq 3; Toor/Valery/Morrell/Duffy 2019 CEEC Eq 2, Morrell-coauthored), and restored the leading
+  `pi` in the cylinder and cone gravity terms (`morrell.ts`). The earlier `(2*pi)^3` pin held only because a
+  second error (a dropped gravity `pi`) compensated it at a wrong charge density (a fitted 4.209 t/m3) while
+  inverting the physics to kinetic-dominated. The corrected verbatim form is gravity-dominated (kinetic/gravity
+  ~0.089 at 73% critical speed) and is the only reading that reproduces Erdem's two chambers at ONE charge
+  density (3.977 vs 3.959 t/m3, 0.46% apart) and the published gross 1365.04 kW at rho_c ~3.96.
+- New regression test (`frontend/test/mill.test.ts`): the full Erdem 2004 two-chamber worked example, asserting
+  no-load exact (<0.5%), one density fits both chambers (<1%), gravity-dominated (kin/grav guard), and gross
+  total ~1365 kW (<2%). Replaces the old test that used the wrong fitted density and a loose tolerance.
+- `G` set to the CEEC value 9.814 m/s2 for fidelity. The overturn is recorded in the pin dossier
+  (`morrell-cmodel-pinned-2026-07-11.md`) with the evidence trail.
+- Effect on the live Power tab: the reference 4x6 ball-mill C-model net moves 1.35 -> 1.31 MW (vs Hogg-Fuerstenau
+  1.19 MW), a physically-correct overestimate within the model's documented 9.8% band. Screenshot-verified
+  light + dark; all 21 unit tests pass.
+
 ## [0.18.000], 2026-07-18
 
 ### Added (the full Morrell C-model in the live app)
