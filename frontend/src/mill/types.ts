@@ -60,6 +60,8 @@ export interface MillResult {
   pCModelNetKw: number;        // Morrell (1996) C-model net charge-motion power [kW] (independent, uncalibrated)
   pCModelGrossKw: number;      // Morrell C-model gross power (motor input = no-load + k*net) [kW]
   pCModelNoLoadKw: number;     // Morrell C-model no-load power [kW]
+  smcWkWhT: number;            // Morrell (2004) SMC total circuit specific energy [kWh/t]
+  smcTphFromCModel: number;    // implied throughput from the C-model gross power / SMC specific energy [t/h]
   bondWKwhT: number;           // Bond specific energy [kWh/t]
   bondPowerKw: number;         // implied power for the throughput [kW]
   powerCurve: PowerPoint[];    // power vs phiC at the current J,D,L

@@ -7,6 +7,7 @@ import { chargeGeometry } from './charge.ts';
 import { CASCADE_CATARACT_PHIC, classifyRegime } from './regime.ts';
 import { bondWKwhT, chargeMassT, hoggFuerstenauKw, morrellFormKw } from './power.ts';
 import { morrellPower } from './morrell.ts';
+import { smcSpecificEnergy, throughputFromPower } from './smc.ts';
 import type { MillResult, Operating, PowerPoint } from './types.ts';
 
 /** The real Morrell (1996) C-model for the operating point: the full continuum power integral, independent and
@@ -82,6 +83,16 @@ export function evaluate(op: Operating): MillResult {
   if (op.fill > 0 && op.fill < 0.15) flags.push('fill < 15%: low charge; ball-on-liner impacts');
   if (op.ballTopMm / 1000 >= 0.05 * op.diameterM) flags.push('ball/diameter ratio large, the (D-d) critical speed matters');
 
+  // Morrell (2004) SMC circuit specific energy (kWh/t) from the operating point's feed/product, with a typical
+  // primary-crush stage ahead of the mill. Composes with the C-model gross power into an implied throughput.
+  const smc = smcSpecificEnergy({
+    crushF80um: Math.max(op.feedF80um * 4, 100_000),  // a run-of-mine primary-crush feed ahead of the mill feed
+    crushP80um: op.feedF80um,                          // the mill feed is the crush product
+    grindP80um: op.prodP80um,
+    Mia: op.oreWi * 1.35, Mib: op.oreWi * 1.3,         // scale the SMC indices off the Bond Wi as a sane proxy
+  });
+  const cmGross = Number.isFinite(cm.grossKw) && cm.grossKw > 0 ? cm.grossKw : 0;
+
   return {
     ncRpm,
     nRpm,
@@ -96,10 +107,12 @@ export function evaluate(op: Operating): MillResult {
     phfKw,
     pMorrellKw,
     pCModelNetKw: Number.isFinite(cm.netKw) && cm.netKw > 0 ? cm.netKw : 0,
-    pCModelGrossKw: Number.isFinite(cm.grossKw) && cm.grossKw > 0 ? cm.grossKw : 0,
+    pCModelGrossKw: cmGross,
     pCModelNoLoadKw: Number.isFinite(cm.noLoadKw) ? cm.noLoadKw : 0,
     bondWKwhT: bondW,
     bondPowerKw: bondW * op.tph,
+    smcWkWhT: Number.isFinite(smc.W_T) && smc.W_T > 0 ? smc.W_T : 0,
+    smcTphFromCModel: throughputFromPower(cmGross, smc.W_T),
     powerCurve,
     chargeMassT: mass,
     flags,

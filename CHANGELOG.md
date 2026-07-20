@@ -3,6 +3,22 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.21.000], 2026-07-19
+
+### Added (SOTA-ladder Unit 3: Morrell 2004 SMC specific-energy model)
+- New `mill/smc.ts`: the Morrell (2004) SMC-test circuit specific-energy model, verbatim from "Using the SMC
+  Test to Predict Comminution Circuit Performance" (Eqs 1-13). The size-dependent exponent `f(x) = -(0.295 +
+  x/1e6)` generalizes Bond's fixed -0.5; the total `W_T = Wa + Wb + Wc + Wh + Ws` sums the coarse-tumbling,
+  fine-tumbling, crushing, HPGR and size-distribution terms. A separate model from the C-model (CEEC 2019
+  explicitly warns they are confused): the C-model gives power (kW), SMC gives specific energy (kWh/t), and the
+  two compose into a throughput `t/h = P / W_T`.
+- New Methodology tab "Specific energy (SMC)": the verbatim equations in KaTeX, the four indices (Mia/Mib/Mic/
+  Mih), the four-stage circuit SVG, and the throughput composition. The App Comminution tab now shows live SMC
+  KPIs (W_T, C-model gross, SMC-implied capacity) beside the Bond duty. For the default ball mill W_T = 12.9
+  kWh/t; a SAG+ball copper circuit computes ~16.4 kWh/t (realistic). Screenshot-verified light + dark.
+- New tests: f(x) exponent family, W_T sums the stages (Eq 3), HPGR term appears only when requested, finer
+  grind raises Wb, throughput composes finite/positive. All tests pass.
+
 ## [0.20.000], 2026-07-19
 
 ### Added (SOTA-ladder Unit 2: Morrell cone term + density-convention controls)

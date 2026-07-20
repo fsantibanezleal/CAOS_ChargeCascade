@@ -277,6 +277,34 @@ test('Morrell cone term is close to Doll 5% allowance; overflow pool > grate; de
   assert.ok(lowE > highE, `lower porosity E -> denser charge (${lowE.toFixed(3)} > ${highE.toFixed(3)})`);
 });
 
+// Unit 3: the Morrell (2004) SMC specific-energy model.
+test('SMC specific-energy model: f(x) exponent family, W_T sums the stages, throughput composes', async () => {
+  const { smcSpecificEnergy, fExp, throughputFromPower } = await import('../src/mill/smc.ts');
+
+  // f(x) = -(0.295 + x/1e6): magnitude grows with size; contrast Bond's fixed -0.5.
+  assert.ok(Math.abs(fExp(100) - -(0.295 + 100 / 1e6)) < 1e-12, 'f(100) verbatim');
+  assert.ok(fExp(750000) < fExp(100), 'f(x) becomes more negative (larger magnitude) with x');
+
+  // a SAG + ball circuit (no HPGR): crush 150000 -> 6000 um, grind to 150 um
+  const r = smcSpecificEnergy({ crushF80um: 150000, crushP80um: 6000, grindP80um: 150 });
+  assert.ok(r.Wa > 0 && r.Wb > 0 && r.Wc > 0 && r.Ws > 0, 'the active stages are positive');
+  assert.equal(r.Wh, 0, 'no HPGR term when hasHpgr is not set');
+  assert.ok(Math.abs(r.W_T - (r.Wa + r.Wb + r.Wc + r.Wh + r.Ws)) < 1e-9, 'W_T is the sum of the stage terms (Eq 3)');
+  assert.ok(r.W_T > 5 && r.W_T < 60, `total specific energy ${r.W_T.toFixed(1)} kWh/t is in a sane comminution range`);
+
+  // finer grind -> more fine-tumbling energy (Wb rises as grindP80 drops)
+  const fine = smcSpecificEnergy({ crushF80um: 150000, crushP80um: 6000, grindP80um: 75 });
+  assert.ok(fine.Wb > r.Wb, `finer grind raises Wb (${fine.Wb.toFixed(2)} > ${r.Wb.toFixed(2)})`);
+
+  // the HPGR term appears only when requested
+  const hpgr = smcSpecificEnergy({ crushF80um: 150000, crushP80um: 6000, grindP80um: 150, hasHpgr: true });
+  assert.ok(hpgr.Wh > 0, 'HPGR term present when hasHpgr is set');
+
+  // throughput composes with a C-model power: tph = power / W_T, finite and positive
+  const tph = throughputFromPower(19_300, r.W_T); // ~19.3 MW SAG
+  assert.ok(tph > 0 && Number.isFinite(tph), `throughput ${tph.toFixed(0)} t/h is finite and positive`);
+});
+
 test('the expanded real anchor keeps a robust leave-one-out error', async () => {
   const { validationStats, allPredictions } = await import('../src/mill/realpower.ts');
   const s = validationStats();

@@ -156,6 +156,36 @@ export default function Methodology() {
             </div>
           ),
         },
+        // ============================================================ SMC SPECIFIC ENERGY
+        {
+          id: 'smc', label: es ? 'Energía específica (SMC)' : 'Specific energy (SMC)',
+          content: (
+            <div className="cc-doc-sec">
+              <p>{es ? 'El C-model da la potencia del molino (kW). El modelo de energía específica de Morrell (2004), el test SMC, da la energía específica del circuito (kWh/t), una cosa distinta. Los dos se componen: la capacidad en toneladas por hora es la potencia dividida por la energía específica.' : 'The C-model gives mill power (kW). Morrell\'s (2004) specific-energy model, the SMC test, gives circuit specific energy (kWh/t), a different thing. The two compose: throughput in tonnes per hour is power divided by specific energy.'}</p>
+              <p>{es ? 'La relación energía-tamaño general (Ec. 1) generaliza la ley de Bond: donde Bond usa un exponente fijo de −0.5, Morrell lo reemplaza por un exponente que varía con el tamaño (Ec. 2):' : 'The general energy-size relationship (Eq 1) generalizes Bond\'s law: where Bond uses a fixed exponent of −0.5, Morrell replaces it with a size-dependent exponent (Eq 2):'}</p>
+              <Equation tex="W_i = M_i\,4\,\big(x_2^{f(x_2)} - x_1^{f(x_1)}\big),\qquad f(x) = -\big(0.295 + \tfrac{x}{10^6}\big)" caption={es ? 'energía específica de reducción de tamaño; x en micrones, x1 = alimentación, x2 = producto; Mi = índice de la etapa' : 'size-reduction specific energy; x in microns, x1 = feed, x2 = product; Mi = the stage work index'} />
+              <p>{es ? 'Los cuatro índices de mena, cada uno para una etapa: ' : 'The four ore indices, one per stage: '}<b>M<sub>ia</sub></b>{es ? ' (molienda gruesa de tambor), ' : ' (coarse tumbling), '}<b>M<sub>ib</sub></b>{es ? ' (molienda fina de tambor, obtenido de un test de Bond vía Ec. 6, no es el índice de Bond), ' : ' (fine tumbling, from a Bond ball-mill test via Eq 6, it is NOT the Bond work index), '}<b>M<sub>ic</sub></b>{es ? ' (chancado) y ' : ' (crushing) and '}<b>M<sub>ih</sub></b>{es ? ' (HPGR). La transición grueso/fino es 750 µm.' : ' (HPGR). The coarse/fine transition is 750 µm.'}</p>
+              <p>{es ? 'La energía específica total del circuito (Ec. 3) suma solo las etapas relevantes:' : 'The total circuit specific energy (Eq 3) sums only the relevant stages:'}</p>
+              <Equation tex="W_T = W_a + W_b + W_c + W_h + W_s" caption={es ? 'Wa molienda gruesa (Ec. 4, K1), Wb molienda fina (Ec. 5), Wc chancado (Ec. 7-8 con la corrección S), Wh HPGR (Ec. 9), Ws corrección por distribución de tamaños' : 'Wa coarse tumbling (Eq 4, K1), Wb fine tumbling (Eq 5), Wc crushing (Eq 7-8 with the S correction), Wh HPGR (Eq 9), Ws size-distribution correction'} />
+              <Equation tex="\text{throughput [t/h]} = \frac{P_{\text{C-model}}\,[\text{kW}]}{W_T\,[\text{kWh/t}]}" caption={es ? 'la composición: la potencia del C-model dividida por la energía específica SMC da la capacidad' : 'the composition: the C-model power divided by the SMC specific energy gives the throughput'} />
+              <figure className="cc-fig">
+                <svg viewBox="0 0 460 130" width="100%" role="img" className="cc-msvg" aria-label={es ? 'circuito de conminución de cuatro etapas' : 'four-stage comminution circuit'}>
+                  {[[10, 'ROM', 'F80'], [120, es ? 'chancado' : 'crush', 'Wc'], [230, 'SAG', 'Wa'], [340, es ? 'bolas' : 'ball', 'Wb']].map(([x, lbl, e], i) => (
+                    <g key={i}><rect className={`bx ${i >= 2 ? 'hi' : ''}`} x={x as number} y="40" width="92" height="44" rx="8" /><text className="t" x={(x as number) + 46} y="60" textAnchor="middle" style={{ fontSize: 11 }}>{lbl as string}</text><text className="s" x={(x as number) + 46} y="76" textAnchor="middle">{e as string}</text></g>
+                  ))}
+                  <path className="fl" d="M102,62 H118" markerEnd="url(#cc-ar4)" /><path className="fl" d="M212,62 H228" markerEnd="url(#cc-ar4)" /><path className="fl" d="M322,62 H338" markerEnd="url(#cc-ar4)" />
+                  <defs><marker id="cc-ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)" /></marker></defs>
+                  <text className="s" x="10" y="104">{es ? 'W_T = Wc + Wa + Wb + Ws (kWh/t); capacidad = P / W_T' : 'W_T = Wc + Wa + Wb + Ws (kWh/t); throughput = P / W_T'}</text>
+                </svg>
+                <figcaption>{es ? 'El circuito de cuatro etapas; cada etapa aporta su energía específica a W_T, y la potencia del C-model sobre W_T da la capacidad.' : 'The four-stage circuit; each stage adds its specific energy to W_T, and the C-model power over W_T gives the throughput.'}</figcaption>
+              </figure>
+              <Callout variant="honest" title={es ? 'Un modelo distinto del C-model, que se compone con él' : 'A different model from the C-model, that composes with it'}>
+                {es ? 'El SMC no es potencia, es energía específica (kWh/t), y es un modelo aparte del C-model (CEEC 2019 advierte explícitamente que se confunden). Los índices Mia/Mib aquí se escalan del índice de Bond de la mena como un proxy razonable; con un test SMC real se usarían los valores medidos. La energía a nivel de piñón es ~93.5% de la bruta (accionamiento por corona y piñón), ~97% sin engranajes. Adoptado por el GMG (2021) como método estándar de energía de circuito.' : 'SMC is not power, it is specific energy (kWh/t), and it is a separate model from the C-model (CEEC 2019 explicitly warns they are confused). The Mia/Mib indices here scale off the ore\'s Bond work index as a sane proxy; a real SMC test would use the measured values. The pinion-level energy is ~93.5% of gross (gear-and-pinion drive), ~97% gearless. Adopted by the GMG (2021) as the standard circuit-energy method.'}
+              </Callout>
+              <Refs ids={['morrell1996', 'bond1952']} label="Refs" />
+            </div>
+          ),
+        },
         // ============================================================ SURROGATE (LEARNED)
         {
           id: 'surrogate', label: es ? 'Surrogate de potencia' : 'Power surrogate',
