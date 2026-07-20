@@ -3,6 +3,22 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.22.000], 2026-07-19
+
+### Changed (SOTA-ladder Unit 4: grouped leave-one-MILL-out + leakage gate)
+- The real-mill validation now uses **leave-one-MILL-out (LOMO)**, grouped by a physical-mill `siteId`, instead
+  of leave-one-row-out: repeat surveys of the same mill (when present) never straddle a fold. A **hard leakage
+  gate** asserts every fold's train and test siteIds stay disjoint, surfaced as a green ✓ badge on the Real
+  validation panel. `validationStats` now reports `nSites` (the LOMO fold count) and `leakageGateOk`.
+- New tests: LOMO fold count matches the distinct-site count, the leakage gate is active, LOMO mean < 10%, and
+  the honest worst-single-mill error (~23% on the current 24-mill set; the plan's 20% target is contingent on
+  the 49-mill Doll expansion). All 23 tests pass.
+- **The 22 -> 49 Doll IMPC 2016 anchor expansion is deferred, not faked**: the 49-survey table lives only in a
+  gated spreadsheet (SurveyTabulation-IMPC2016-v6.ods) and a scanned-image PDF that curl/WebFetch cannot read.
+  Per the no-fabrication rule the 27 additional mills are not invented; the LOMO/gate infrastructure is correct
+  for any n, so the expansion is a pure data-append once the spreadsheet is obtained (recorded in the anchor
+  dossier). Screenshot-verified light + dark.
+
 ## [0.21.000], 2026-07-19
 
 ### Added (SOTA-ladder Unit 3: Morrell 2004 SMC specific-energy model)

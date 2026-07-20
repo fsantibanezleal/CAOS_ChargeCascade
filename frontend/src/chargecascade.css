@@ -44,6 +44,11 @@
 .cc-ctl-grid input[type="range"]:disabled { opacity: 0.4; }
 .cc-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--color-fg-subtle); margin-top: 0.3rem; }
 
+/* Unit 4: LOMO leakage-gate badge */
+.cc-gate-badge { display: inline-block; width: 1.15em; height: 1.15em; line-height: 1.15em; text-align: center; border-radius: 50%; font-size: 0.8em; font-weight: 700; margin-right: 0.2rem; }
+.cc-gate-badge.ok { background: var(--color-good, #2ea043); color: #fff; }
+.cc-gate-badge.bad { background: var(--color-bad, #f85149); color: #fff; }
+
 .cc-vizstack { display: flex; flex-direction: column; gap: 0.9rem; }
 .cc-plot-t { font-size: 0.82rem; color: var(--color-fg-subtle); }
 .cc-plot-th { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

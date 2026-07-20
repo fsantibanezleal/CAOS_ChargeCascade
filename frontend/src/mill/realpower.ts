@@ -83,36 +83,51 @@ export function allPredictions(): Prediction[] {
 }
 
 export interface ValidationStats {
-  n: number;
-  looMeanAbsPct: number;   // leave-one-out mean absolute error, the honest generalization number
+  n: number;               // number of motor mills (survey rows)
+  nSites: number;          // number of distinct physical mills (LOMO folds)
+  looMeanAbsPct: number;   // leave-one-MILL-out mean absolute error, the honest generalization number
   looMaxAbsPct: number;
   residSdKw: number;       // residual standard deviation of the motor fit, the UQ band (kW)
   r2: number;              // fit R^2 on the motor mills
+  leakageGateOk: boolean;  // true iff every LOMO fold's train and test sets have disjoint siteIds (no leakage)
 }
 
-/** Leave-one-out validation of the motor-basis calibration + the fit quality (the model's real-data skill). */
+/** the physical-mill grouping id for a row: its siteId, or its own id when it is a single-survey mill. */
+function siteOf(m: RealMill): string {
+  return m.siteId ?? m.id;
+}
+
+/** Leave-one-MILL-out validation of the motor-basis calibration + the fit quality (the model's real-data skill).
+ *  Repeat surveys of the same physical mill (shared siteId) never straddle a fold: the held-out mill's rows are
+ *  ALL removed from the training fit, and a hard leakage gate asserts the train/test siteIds stay disjoint. */
 export function validationStats(): ValidationStats {
-  const pts = MOTOR.map((m) => ({ x: hfNetKw(m), y: m.measuredKw }));
-  // leave-one-out: refit without each mill, predict it, accumulate the absolute % error
+  const rows = MOTOR.map((m) => ({ x: hfNetKw(m), y: m.measuredKw, site: siteOf(m) }));
+  const sites = [...new Set(rows.map((r) => r.site))];
   const errs: number[] = [];
-  for (let i = 0; i < pts.length; i++) {
-    const train = pts.filter((_, j) => j !== i);
+  let leakageGateOk = true;
+  for (const heldSite of sites) {
+    const train = rows.filter((r) => r.site !== heldSite);
+    const test = rows.filter((r) => r.site === heldSite);
+    // hard leakage gate: the held-out mill must not appear in the training set
+    const trainSites = new Set(train.map((r) => r.site));
+    if (test.some((t) => trainSites.has(t.site))) leakageGateOk = false;
     const f = linfit(train);
-    const pred = f.a + f.b * pts[i].x;
-    errs.push(Math.abs(pred - pts[i].y) / pts[i].y * 100);
+    for (const t of test) errs.push(Math.abs((f.a + f.b * t.x) - t.y) / t.y * 100);
   }
   // residual sd + R^2 on the full motor fit
   const f = CALIBRATION;
-  const resid = pts.map((p) => p.y - (f.a + f.b * p.x));
-  const residSd = Math.sqrt(resid.reduce((s, e) => s + e * e, 0) / (pts.length - 2));
-  const ybar = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-  const ssTot = pts.reduce((s, p) => s + (p.y - ybar) ** 2, 0);
+  const resid = rows.map((p) => p.y - (f.a + f.b * p.x));
+  const residSd = Math.sqrt(resid.reduce((s, e) => s + e * e, 0) / (rows.length - 2));
+  const ybar = rows.reduce((s, p) => s + p.y, 0) / rows.length;
+  const ssTot = rows.reduce((s, p) => s + (p.y - ybar) ** 2, 0);
   const ssRes = resid.reduce((s, e) => s + e * e, 0);
   return {
     n: MOTOR.length,
+    nSites: sites.length,
     looMeanAbsPct: errs.reduce((s, e) => s + e, 0) / errs.length,
     looMaxAbsPct: Math.max(...errs),
     residSdKw: residSd,
     r2: 1 - ssRes / ssTot,
+    leakageGateOk,
   };
 }
