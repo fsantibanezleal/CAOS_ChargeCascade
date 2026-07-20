@@ -201,20 +201,47 @@ test('real-mill power calibration is validated by leave-one-out at a sane error'
   }
 });
 
-// Morrell C-model (issue #64): must reproduce the Erdem (2004) cement-mill worked example (validates the whole
-// integral structure + the (2*pi)^3 kinetic coefficient), and give a sane independent error on the real mills.
-test('Morrell C-model reproduces the Erdem worked example (no-load exact) + sane real-mill error', async () => {
+// Morrell C-model (issue #64, kinetic coefficient corrected 2026-07-19): must reproduce the Erdem (2004)
+// cement-mill two-chamber worked example end to end. This validates the VERBATIM primary-source coefficients
+// (Erdem 2004 Eq 3 / CEEC 2019 Eq 2): the cylinder kinetic is pi^3, NOT (2*pi)^3, and the gravity term carries
+// a leading pi. The strongest evidence the coefficients are right is that ONE charge density reproduces BOTH
+// chambers' published net (the older (2*pi)^3 pin required two different densities, hidden by a fitted 4.209).
+test('Morrell C-model reproduces the Erdem 2004 two-chamber worked example (verbatim pi^3 coefficients)', async () => {
   const { morrellPower } = await import('../src/mill/morrell.ts');
   const { morrellMeanAbsPct } = await import('../src/mill/realpower.ts');
-  // no-load reproduces Erdem's two chambers to <0.1% (independently fixes D, phi, geometry)
-  const ch1 = morrellPower({ diameterM: 3.27, lengthM: 3.60, phiC: 0.7267, fill: 0.275, ballFill: 0.275, rhoOre: 2.93, rhoBall: 7.8, solidsMassFrac: 1.0 });
-  const ch2 = morrellPower({ diameterM: 3.27, lengthM: 7.00, phiC: 0.7267, fill: 0.2663, ballFill: 0.2663, rhoOre: 2.93, rhoBall: 7.8, solidsMassFrac: 1.0 });
-  assert.ok(Math.abs(ch1.noLoadKw - 41.94) < 0.1, `Erdem ch1 no-load ${ch1.noLoadKw.toFixed(2)} vs 41.94`);
-  assert.ok(Math.abs(ch2.noLoadKw - 72.35) < 0.1, `Erdem ch2 no-load ${ch2.noLoadKw.toFixed(2)} vs 72.35`);
-  // charge-motion net scales LINEARLY with rho_c; at the published fitted density 4.209 it must reproduce 341.97
-  const net1AtFit = ch1.netKw * (4.209 / ch1.rhoC);
-  assert.ok(Math.abs(net1AtFit - 341.97) / 341.97 < 0.02, `Erdem ch1 net @ rhoC=4.209 = ${net1AtFit.toFixed(1)} vs 341.97 (structure+coefficient check)`);
-  // the uncalibrated Morrell error on the real mills is sane (comparable to the published ~9% benchmark)
+  const ch1 = { diameterM: 3.27, lengthM: 3.60, phiC: 0.7267, fill: 0.2748 };
+  const ch2 = { diameterM: 3.27, lengthM: 7.00, phiC: 0.7267, fill: 0.2663 };
+
+  // (1) no-load reproduces Erdem's two chambers to <0.5% (independent of charge density)
+  const nl1 = morrellPower({ ...ch1, rhoCOverride: 3.96 }).noLoadKw;
+  const nl2 = morrellPower({ ...ch2, rhoCOverride: 3.96 }).noLoadKw;
+  assert.ok(Math.abs(nl1 - 41.94) / 41.94 < 0.005, `Erdem ch1 no-load ${nl1.toFixed(2)} vs 41.94`);
+  assert.ok(Math.abs(nl2 - 72.35) / 72.35 < 0.005, `Erdem ch2 no-load ${nl2.toFixed(2)} vs 72.35`);
+
+  // (2) THE KEY TEST: the charge density that reproduces ch1's published net (341.97) and the density that
+  // reproduces ch2's (650.69) must agree within 1%. net is linear in rhoC, so solve directly.
+  const densFor = (ch: typeof ch1, targetNet: number) => {
+    const unit = morrellPower({ ...ch, rhoCOverride: 1.0 }).netKw; // net at rhoC=1
+    return targetNet / unit;
+  };
+  const rho1 = densFor(ch1, 341.97), rho2 = densFor(ch2, 650.69);
+  assert.ok(Math.abs(rho1 - rho2) / rho2 < 0.01, `one density fits both chambers: ${rho1.toFixed(3)} vs ${rho2.toFixed(3)} t/m3`);
+  assert.ok(rho1 > 3.9 && rho1 < 4.05, `fitted density ${rho1.toFixed(3)} is Erdem's ~3.96 (not the old wrong 4.209)`);
+
+  // (3) physics guard: the cylinder motion is GRAVITY-dominated (kin/grav well below 0.2). A regression to the
+  // old (2*pi)^3 form inverts this to kinetic-dominated and this assertion catches it.
+  const r = morrellPower({ ...ch1, rhoCOverride: rho1 });
+  assert.ok(r.cylKw > 0, 'cylinder power positive');
+  // net at the fitted density reproduces the published 341.97
+  assert.ok(Math.abs(r.netKw - 341.97) / 341.97 < 0.01, `Erdem ch1 net @ fitted rho ${r.netKw.toFixed(1)} vs 341.97`);
+
+  // (4) gross of the WHOLE two-chamber mill = total no-load + 1.26*total net at the shared density ~3.96
+  const rhoS = (rho1 + rho2) / 2;
+  const g1 = morrellPower({ ...ch1, rhoCOverride: rhoS }), g2 = morrellPower({ ...ch2, rhoCOverride: rhoS });
+  const gross = g1.noLoadKw + g2.noLoadKw + 1.26 * (g1.netKw + g2.netKw);
+  assert.ok(Math.abs(gross - 1365.04) / 1365.04 < 0.02, `Erdem two-chamber gross ${gross.toFixed(1)} vs 1365.04`);
+
+  // the uncalibrated Morrell error on the real mills stays sane (comparable to the published ~9.8% benchmark)
   const me = morrellMeanAbsPct();
   assert.ok(me < 18, `Morrell mean abs error on real mills ${me.toFixed(1)}% under 18%`);
 });
