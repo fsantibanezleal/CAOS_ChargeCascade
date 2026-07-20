@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { RealMill } from '../mill/realmills.ts';
-import { allPredictions, morrellMeanAbsPct, validationStats } from '../mill/realpower.ts';
+import { allPredictions, conformalReliability, morrellMeanAbsPct, validationStats } from '../mill/realpower.ts';
 
 // The Real-data validation panel (issue #45, the novel rung): the App's Hogg-Fuerstenau power, calibrated to the
 // real Doll motor-basis mills, plotted predicted-vs-measured against the 11 surveyed mills, with the y=x agreement
@@ -10,6 +10,7 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
   const preds = useMemo(() => allPredictions(), []);
   const stats = useMemo(() => validationStats(), []);
   const morrellErr = useMemo(() => morrellMeanAbsPct(), []);
+  const uq = useMemo(() => conformalReliability(), []);
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   const W = 460, H = 300, pad = 46;
@@ -22,9 +23,28 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
   return (
     <div className="cc-doc-sec">
       <div className="cc-kpis">
-        <Kpi label={es ? 'HF calibrado, leave-one-out' : 'HF calibrated, leave-one-out'} value={`${stats.looMeanAbsPct.toFixed(1)}%`} sub={es ? `medio · máx ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}` : `mean · max ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}`} />
+        <Kpi label={es ? 'HF calibrado, leave-one-mill-out' : 'HF calibrated, leave-one-mill-out'} value={`${stats.looMeanAbsPct.toFixed(1)}%`} sub={es ? `medio · máx ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}` : `mean · max ${stats.looMaxAbsPct.toFixed(0)}% · R² ${stats.r2.toFixed(2)}`} />
         <Kpi label={es ? 'Morrell C-model (independiente)' : 'Morrell C-model (independent)'} value={`${morrellErr.toFixed(1)}%`} sub={es ? 'sin calibrar, primeros principios' : 'uncalibrated, first-principles'} />
-        <Kpi label={es ? 'anclas verificadas' : 'verified anchors'} value={`${preds.length}`} sub={es ? `${stats.n} base motor + ${preds.length - stats.n} neta` : `${stats.n} motor + ${preds.length - stats.n} net`} />
+        <Kpi label={es ? 'anclas verificadas' : 'verified anchors'} value={`${preds.length}`} sub={es ? `${stats.nSites} molinos (${stats.n} base motor) + ${preds.length - stats.n} neta` : `${stats.nSites} mills (${stats.n} motor) + ${preds.length - stats.n} net`} />
+      </div>
+      <p className="cc-note" style={{ marginTop: '0.3rem' }}>
+        <span className={`cc-gate-badge ${stats.leakageGateOk ? 'ok' : 'bad'}`}>{stats.leakageGateOk ? '✓' : '✗'}</span>
+        {es
+          ? ` Validación cruzada dejando un MOLINO fuera (LOMO), agrupada por molino físico: las encuestas repetidas del mismo molino nunca se reparten entre entrenamiento y prueba. Gate de fuga ${stats.leakageGateOk ? 'activo (train/test con sitios disjuntos)' : 'FALLA'}.`
+          : ` Leave-one-MILL-out cross-validation, grouped by physical mill: repeat surveys of the same mill never straddle train and test. Leakage gate ${stats.leakageGateOk ? 'active (train/test siteIds disjoint)' : 'FAILING'}.`}</p>
+      <div className="cc-uq-row">
+        <span className="cc-uq-title">{es ? 'UQ conforme (jackknife+):' : 'Conformal UQ (jackknife+):'}</span>
+        {uq.reports.map((r) => (
+          <span key={r.alpha} className="cc-uq-cell">
+            <b>{(r.nominal * 100).toFixed(0)}%</b> {es ? 'nominal' : 'nominal'} →{' '}
+            {(r.empirical * 100).toFixed(0)}% {es ? 'empírico' : 'empirical'}{' '}
+            <span className="cc-muted">[CP {(r.cpLowerCI * 100).toFixed(0)}–{(r.cpUpperCI * 100).toFixed(0)}%]</span>{' '}
+            <span className={r.withinBound ? 'cc-uq-ok' : 'cc-uq-bad'}>{r.withinBound ? '✓' : '✗'} ≥{(r.guarantee * 100).toFixed(0)}%</span>
+          </span>
+        ))}
+        <span className="cc-uq-cell cc-muted">{es
+          ? `p.ej. ${uq.sample.millName} 90%: ${(uq.sample.lowerKw / 1000).toFixed(1)}–${(uq.sample.upperKw / 1000).toFixed(1)} MW (medido ${(uq.sample.measuredKw / 1000).toFixed(1)})`
+          : `e.g. ${uq.sample.millName} 90%: ${(uq.sample.lowerKw / 1000).toFixed(1)}–${(uq.sample.upperKw / 1000).toFixed(1)} MW (measured ${(uq.sample.measuredKw / 1000).toFixed(1)})`}</span>
       </div>
 
       <div className="cc-plot" style={{ maxWidth: W + 20, position: 'relative' }}>
@@ -86,8 +106,8 @@ export function RealValidation({ mill, es }: { mill: RealMill; es: boolean }) {
       </table>
 
       <div className="cc-note" style={{ marginTop: '0.6rem' }}>
-        {es ? `Dos modelos contra la verdad medida: (1) HF calibrado, la potencia HF de primeros principios ajustada a la potencia industrial medida real (${stats.n} molinos base-motor de Doll), error por leave-one-out (entrenar sin cada molino, predecirlo); no se transfiere precisión de ningún paper. (2) Morrell C-model, el modelo SOTA real, ahora implementado (reproduce el ejemplo de Erdem 2004: bruta 1365 kW exacta) y ejecutado sin calibrar; su error es su desempeño real. Residual honesto: la convención exacta de densidad de carga de Napier-Munn afloja ~±10%, por eso Morrell tiende a sobre-predecir; la estructura y todos los coeficientes son exactos.`
-            : `Two models against the measured truth: (1) HF calibrated, the first-principles HF power fitted to real measured industrial power (${stats.n} Doll motor-basis mills), error by leave-one-out (train without each mill, predict it); no paper accuracy is transplanted. (2) Morrell C-model, the real SOTA model, now implemented (it reproduces Erdem's 2004 worked example: gross 1365 kW exact) and run uncalibrated; its error is its genuine performance. Honest residual: the exact Napier-Munn charge-density packing convention is loose by ~±10%, so Morrell tends to over-predict; the structure and all coefficients are exact.`}
+        {es ? `Dos modelos contra la verdad medida: (1) HF calibrado, la potencia HF de primeros principios ajustada a la potencia industrial medida real (${stats.n} molinos base-motor de Doll), error por leave-one-mill-out agrupado (entrenar sin cada molino físico, predecirlo); no se transfiere precisión de ningún paper. (2) Morrell C-model, el modelo SOTA real, ahora implementado (reproduce el ejemplo de Erdem 2004: bruta 1365 kW exacta) y ejecutado sin calibrar; su error es su desempeño real. Residual honesto: la convención exacta de densidad de carga de Napier-Munn afloja ~±10%, por eso Morrell tiende a sobre-predecir; la estructura y todos los coeficientes son exactos.`
+            : `Two models against the measured truth: (1) HF calibrated, the first-principles HF power fitted to real measured industrial power (${stats.n} Doll motor-basis mills), error by grouped leave-one-mill-out (train without each physical mill, predict it); no paper accuracy is transplanted. (2) Morrell C-model, the real SOTA model, now implemented (it reproduces Erdem's 2004 worked example: gross 1365 kW exact) and run uncalibrated; its error is its genuine performance. Honest residual: the exact Napier-Munn charge-density packing convention is loose by ~±10%, so Morrell tends to over-predict; the structure and all coefficients are exact.`}
       </div>
     </div>
   );
