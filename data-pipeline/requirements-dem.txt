@@ -1,0 +1,10 @@
+# ChargeCascade DEM bake lane (Unit 6). Cross-platform, no C++ toolchain, no WSL.
+# The DEM engine is milldem (github.com/fsantibanezleal/CAOS_MillDEM, MIT), a numpy-core soft-sphere DEM with an
+# optional numba JIT. Its thin-3D-slab net power is validated against the classical Hogg-Fuerstenau model within
+# ~10-20% and size-consistently (milldem docs/VALIDATION.md, tests/test_power3d.py). Install into .venv-precompute.
+#
+#   python -m pip install -r requirements-dem.txt
+#   python -m cclab.dem            # bake all cases + the (phiC, J) power grid, then validate
+
+milldem[jit]>=0.2.0     # DEM engine + numba JIT (10-50x). Drop the [jit] extra for a pure-numpy install.
+numpy>=2.0,<2.3

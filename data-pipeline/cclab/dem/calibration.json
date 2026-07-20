@@ -1,0 +1,27 @@
+{
+  "schema": "chargecascade.dem-calibration/v1",
+  "engine": "milldem",
+  "engine_version": "0.02.000",
+  "engine_source": "https://pypi.org/project/milldem/ (fsantibanezleal/CAOS_MillDEM, MIT)",
+  "note": "Cross-platform soft-sphere DEM (numpy core + optional numba JIT), no C++/WSL. The thin-3D-slab route (MillDEM3D) is validated against the classical Hogg-Fuerstenau power within ~10-20% and size-consistently (see the milldem docs/VALIDATION.md and tests/test_power3d.py). ChargeCascade's DEM lane bakes with this engine; the shell footer and analytic Morrell/Hogg-Fuerstenau/Bond engine stay the displayed authority.",
+  "contact": {
+    "model": "hooke",
+    "restitution_e": 0.5,
+    "friction_mu_particle": 0.25,
+    "rolling_mu_r": 0.05,
+    "kt_over_kn": 0.2857142857142857,
+    "kn": "auto (density-scaled for numerical stability; see milldem.engine3d._auto_kn)",
+    "damping_from_restitution": "Tsuji, Tanaka, Ishida 1992: beta = -ln(e)/sqrt(ln(e)^2 + pi^2), C_n = 2*beta*sqrt(k_n*m_eff)",
+    "background_damping_per_s": 16.0,
+    "source": "Cundall & Strack 1979 soft-sphere; LAMMPS gran/hooke pair style; Tsuji et al. 1992 damping-from-restitution. Values in the Govender 2015 mill-DEM calibrated range (e 0.5-0.7, mu 0.25-0.7)."
+  },
+  "slab": {
+    "geometry": "thin-3D axial slab, thickness w = 4 x ball diameter, periodic in the axial (z) direction",
+    "why": "A single 2D disc slice gives a size-independent absolute lift, so its power/Hogg-Fuerstenau ratio shrinks with mill size. The axial-periodic slab resolves the 3D force chains that carry the charge lift, restoring size-consistency. The full-length mill charge is statistically identical in every axial slab of thickness w (that is what the periodic boundary asserts), so the render tiles the slab K = round(L / w) times along the axis, each tile at a different time-phase (the motion is stationary, so different tiles at different cycle phases is physically valid and removes visual lockstep)."
+  },
+  "density_mapping": {
+    "rho_ball_solid": "charge_density_bulk / packing_fraction",
+    "packing_fraction": 0.62,
+    "why": "The case charge_density is the BULK charge density (media + voids, e.g. 4.8 t/m3 for graded steel balls). milldem populates the slab with solid spheres of density rho_ball; the ~0.62 packing of the settled bed reproduces the bulk. Setting rho_ball = charge_density / 0.62 makes the DEM charge mass match the case's stated charge density, so the DEM power and the analytic engine power share one charge mass."
+  }
+}

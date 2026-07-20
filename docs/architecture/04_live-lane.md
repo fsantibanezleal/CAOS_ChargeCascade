@@ -34,10 +34,12 @@ The loader is **graceful**: if the ONNX are absent (not yet trained) it resolves
 analytic engine live anyway (it is cheap), and the UI shows the honest "pending training" state instead of fabricating
 numbers.
 
-## The 3D animation, kinematic, not DEM
+## The 3D charge: real DEM (baked) + Davis kinematic (live)
 
-`viz/Mill3D.tsx` (three.js `^0.171`: `WebGLRenderer` + `OrbitControls` + a `BufferGeometry` charge-particle cloud, with
-proper `dispose()` on teardown) animates the **same Davis trajectories** `charge.ts` computes, a **kinematic animation
-of the analytic engine**, not a DEM / N-body discrete-element solve. A real DEM / PEPT trace is the documented offline
-upgrade. This is the "interactive value-readout viz that reacts to the controls": every control change re-runs
-`evaluate(op)` and re-draws the charge motion, the regime, the power readout and the power-vs-`φc` curve live.
+`viz/Mill3D.tsx` (three.js `^0.171`: `WebGLRenderer` + `OrbitControls` + an `InstancedMesh` charge, with proper
+`dispose()` on teardown) has two toggled views. **DEM**: real discrete-element charge motion baked offline with
+milldem (the thin-3D slab, tiled along the axis) and replayed per-frame, `10^4-3x10^4` particles; DEM cannot run in
+the browser (see `../frameworks/04_dem-lane.md`). **Davis**: the **same Davis trajectories** `charge.ts` computes, a
+live kinematic animation of the analytic engine that reacts to every control. The Davis view is the "interactive
+value-readout viz that reacts to the controls": every control change re-runs `evaluate(op)` and re-draws the charge
+motion, the regime, the power readout and the power-vs-`φc` curve live.

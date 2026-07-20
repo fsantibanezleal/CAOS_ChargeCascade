@@ -13,6 +13,9 @@ import { REAL_MILLS, realMillToOperating } from '../mill/realmills.ts';
 import { predictionFor } from '../mill/realpower.ts';
 import { BondCurve } from '../viz/BondCurve.tsx';
 import { PanelBoundary } from '../viz/PanelBoundary.tsx';
+import { ChargeShapeOverlay } from '../viz/ChargeShapeOverlay.tsx';
+import { PowerFieldHeatmap } from '../viz/PowerFieldHeatmap.tsx';
+import { fetchDemOutline, fetchDemPower, fetchDemPowerGrid, type DemOutline, type DemPower, type DemPowerGrid } from '../lib/demframes.ts';
 
 const CATS = ['mill type (the machine)', 'speed sweep (the regime transition)', 'fill / charge regime', 'control (analytic anchor)'];
 const CAT_ES: Record<string, string> = {
@@ -51,6 +54,22 @@ export default function Tool() {
 
   useEffect(() => { loadLearned().then((l) => setOodThr(l.ood?.thr ?? null)).catch(() => setOodThr(null)); }, []);
 
+  // the baked DEM lane (milldem thin-3D slab). Keyed by the canonical case (synthetic mode); the Davis kinematic view
+  // stays live for edited/real points. Missing bakes degrade gracefully to Davis + a note.
+  const [demPower, setDemPower] = useState<DemPower | null>(null);
+  const [demOutline, setDemOutline] = useState<DemOutline | null>(null);
+  const [demGrid, setDemGrid] = useState<DemPowerGrid | null>(null);
+  const base = import.meta.env.BASE_URL || '/';
+  const demOn = source === 'synthetic';
+  useEffect(() => { fetchDemPowerGrid(base).then(setDemGrid).catch(() => setDemGrid(null)); }, [base]);
+  useEffect(() => {
+    if (!demOn) { setDemPower(null); setDemOutline(null); return; }
+    let cancel = false;
+    fetchDemPower(caseId, base).then((d) => { if (!cancel) setDemPower(d); }).catch(() => { if (!cancel) setDemPower(null); });
+    fetchDemOutline(caseId, base).then((d) => { if (!cancel) setDemOutline(d); }).catch(() => { if (!cancel) setDemOutline(null); });
+    return () => { cancel = true; };
+  }, [caseId, demOn, base]);
+
   useEffect(() => {
     let cancel = false;
     setSurrPending(true);
@@ -77,17 +96,36 @@ export default function Tool() {
       id: 'charge3d', label: es ? 'Carga 3D' : '3D charge',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'El molino girando con la carga: las partículas suben con la pared (cinemática de Davis) y caen en arcos de cataract. Arrastrar para orbitar.' : 'The rotating mill with the charge: particles ride the shell (Davis kinematics) and fall in cataract arcs. Drag to orbit.'}</div>
-          <Mill3D op={op} />
+          <div className="cc-plot-t">{es ? 'El molino girando con la carga. DEM: dinámica de partículas real horneada (milldem, contacto+fricción+cadenas de fuerza), la losa se replica a lo largo del eje. Davis: la vista cinemática analítica en vivo. Arrastrar para orbitar.' : 'The rotating mill with the charge. DEM: real baked particle dynamics (milldem, contact+friction+force chains), the slab is tiled along the axis. Davis: the live analytic kinematic view. Drag to orbit.'}</div>
+          <Mill3D op={op} caseId={caseId} demEnabled={demOn} />
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
             <Kpi label="φc" value={op.phiC.toFixed(2)} />
-            <Kpi label={es ? 'potencia' : 'power'} value={kw(r.phfKw)} />
-            <Kpi label={es ? '% centrifugando' : '% centrifuging'} value={`${(r.fracCentrifuging * 100).toFixed(0)}%`} />
+            <Kpi label={es ? 'potencia (Hogg-F.)' : 'power (Hogg-F.)'} value={kw(r.phfKw)} />
+            {demPower ? <Kpi label={es ? 'potencia DEM' : 'DEM power'} value={kw(demPower.net_power_kw)} />
+              : <Kpi label={es ? '% centrifugando' : '% centrifuging'} value={`${(r.fracCentrifuging * 100).toFixed(0)}%`} />}
           </div>
+          {demPower && <p className="cc-note">{es
+            ? `DEM (milldem, losa-3D delgada) para este caso: ${kw(demPower.net_power_kw)} sobre ${demPower.n_particles} partículas; Hogg-Fuerstenau ${kw(r.phfKw)} (razón ${(demPower.net_power_kw / Math.max(1, r.phfKw)).toFixed(2)}). El DEM está horneado en el punto canónico del caso; editar los deslizadores usa la vista cinemática de Davis en vivo.`
+            : `DEM (milldem, thin-3D slab) for this case: ${kw(demPower.net_power_kw)} over ${demPower.n_particles} particles; Hogg-Fuerstenau ${kw(r.phfKw)} (ratio ${(demPower.net_power_kw / Math.max(1, r.phfKw)).toFixed(2)}). The DEM is baked at the case's canonical point; editing the sliders uses the live Davis kinematic view.`}</p>}
         </div>
       ),
     },
+    ...(demOn ? [{
+      id: 'chargeshape', label: es ? 'Forma de carga (DEM)' : 'Charge shape (DEM)',
+      content: (
+        <div className="cc-vizstack">
+          <div className="cc-plot-t">{es ? 'Sección transversal: la ocupación media del DEM horneado (densidad viridis en (r, θ)) con los ángulos analíticos de pie/hombro marcados. Donde el cuerpo DEM y la teoría de una partícula divergen es donde el DEM aporta.' : 'Cross-section: the time-averaged occupancy of the baked DEM (viridis density in (r, θ)) with the analytic toe/shoulder angles marked. Where the DEM body and single-particle theory diverge is where DEM earns its keep.'}</div>
+          <ChargeShapeOverlay outline={demOutline} analyticToeDeg={r.toeDeg} analyticShoulderDeg={r.shoulderDeg} />
+          <div className="cc-kpis">
+            <Kpi label={es ? 'hombro DEM' : 'DEM shoulder'} value={demOutline ? `${demOutline.shoulder_deg.toFixed(0)}°` : 'n/a'} />
+            <Kpi label={es ? 'pie DEM' : 'DEM toe'} value={demOutline ? `${demOutline.toe_deg.toFixed(0)}°` : 'n/a'} />
+            <Kpi label={es ? 'hombro (analítico)' : 'shoulder (analytic)'} value={`${r.shoulderDeg.toFixed(0)}°`} />
+            <Kpi label={es ? 'pie (analítico)' : 'toe (analytic)'} value={`${r.toeDeg.toFixed(0)}°`} />
+          </div>
+        </div>
+      ),
+    }] : []),
     {
       id: 'traj', label: es ? 'Trayectorias' : 'Trajectories',
       content: (
@@ -147,6 +185,21 @@ export default function Tool() {
               onChange={(e) => setOp((o) => ({ ...o, dynamicVoidage: e.target.checked }))} />
               {es ? 'Voidage dinámico (Golpayegani y Rezai 2023)' : 'Dynamic voidage (Golpayegani & Rezai 2023)'}</label>
           </details>
+        </div>
+      ),
+    },
+    {
+      id: 'field', label: es ? 'Campo de potencia' : 'Power field',
+      content: (
+        <div className="cc-vizstack">
+          <div className="cc-plot-t">{es ? 'Campo de potencia neta sobre el plano φc × J. Capas: DEM (grilla milldem horneada, interpolada y escalada al molino por la razón HF), Hogg-Fuerstenau y C-model (en vivo, exactos), y la discrepancia |DEM − HF| como proxy de incertidumbre entre modelos. Clic para cargar (φc, J) en el motor.' : 'Net-power field over the φc × J plane. Layers: DEM (baked milldem grid, interpolated and scaled to the mill by the HF ratio), Hogg-Fuerstenau and C-model (live, exact), and the |DEM − HF| disagreement as a cross-model uncertainty proxy. Click to load (φc, J) into the engine.'}</div>
+          <PowerFieldHeatmap op={op} demGrid={demGrid} onLoad={(phiC, fill) => setOp((o) => ({ ...o, phiC, fill }))} />
+          <div className="cc-kpis">
+            <Kpi label="φc" value={op.phiC.toFixed(2)} />
+            <Kpi label={es ? 'llenado J' : 'fill J'} value={`${(op.fill * 100).toFixed(0)}%`} />
+            <Kpi label={es ? 'Hogg-F. aquí' : 'Hogg-F. here'} value={kw(r.phfKw)} />
+            <Kpi label={es ? 'grilla DEM' : 'DEM grid'} value={demGrid ? `${demGrid.phi_c_nodes.length}×${demGrid.fill_nodes.length}` : 'n/a'} />
+          </div>
         </div>
       ),
     },

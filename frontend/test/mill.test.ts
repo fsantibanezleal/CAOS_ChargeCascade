@@ -357,3 +357,24 @@ test('jackknife+ conformal intervals: valid construction + coverage meets the 1-
   assert.ok(rep.empirical >= rep.guarantee - 1e-9, `empirical coverage ${(rep.empirical * 100).toFixed(0)}% meets the 1-2*alpha=${(rep.guarantee * 100).toFixed(0)}% jackknife+ bound`);
   assert.ok(rep.cpLowerCI >= 0 && rep.cpUpperCI <= 1 && rep.cpLowerCI <= rep.empirical && rep.empirical <= rep.cpUpperCI, 'the Clopper-Pearson CI brackets the empirical coverage');
 });
+
+// ----- Unit 8: the power-field grid computer matches the engine (HF + C-model), exactly, at sampled cells -----
+test('power field, the grid computer matches evaluate() at sampled operating points (HF + C-model)', async () => {
+  const { computeField, sampleAt } = await import('../src/lib/powerField.ts');
+  // With no DEM grid, DEM/SPREAD are NaN but HF and C-model are the live engine, exactly. Check a few interior cells.
+  const fHF = computeField(BALL, 'HF', null, { nx: 21, ny: 11, phiMin: 0.5, phiMax: 1.0, jMin: 0.15, jMax: 0.40 });
+  const fCM = computeField(BALL, 'CMODEL', null, { nx: 21, ny: 11, phiMin: 0.5, phiMax: 1.0, jMin: 0.15, jMax: 0.40 });
+  for (const [ix, iy] of [[0, 0], [10, 5], [20, 10], [5, 8]] as const) {
+    const phi = 0.5 + (ix / 20) * 0.5;
+    const j = 0.15 + (iy / 10) * 0.25;
+    const exact = evaluate({ ...BALL, phiC: phi, fill: j });
+    // values are stored Float32, so compare to a float32-appropriate relative tolerance
+    const tol = (v: number) => Math.max(1e-3, Math.abs(v) * 1e-5);
+    assert.ok(Math.abs(fHF.values[iy * 21 + ix] - exact.phfKw) < tol(exact.phfKw), `HF cell (${phi.toFixed(2)},${j.toFixed(2)}) matches engine`);
+    assert.ok(Math.abs(fCM.values[iy * 21 + ix] - exact.pCModelNetKw) < tol(exact.pCModelNetKw), `C-model cell matches engine`);
+    assert.ok(Math.abs(sampleAt(BALL, 'HF', null, phi, j) - exact.phfKw) < 1e-6, 'sampleAt HF matches engine'); // sampleAt is float64
+  }
+  // the field carries a finite range and the per-cell centrifuging fraction (for the r*/R=1 contour)
+  assert.ok(fHF.vmax > fHF.vmin && fHF.vmin >= 0, 'HF field has a positive finite range');
+  assert.ok(fHF.centrifuging.some((c) => c > 0) && fHF.centrifuging.every((c) => c >= 0 && c <= 1), 'centrifuging fraction in [0,1], nonzero near phiC~1');
+});

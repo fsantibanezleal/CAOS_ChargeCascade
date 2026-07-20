@@ -16,18 +16,21 @@ export const architecture: ArchitectureConfig = {
         'centrifuging in 3D, with the live power draw.\n\n' +
         'It is a real physics workbench, not a demo. The TypeScript mill engine recomputes the charge motion ' +
         '+ the regime + the power on every control: the critical speed, the Davis single-particle departure + the ' +
-        'parabolic cataract trajectories the 3D viz animates, and the Hogg-Fuerstenau / Morrell power. The 3D charge is ' +
-        'a kinematic animation of the analytic engine, not a DEM solve; a real DEM trace is the documented offline ' +
-        'upgrade. C-CRITICAL (φc = 1) and C-EMPTY (J = 0) are exact analytic controls.',
+        'parabolic cataract trajectories, and the Hogg-Fuerstenau / Morrell power. The 3D charge has two toggled views: ' +
+        'a real discrete-element (DEM) solve baked offline with milldem (contact forces, friction, force chains; the ' +
+        'thin-3D slab, net power validated within ~10-20% of Hogg-Fuerstenau, size-consistently), and the live Davis ' +
+        'kinematic view that reacts to every slider. C-CRITICAL (φc = 1) and C-EMPTY (J = 0) are exact analytic controls.',
       body_es:
         'ChargeCascade responde "¿cómo muele un molino de tambor?": al fijar el diámetro, el % de llenado, el tamaño ' +
         'de bolas y la fracción de velocidad crítica en un molino SAG / bolas / barras, se observa la carga transicionar cascading → ' +
         'cataracting → centrifuging en 3D, con la potencia en vivo.\n\n' +
         'Es un entorno de física real, no un demo. El motor TypeScript recalcula el movimiento de la carga + el ' +
         'régimen + la potencia con cada control: la velocidad crítica, la partida de Davis de partícula única + las ' +
-        'trayectorias parabólicas de cataract que anima el 3D, y la potencia Hogg-Fuerstenau / Morrell. La carga 3D es ' +
-        'una animación cinemática del motor analítico, no es un solve DEM; una traza DEM real es la mejora offline ' +
-        'documentada. C-CRITICAL (φc = 1) y C-EMPTY (J = 0) son controles analíticos exactos.',
+        'trayectorias parabólicas de cataract, y la potencia Hogg-Fuerstenau / Morrell. La carga 3D tiene dos vistas: ' +
+        'un solve de elementos discretos (DEM) real horneado offline con milldem (fuerzas de contacto, fricción, ' +
+        'cadenas de fuerza; la losa 3D delgada, potencia neta validada dentro de ~10-20% de Hogg-Fuerstenau y ' +
+        'consistente con el tamaño), y la vista cinemática de Davis en vivo que reacciona a cada deslizador. ' +
+        'C-CRITICAL (φc = 1) y C-EMPTY (J = 0) son controles analíticos exactos.',
     },
     {
       id: 'lanes',
@@ -36,17 +39,19 @@ export const architecture: ArchitectureConfig = {
       svg: 'svg/tech/02-lanes.svg',
       body_en:
         'Three lanes. web (live, in the browser): the TypeScript mill engine recomputes on every ' +
-        'control, the Three.js 3D mill animates the charge, and onnxruntime-web runs the power surrogate + the OOD ' +
-        'autoencoder, no server. offline / compute (your machine, isolated environment): the Python pipeline bakes the ' +
-        'canonical case artifacts (the same TS engine) and the heavy lane (retrain, torch) trains the two ' +
-        'learned models → ONNX. replay: the small committed artifacts are overlaid into the SPA by the data-copy step; ' +
+        'control, the Three.js 3D mill animates the charge (baked DEM or live Davis), and onnxruntime-web runs the ' +
+        'power surrogate + the OOD autoencoder, no server. offline / compute (your machine, isolated environment): the ' +
+        'Python pipeline bakes the canonical case artifacts (the same TS engine), the milldem DEM lane bakes the real ' +
+        'charge-motion frames + net power + the (φc, J) power grid, and the heavy lane (retrain, torch) trains the two ' +
+        'learned models → ONNX. replay: the small committed artifacts (incl. the DEM frames) are overlaid into the SPA by the data-copy step; ' +
         'the typed contract mirror fails the build if the web and pipeline shapes diverge.',
       body_es:
         'Tres carriles. web (en vivo): el motor TypeScript recalcula con cada control, el molino ' +
-        '3D de Three.js anima la carga, y onnxruntime-web ejecuta el surrogate de potencia + el autoencoder OOD, sin ' +
-        'servidor. offline / cómputo (entorno aislado): el pipeline Python precalcula los artefactos canónicos (el mismo ' +
-        'motor TS) y el carril pesado (retrain, torch) entrena los dos modelos → ONNX. replay: los ' +
-        'artefactos versionados se superponen con el paso de copia de datos; el espejo de contrato tipado ' +
+        '3D de Three.js anima la carga (DEM horneado o Davis en vivo), y onnxruntime-web ejecuta el surrogate de ' +
+        'potencia + el autoencoder OOD, sin servidor. offline / cómputo (entorno aislado): el pipeline Python precalcula ' +
+        'los artefactos canónicos (el mismo motor TS), el carril DEM de milldem hornea los cuadros de movimiento de ' +
+        'carga reales + la potencia neta + la grilla de potencia (φc, J), y el carril pesado (retrain, torch) entrena ' +
+        'los dos modelos → ONNX. replay: los artefactos versionados (incl. los cuadros DEM) se superponen con el paso de copia de datos; el espejo de contrato tipado ' +
         'rompe el build si la web y el pipeline divergen.',
     },
     {

@@ -29,8 +29,10 @@ onnxruntime-web.
   **synthetic-but-realistic** and clearly labelled; the power *magnitude* is calibrated to real industrial values
   (`C_ARM = 0.80` set so the reference 4.0 × 6.0 m ball mill draws ~1.3 MW), and the `C-*` cases are exact analytic
   controls.
-- The 3D is a **kinematic animation of the analytic engine**, not a DEM / N-body discrete-element solve, a real
-  DEM / PEPT trace is the documented offline upgrade, stated as such everywhere it matters.
+- The 3D charge has two views: a **real DEM solve** baked offline with milldem (the thin-3D slab; collisions,
+  friction, force chains; net power validated within ~10-20% of Hogg-Fuerstenau, size-consistent) and the **live
+  Davis kinematic** view. DEM cannot run in the browser, so its per-frame positions are baked and replayed
+  (see `frameworks/04_dem-lane.md`).
 - Public derived artifacts are committed (`data/derived/`); raw/private sources stay out of git (`data/raw/`, the
   `public/` overlay). The two data contracts ([architecture/08_data-contracts.md](architecture/08_data-contracts.md))
   govern the mill-operating-point → pipeline and pipeline → web seams.
