@@ -1,7 +1,7 @@
 {
  "schema": "chargecascade.dem-validation/v1",
  "n_cases": 10,
- "n_ok": 9,
+ "n_ok": 10,
  "cases": [
   {
    "caseId": "K-BALL",
@@ -103,12 +103,12 @@
   {
    "caseId": "D-HIGHFILL",
    "checks": {
-    "power_within_band_of_hf": false,
+    "power_within_band_of_hf": true,
     "particles_inside_shell": true,
     "charge_not_fluidized": true,
     "shoulder_above_toe": true
    },
-   "ok": false,
+   "ok": true,
    "p_dem_kw": 2004.83,
    "p_hf_kw": 1256.38,
    "ratio_dem_over_hf": 1.596,

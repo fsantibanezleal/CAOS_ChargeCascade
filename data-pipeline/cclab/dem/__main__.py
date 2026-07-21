@@ -19,6 +19,7 @@ def main() -> None:
 
     if args.validate:
         val = validate_all(CASES, DEM_DIR)
+        (DEM_DIR / "validation.json").write_text(json.dumps(val, indent=1), encoding="utf-8")  # persist the re-check
         print(json.dumps(val, indent=1))
         raise SystemExit(0 if val["n_ok"] == val["n_cases"] else 1)
 
