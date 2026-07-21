@@ -1,7 +1,7 @@
 {
   "schema": "chargecascade.dem-calibration/v1",
   "engine": "milldem",
-  "engine_version": "0.02.000",
+  "engine_version": "0.03.001",
   "engine_source": "https://pypi.org/project/milldem/ (fsantibanezleal/CAOS_MillDEM, MIT)",
   "note": "Cross-platform soft-sphere DEM (numpy core + optional numba JIT), no C++/WSL. The thin-3D-slab route (MillDEM3D) is validated against the classical Hogg-Fuerstenau power within ~10-20% and size-consistently (see the milldem docs/VALIDATION.md and tests/test_power3d.py). ChargeCascade's DEM lane bakes with this engine; the shell footer and analytic Morrell/Hogg-Fuerstenau/Bond engine stay the displayed authority.",
   "contact": {

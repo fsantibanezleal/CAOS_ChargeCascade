@@ -48,7 +48,9 @@ export function decodeDemFrames(buf: ArrayBuffer): DemFrames {
   let off = 8 + headerLen;
   const sizeClass = new Uint8Array(buf, off, N);
   off += N;
-  const body = new Uint16Array(buf, off, F * N * 3);
+  // `off` (8 + headerLen + N) is not guaranteed 2-byte aligned, and `new Uint16Array(buf, off, ...)` REQUIRES a
+  // multiple-of-2 byte offset (else RangeError). Slice into a fresh 0-aligned buffer so the view is always valid.
+  const body = new Uint16Array(buf.slice(off, off + F * N * 3 * 2));
 
   const lo = header.aabb.min;
   const hi = header.aabb.max;

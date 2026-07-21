@@ -1,0 +1,140 @@
+{
+ "schema": "chargecascade.dem-validation/v1",
+ "n_cases": 10,
+ "n_ok": 9,
+ "cases": [
+  {
+   "caseId": "K-BALL",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 1434.61,
+   "p_hf_kw": 1188.21,
+   "ratio_dem_over_hf": 1.207,
+   "v_max_ms": 8.91
+  },
+  {
+   "caseId": "K-SAG",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 4852.03,
+   "p_hf_kw": 5692.94,
+   "ratio_dem_over_hf": 0.852,
+   "v_max_ms": 10.26
+  },
+  {
+   "caseId": "K-ROD",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 698.94,
+   "p_hf_kw": 761.35,
+   "ratio_dem_over_hf": 0.918,
+   "v_max_ms": 9.72
+  },
+  {
+   "caseId": "S-CASCADE",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 648.73,
+   "p_hf_kw": 871.35,
+   "ratio_dem_over_hf": 0.745,
+   "v_max_ms": 9.45
+  },
+  {
+   "caseId": "S-CATARACT",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 1274.35,
+   "p_hf_kw": 1235.73,
+   "ratio_dem_over_hf": 1.031,
+   "v_max_ms": 9.26
+  },
+  {
+   "caseId": "S-CENTRIFUGE",
+   "checks": {
+    "power_rolls_off_below_hf_ceiling": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true
+   },
+   "ok": true,
+   "p_dem_kw": 1792.86,
+   "p_hf_kw": 1615.96,
+   "ratio_dem_over_hf": 1.109,
+   "v_max_ms": 8.36
+  },
+  {
+   "caseId": "D-LOWFILL",
+   "checks": {
+    "power_within_band_of_hf": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": true,
+   "p_dem_kw": 790.81,
+   "p_hf_kw": 851.9,
+   "ratio_dem_over_hf": 0.928,
+   "v_max_ms": 10.06
+  },
+  {
+   "caseId": "D-HIGHFILL",
+   "checks": {
+    "power_within_band_of_hf": false,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true,
+    "shoulder_above_toe": true
+   },
+   "ok": false,
+   "p_dem_kw": 2004.83,
+   "p_hf_kw": 1256.38,
+   "ratio_dem_over_hf": 1.596,
+   "v_max_ms": 8.82
+  },
+  {
+   "caseId": "C-CRITICAL",
+   "checks": {
+    "power_rolls_off_below_hf_ceiling": true,
+    "particles_inside_shell": true,
+    "charge_not_fluidized": true
+   },
+   "ok": true,
+   "p_dem_kw": 1667.25,
+   "p_hf_kw": 1584.27,
+   "ratio_dem_over_hf": 1.052,
+   "v_max_ms": 8.88
+  },
+  {
+   "caseId": "C-EMPTY",
+   "checks": {
+    "empty_is_zero_power": true
+   },
+   "ok": true,
+   "p_dem_kw": 0.0,
+   "p_hf_kw": 0.0
+  }
+ ]
+}

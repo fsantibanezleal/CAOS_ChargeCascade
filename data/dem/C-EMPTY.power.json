@@ -1,0 +1,11 @@
+{
+ "schema": "chargecascade.dem-power/v1",
+ "net_power_kw": 0.0,
+ "arm_m": 0.0,
+ "n_particles": 0,
+ "power_series_kw": [],
+ "impact_ke_hist": {
+  "counts": [],
+  "edges_j": []
+ }
+}

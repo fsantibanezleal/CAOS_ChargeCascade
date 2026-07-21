@@ -378,3 +378,34 @@ test('power field, the grid computer matches evaluate() at sampled operating poi
   assert.ok(fHF.vmax > fHF.vmin && fHF.vmin >= 0, 'HF field has a positive finite range');
   assert.ok(fHF.centrifuging.some((c) => c > 0) && fHF.centrifuging.every((c) => c >= 0 && c <= 1), 'centrifuging fraction in [0,1], nonzero near phiC~1');
 });
+
+// ----- Unit 7 regression: the demframes decoder must handle an UNALIGNED body offset (a green build hid this) -----
+test('demframes decoder handles a non-2-byte-aligned body offset (Uint16 view alignment)', async () => {
+  const { decodeDemFrames } = await import('../src/lib/demframes.ts');
+  // Build a minimal chargecascade.demframes/v1 binary whose body offset (8 + headerLen + N) is ODD, which is
+  // exactly what broke `new Uint16Array(buf, oddOffset, ...)` (RangeError) and silently fell back to Davis.
+  const N = 3, F = 2;
+  const header = { schema: 'chargecascade.demframes/v1', caseId: 'T', N, F, fps: 25, quant: 16,
+    aabb: { min: [-1, -1, 0], max: [1, 1, 0.4] }, tiles: 2, slabThicknessM: 0.4, lengthM: 0.8,
+    radiusM: 1, ballDiameterM: 0.1, dt_sim: 1e-5, revsCovered: 1, sizeClassBytes: N, engine: 'milldem', engineVersion: 't' };
+  let hb = new TextEncoder().encode(JSON.stringify(header));
+  // force (8 + headerLen + N) to be ODD by padding the header string with a space if needed
+  if ((8 + hb.length + N) % 2 === 0) { const h2 = { ...header, _pad: ' ' }; hb = new TextEncoder().encode(JSON.stringify(h2)); }
+  assert.equal((8 + hb.length + N) % 2, 1, 'body offset is deliberately odd');
+  const bodyLen = F * N * 3;
+  const buf = new ArrayBuffer(8 + hb.length + N + bodyLen * 2);
+  const dv = new DataView(buf);
+  dv.setUint32(0, 0x314d4443, true);           // 'CDM1'
+  dv.setUint32(4, hb.length, true);
+  new Uint8Array(buf, 8, hb.length).set(hb);
+  new Uint8Array(buf, 8 + hb.length, N).set([0, 1, 2]);
+  const body = new Uint16Array(bodyLen).map((_, i) => (i * 1000) % 65535);
+  new Uint8Array(buf, 8 + hb.length + N).set(new Uint8Array(body.buffer)); // byte-copy (offset may be odd)
+  // must decode without throwing despite the odd offset
+  const dem = decodeDemFrames(buf);
+  assert.equal(dem.header.N, N); assert.equal(dem.header.F, F);
+  const out = new Float32Array(N * 3);
+  dem.readFrame(0, out);
+  assert.ok(Number.isFinite(out[0]) && out.length === N * 3, 'frame 0 decodes to finite positions');
+  assert.equal(dem.sizeClass[2], 2, 'size class decodes');
+});

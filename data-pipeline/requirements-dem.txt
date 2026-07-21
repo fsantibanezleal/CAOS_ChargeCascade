@@ -6,5 +6,6 @@
 #   python -m pip install -r requirements-dem.txt
 #   python -m cclab.dem            # bake all cases + the (phiC, J) power grid, then validate
 
-milldem[jit]>=0.2.0     # DEM engine + numba JIT (10-50x). Drop the [jit] extra for a pure-numpy install.
+milldem[jit]>=0.3.0     # DEM engine + numba JIT (10-50x). >=0.3.0: the periodic-z placement that honors charge
+                        # fill (0.2.0 saturated fill below ~0.30). Drop the [jit] extra for a pure-numpy install.
 numpy>=2.0,<2.3

@@ -25,10 +25,13 @@ from pathlib import Path
 
 import numpy as np
 
+import milldem
 from milldem import MillConfig, MillDEM3D
 from milldem.contact import ContactModel
 
 from ..cases.mill_cases import Case
+
+ENGINE_VERSION = milldem.__version__
 
 PACKING = 0.62                 # settled-bed solid fraction; bulk = rho_ball * PACKING (see calibration.json)
 FPS = 25                       # display cadence of the baked frames (never the ~1e4-1e5 DEM substeps)
@@ -125,7 +128,7 @@ def write_demframes(path: Path, frames: np.ndarray, radii: np.ndarray, *, case_i
         "tiles": int(tiles), "slabThicknessM": float(w), "lengthM": float(length_m),
         "radiusM": float(R), "ballDiameterM": float(ball_diameter_m),
         "dt_sim": float(dt_sim), "revsCovered": float(revs), "sizeClassBytes": int(N),
-        "engine": "milldem", "engineVersion": "0.02.000",
+        "engine": "milldem", "engineVersion": ENGINE_VERSION,
     }
     hb = json.dumps(header, separators=(",", ":")).encode("utf-8")
     span = np.array([aabb_max[i] - aabb_min[i] or 1.0 for i in range(3)], dtype=np.float64)

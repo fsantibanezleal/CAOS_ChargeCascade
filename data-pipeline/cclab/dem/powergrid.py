@@ -16,6 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
+import milldem
 from milldem import MillConfig, MillDEM3D
 from milldem.contact import ContactModel
 
@@ -55,7 +56,7 @@ def bake_power_grid(out_dir: Path, seed: int = 42) -> dict:
                      "ball_diameter_m": REF["ball_diameter_m"], "charge_density_bulk": REF["charge_density_bulk"]},
         "phi_c_nodes": phis, "fill_nodes": js,
         "power_kw": grid.round(2).tolist(),        # [len(J)][len(phiC)]
-        "engine": "milldem", "engineVersion": "0.02.000",
+        "engine": "milldem", "engineVersion": milldem.__version__,
         "note": "Net DEM power [kW] on a coarse (phiC, J) grid for the reference mill (accelerated bake path: "
                 "dt_scale + short settle). Bilinearly interpolate to the display grid in the browser; HF and C-model "
                 "fields are computed live and exact.",
