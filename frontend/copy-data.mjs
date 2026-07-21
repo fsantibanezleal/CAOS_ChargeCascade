@@ -21,3 +21,13 @@ if (!existsSync(derived)) {
   }
   console.log('[copy-data] data/derived -> public/data (+ root-level case-results / onnx)');
 }
+
+// the baked DEM lane (milldem frames + power + outlines + the (phiC,J) grid) lives in ../data/dem; overlay it into
+// public/data/dem so the SPA fetches data/dem/<case>.demframes.bin etc. (bake with `python -m cclab.dem`).
+const demDir = join(ROOT, 'data', 'dem');
+if (existsSync(demDir)) {
+  cpSync(demDir, join(PUB, 'data', 'dem'), { recursive: true });
+  console.log('[copy-data] data/dem -> public/data/dem (DEM frames + power grid)');
+} else {
+  console.warn('[copy-data] no data/dem (DEM lane not baked; the 3D charge falls back to the Davis kinematic view)');
+}

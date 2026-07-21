@@ -41,8 +41,9 @@ compact per-case trace) → `data/derived/` (committed) → the `frontend/` App 
 - **Is:** Davis (1919) single-particle charge motion + Hogg & Fuerstenau (1972) net power (plus a calibrated Morrell-form consistency check; the full Morrell 1996 C-model is the documented upgrade) + the
   cascading → cataracting → centrifuging transition rendered in 3D, with an honest surrogate-vs-exact comparison and an
   out-of-envelope flag.
-- **Is not:** a DEM / N-body discrete-element solver, the 3D is a kinematic animation of the analytic engine, and a
-  real DEM / PEPT trace is the documented offline upgrade. The operating points are synthetic-but-realistic (clearly
+- **Is not:** a live DEM solver, DEM cannot run in the browser. The 3D charge has two views: a real DEM solve
+  baked offline with milldem (the thin-3D slab; net power validated within ~10-20% of Hogg-Fuerstenau,
+  size-consistent) replayed per-frame, and the live Davis kinematic view. The operating points are synthetic-but-realistic (clearly
   labelled), the power magnitude is calibrated to real industrial values, and the `C-*` cases are exact analytic
   controls.
 

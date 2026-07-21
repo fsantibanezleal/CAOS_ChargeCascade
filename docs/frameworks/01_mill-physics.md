@@ -6,9 +6,9 @@ every control change, and runs in the Node bake (via `tsx`) to label the surroga
 the App's physics truth and the offline ground truth (the ChancaDEM `engine.ts` pattern). `evaluate(op)` →
 `MillResult` is sub-millisecond, no Pyodide, no backend.
 
-> This is an **analytic engine** (closed-form published equations), **not a DEM / N-body solver**. A real
-> DEM / PEPT charge trace is the documented offline upgrade, the engine's interface is the contract that upgrade
-> would satisfy.
+> This is the **live analytic engine** (closed-form published equations), not a DEM solve, DEM cannot run in the
+> browser. The real DEM charge trace is now baked offline with milldem and replayed (the DEM lane, see
+> `04_dem-lane.md`); the live engine stays the authority for the interactive what-if.
 
 ## 1. Critical speed, the master scaling (`criticalspeed.ts`)
 

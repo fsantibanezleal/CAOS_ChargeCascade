@@ -24,8 +24,9 @@ Only if you **scale up** well beyond the shipped envelope, e.g.:
 
 - the training/eval sweep grows to **millions** of points (a much finer operating-envelope sample), or
 - the models grow substantially (deeper nets, a larger feature set), or
-- you replace the kinematic 3D animation with a real **DEM** charge-motion solve as the offline ground truth (the
-  documented future upgrade), *that* is a genuinely GPU-shaped compute, not the surrogate training.
+- you scale the real **DEM** charge-motion bake (already shipped via milldem, `cclab/dem/`) to many more cases,
+  finer slabs or a GNS surrogate trained on the DEM corpus, *that* is a genuinely GPU-shaped compute, not the
+  surrogate training. milldem's `[train]` lane installs the CUDA torch wheel for that path.
 
 To switch to GPU in that case: install the CUDA torch wheel instead of the `+cpu` one (e.g.
 `torch==2.12.1` from the CUDA index `https://download.pytorch.org/whl/cu124`) into `.venv-precompute`, and set

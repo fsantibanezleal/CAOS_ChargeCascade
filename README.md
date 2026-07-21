@@ -51,8 +51,9 @@ gate as the cases, TS mirroring the Python contract) and runs the exact engine o
 
 ## What this is not (honesty posture)
 
-- The 3D charge is a **kinematic animation** of the Davis equations, not a DEM / N-body solve (a real DEM lane is
-  the documented offline upgrade).
+- The 3D charge has **two views**: a real DEM solve baked offline with milldem (collisions, friction, force chains;
+  the thin-3D slab, net power validated within ~10-20% of Hogg-Fuerstenau, size-consistent) and the live Davis
+  kinematic view. DEM cannot run in the browser, so its per-frame positions are baked and replayed (see the DEM lane).
 - The displayed Morrell-form is a **calibrated rescale** of the Hogg–Fuerstenau torque arm, agreement between the
   two curves is a consistency check by construction, not a two-model validation.
 - **No published-mill dataset ships in this build**, no external power cross-check is claimed; the power magnitude

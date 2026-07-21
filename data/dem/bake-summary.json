@@ -1,0 +1,128 @@
+{
+ "cases": [
+  {
+   "caseId": "K-BALL",
+   "net_power_kw": 1434.61,
+   "n_particles": 5251,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137567,
+   "toe_deg": -166.15,
+   "shoulder_deg": 164.43
+  },
+  {
+   "caseId": "K-SAG",
+   "net_power_kw": 4852.03,
+   "n_particles": 10752,
+   "render_n": 2000,
+   "tiles": 10,
+   "frames": 180,
+   "bytes": 2162367,
+   "toe_deg": -168.33,
+   "shoulder_deg": 21.15
+  },
+  {
+   "caseId": "K-ROD",
+   "net_power_kw": 698.94,
+   "n_particles": 3449,
+   "render_n": 1333,
+   "tiles": 15,
+   "frames": 180,
+   "bytes": 1441332,
+   "toe_deg": -164.43,
+   "shoulder_deg": 161.97
+  },
+  {
+   "caseId": "S-CASCADE",
+   "net_power_kw": 648.73,
+   "n_particles": 5251,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137584,
+   "toe_deg": -166.0,
+   "shoulder_deg": 164.09
+  },
+  {
+   "caseId": "S-CATARACT",
+   "net_power_kw": 1274.35,
+   "n_particles": 5251,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137571,
+   "toe_deg": -165.77,
+   "shoulder_deg": 164.51
+  },
+  {
+   "caseId": "S-CENTRIFUGE",
+   "net_power_kw": 1792.86,
+   "n_particles": 5251,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137573,
+   "toe_deg": -165.07,
+   "shoulder_deg": 163.48
+  },
+  {
+   "caseId": "D-LOWFILL",
+   "net_power_kw": 790.81,
+   "n_particles": 3001,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137570,
+   "toe_deg": -163.77,
+   "shoulder_deg": -6.45
+  },
+  {
+   "caseId": "D-HIGHFILL",
+   "net_power_kw": 2004.83,
+   "n_particles": 6028,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137571,
+   "toe_deg": -163.07,
+   "shoulder_deg": 162.12
+  },
+  {
+   "caseId": "C-CRITICAL",
+   "net_power_kw": 1667.25,
+   "n_particles": 5251,
+   "render_n": 1052,
+   "tiles": 19,
+   "frames": 180,
+   "bytes": 1137571,
+   "toe_deg": -165.35,
+   "shoulder_deg": 162.71
+  },
+  {
+   "caseId": "C-EMPTY",
+   "net_power_kw": 0.0,
+   "n_particles": 0,
+   "empty": true
+  }
+ ],
+ "grid": {
+  "nodes": 15,
+  "phi_c": [
+   0.55,
+   0.68,
+   0.8,
+   0.92,
+   1.05
+  ],
+  "fill": [
+   0.15,
+   0.27,
+   0.4
+  ],
+  "p_min": 489.0290222167969,
+  "p_max": 1543.51611328125
+ },
+ "n_ok": 9,
+ "n_cases": 10
+}
