@@ -11,7 +11,6 @@ milldem's conservative simulate_power defaults, so the whole grid is tractable o
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
 import numpy as np
@@ -44,7 +43,8 @@ def _net_power_kw(phi: float, J: float, seed: int) -> float:
 
 
 def bake_power_grid(out_dir: Path, seed: int = 42) -> dict:
-    phis = list(PHI_NODES); js = list(J_NODES)
+    phis = list(PHI_NODES)
+    js = list(J_NODES)
     grid = np.zeros((len(js), len(phis)), dtype=np.float32)   # [J][phiC]
     for jj, J in enumerate(js):
         for ii, phi in enumerate(phis):

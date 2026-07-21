@@ -148,7 +148,8 @@ def write_demframes(path: Path, frames: np.ndarray, radii: np.ndarray, *, case_i
 def _outline(frames: np.ndarray, R: float, nr: int = 24, nth: int = 72) -> dict:
     """Time-averaged (r/R, theta) occupancy of the charge + toe/shoulder angles. theta is measured CCW from +x;
     the mill turns CCW (omega>0), so the charge lifts on the +x/-y side and sheds toward the toe."""
-    xs = frames[:, :, 0].ravel(); ys = frames[:, :, 1].ravel()
+    xs = frames[:, :, 0].ravel()
+    ys = frames[:, :, 1].ravel()
     r = np.hypot(xs, ys) / R
     th = np.degrees(np.arctan2(ys, xs))
     occ, _, _ = np.histogram2d(np.clip(r, 0, 1), th, bins=[nr, nth], range=[[0, 1], [-180, 180]])

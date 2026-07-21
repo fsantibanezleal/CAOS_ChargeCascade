@@ -75,8 +75,10 @@ def _stats(rollouts: list[dict]) -> dict:
         p = r["positions"]                                 # [T, n, 2]
         v = np.diff(p, axis=0)                              # [T-1, n, 2] (per-frame displacement = velocity*dt)
         a = np.diff(v, axis=0)                              # [T-2, n, 2]
-        vs.append(v.reshape(-1, 2)); accs.append(a.reshape(-1, 2))
-    V = np.concatenate(vs); A = np.concatenate(accs)
+        vs.append(v.reshape(-1, 2))
+        accs.append(a.reshape(-1, 2))
+    V = np.concatenate(vs)
+    A = np.concatenate(accs)
     return {
         "vel_mean": V.mean(0).tolist(), "vel_std": (V.std(0) + 1e-9).tolist(),
         "acc_mean": A.mean(0).tolist(), "acc_std": (A.std(0) + 1e-9).tolist(),

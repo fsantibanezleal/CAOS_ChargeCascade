@@ -143,11 +143,13 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
     hist = []
     print(f"[gns-train] device={device} rollouts={len(corpus.rollouts)} blocks={N_BLOCKS} hidden={HIDDEN}", flush=True)
     for ep in range(epochs):
-        model.train(); tot = 0.0
+        model.train()
+        tot = 0.0
         for _ in range(steps_per_epoch):
             ri, t = corpus.sample_indices(rng)
             roll = corpus.rollouts[ri]
-            R = roll["radius_m"]; rc = corpus.connectivity_radius(roll)
+            R = roll["radius_m"]
+            rc = corpus.connectivity_radius(roll)
             pos_hist = roll["pos"][t - corpus.c_history: t + 1].copy()   # [C+1, N, 2]
             # random-walk noise on the history (stability trick)
             noise = rng.normal(0, NOISE_STD, pos_hist.shape).cumsum(axis=0).astype(np.float32)
@@ -163,7 +165,9 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
             pred = model(node_feat, edge_feat, src, dst, cur.shape[0])   # normalized accel
             tgt = (torch.tensor(target_acc, device=device) - acc_mean) / acc_std
             loss = ((pred - tgt) ** 2).mean()
-            opt.zero_grad(); loss.backward(); opt.step()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
             tot += float(loss)
         mean = tot / steps_per_epoch
         hist.append(mean)
@@ -188,14 +192,16 @@ def smoke() -> None:
     model = MillGNS()
     N = 64
     pos = torch.rand(N, 2) * 2 - 1
-    vhist = torch.randn(N, 2 * C_HISTORY); wall = torch.rand(N, 2)
+    vhist = torch.randn(N, 2 * C_HISTORY)
+    wall = torch.rand(N, 2)
     tembed = model.type_embed(torch.zeros(N, dtype=torch.long))
     node_feat = torch.cat([vhist, tembed, wall], dim=-1)
     src, dst = _radius_graph(pos, 0.4)
     rel = pos[src] - pos[dst]
     edge_feat = torch.cat([rel, rel.norm(dim=-1, keepdim=True)], dim=-1)
     pred = model(node_feat, edge_feat, src, dst, N)
-    loss = (pred ** 2).mean(); loss.backward()
+    loss = (pred ** 2).mean()
+    loss.backward()
     gnorm = sum(p.grad.abs().sum().item() for p in model.parameters() if p.grad is not None)
     print(f"[gns-smoke] N={N} edges={src.shape[0]} pred={tuple(pred.shape)} loss={float(loss):.4f} grad_sum={gnorm:.2f} OK")
 

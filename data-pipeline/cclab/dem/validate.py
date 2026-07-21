@@ -17,14 +17,16 @@ from pathlib import Path
 import numpy as np
 
 from ..cases.mill_cases import Case
-from .bake import FPS, PACKING
+from .bake import FPS
 
 
 def hf_power_kw(c: Case, lift_deg: float = 35.0, c_arm: float = 0.80) -> float:
     """Classical Hogg-Fuerstenau net power [kW] for the case (the cross-check reference the app already ships)."""
     if c.fill <= 0:
         return 0.0
-    D = c.diameter_m; R = D / 2; L = c.length_m
+    D = c.diameter_m
+    R = D / 2
+    L = c.length_m
     Nc = 42.3 / math.sqrt(D)
     omega = 2 * math.pi * (c.phi_c * Nc) / 60
     M = c.charge_density * 1000 * (math.pi * R * R * L) * c.fill
@@ -42,7 +44,8 @@ def read_demframes(path: Path) -> tuple[dict, np.ndarray, np.ndarray]:
     size_class = np.frombuffer(buf, dtype=np.uint8, count=N, offset=off).copy()
     off += N
     q = np.frombuffer(buf, dtype="<u2", count=F * N * 3, offset=off).reshape(F, N, 3).astype(np.float64)
-    lo = np.array(header["aabb"]["min"]); hi = np.array(header["aabb"]["max"])
+    lo = np.array(header["aabb"]["min"])
+    hi = np.array(header["aabb"]["max"])
     span = np.where(hi - lo == 0, 1.0, hi - lo)
     frames = (q / 65535.0 * span + lo).astype(np.float32)
     return header, frames, size_class
@@ -61,7 +64,8 @@ def validate_case(c: Case, dem_dir: Path, power_band: float = 0.65) -> dict:
     power = json.loads((dem_dir / f"{c.id}.power.json").read_text(encoding="utf-8"))
     p_dem = power["net_power_kw"]
     p_hf = hf_power_kw(c)
-    rec["p_dem_kw"] = p_dem; rec["p_hf_kw"] = round(p_hf, 2)
+    rec["p_dem_kw"] = p_dem
+    rec["p_hf_kw"] = round(p_hf, 2)
 
     if c.fill <= 0:  # C-EMPTY: the zero-power oracle
         ok = p_dem == 0.0

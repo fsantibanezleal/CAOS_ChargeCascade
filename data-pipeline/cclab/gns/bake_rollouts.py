@@ -12,8 +12,6 @@ prohibitive on WASM; see the beyond-SOTA + viz dossiers).
 from __future__ import annotations
 
 import json
-import math
-from pathlib import Path
 
 import numpy as np
 
@@ -34,7 +32,8 @@ def _load_model():
     from .train_gns import MillGNS
     ckpt = torch.load(GNS_DIR / "gns.pt", map_location="cpu")
     model = MillGNS(hidden=ckpt["hidden"], n_blocks=ckpt["n_blocks"], c_history=ckpt["c_history"])
-    model.load_state_dict(ckpt["state_dict"]); model.eval()
+    model.load_state_dict(ckpt["state_dict"])
+    model.eval()
     return model, np.array(ckpt["acc_mean"], np.float32), np.array(ckpt["acc_std"], np.float32), ckpt["c_history"]
 
 
@@ -42,7 +41,8 @@ def _rollout(model, acc_mean, acc_std, c_history, pos0_hist, ptype, R, ball_d, f
     """Recursively roll the GNS: pos0_hist [C+1, N, 2]. Returns predicted positions [frames, N, 2]."""
     from .train_gns import _radius_graph, _node_features
     rc = 2.5 * ball_d
-    am = torch.tensor(acc_mean); asd = torch.tensor(acc_std)
+    am = torch.tensor(acc_mean)
+    asd = torch.tensor(acc_std)
     hist = [torch.tensor(pos0_hist[i]) for i in range(pos0_hist.shape[0])]  # list of [N,2]
     out = []
     tembed = model.type_embed(torch.tensor(ptype))
@@ -62,7 +62,8 @@ def _rollout(model, acc_mean, acc_std, c_history, pos0_hist, ptype, R, ball_d, f
             over = (rad > R).squeeze(-1)
             if over.any():
                 nxt[over] = nxt[over] / rad[over] * R
-            hist.append(nxt); out.append(nxt.numpy())
+            hist.append(nxt)
+            out.append(nxt.numpy())
     return np.asarray(out, dtype=np.float32)
 
 
@@ -73,9 +74,12 @@ def bake_case_rollout(case_id: str, frames: int = ROLLOUT_FRAMES) -> dict | None
     dem = DEM_DIR / f"{case_id}.demframes.bin"
     if not npz.exists() or not dem.exists():
         return None
-    z = np.load(npz); pos = z["positions"]; ptype = z["particle_type"]
+    z = np.load(npz)
+    pos = z["positions"]
+    ptype = z["particle_type"]
     header, _, _ = read_demframes(dem)
-    R = float(header["radiusM"]); ball_d = float(header["ballDiameterM"])
+    R = float(header["radiusM"])
+    ball_d = float(header["ballDiameterM"])
     model, am, asd, c_history = _load_model()
     pos0 = pos[:c_history + 1]                                             # seed from the real DEM start
     pred = _rollout(model, am, asd, c_history, pos0, ptype, R, ball_d, frames)   # [frames, N, 2]
