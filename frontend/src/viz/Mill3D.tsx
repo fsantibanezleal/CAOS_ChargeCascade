@@ -3,15 +3,19 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { usePausedViz, useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
+import { fetchDemFrames, type DemFrames } from '../lib/demframes.ts';
 
-// The interactive 3D tumbling mill. The cylindrical shell (axis along z) rotates; lifter bars carry the charge up;
-// each charge BALL rides the shell until the Davis departure azimuth (cos a = omega^2 r/g per radial shell), then
-// flies the parabolic free-flight trajectory and lands back at the toe, so the user WATCHES cascading ->
-// cataracting -> centrifuging as they change phiC. Centrifuging shells (cos a >= 1) stay pinned to the shell.
+// The interactive 3D tumbling mill. Two sources, toggled live:
+//  - 'davis'  : the KINEMATIC analytic view. Each ball rides the shell until the Davis departure azimuth
+//               (cos a = omega^2 r/g per radial shell), then flies the parabolic free-flight and lands at the toe.
+//               Single-particle physics, computed live in TS, reacts to every slider. NOT a DEM solve.
+//  - 'dem'    : REAL baked DEM. The milldem thin-3D-slab engine (data-pipeline/cclab/dem) computed the full
+//               particle dynamics OFFLINE (contact forces, friction, force chains); here we only replay the baked
+//               per-frame positions on the InstancedMesh. A browser cannot run DEM time-integration (Govender 2015:
+//               4 M particles = 1.16 h per simulated second on a GPU). The slab is tiled along the axis to fill the
+//               mill length (exact under the periodic-axial boundary), each tile at a different time-phase.
 // Balls are low-poly instanced spheres coloured by speed; the camera fits + centers the mill and the POV PERSISTS
-// across option changes (only Reset view re-fits). Autoplays SLOWLY (default 0.05x, Felipe's explicit request:
-// see the charge dynamics clearly); the rAF still halts on a hidden tab (ADR-0059). KINEMATIC animation of the
-// analytic engine's physics, not a DEM solve. Pure three.js.
+// across option changes (only Reset view re-fits). Autoplays SLOWLY; the rAF halts on a hidden tab (ADR-0059).
 const G = 9.81;
 const S = 60; // metres -> scene units
 const VIRIDIS = [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]];
@@ -33,18 +37,42 @@ function fitCamera(cam: THREE.PerspectiveCamera, controls: OrbitControls, box: T
   controls.update();
 }
 
-export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; height?: number; speed?: number }) {
+type Mode = 'davis' | 'dem';
+
+export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0.05 }:
+  { op: Operating; caseId?: string; demEnabled?: boolean; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
+
+  const [mode, setMode] = useState<Mode>(demEnabled ? 'dem' : 'davis');
+  const [dem, setDem] = useState<DemFrames | null>(null);
+  const [demMiss, setDemMiss] = useState(false);
+  const [frameIdx, setFrameIdx] = useState(0);      // scrub position (dem mode)
+  const frameRef = useRef(0); frameRef.current = frameIdx;
 
   const [animSpeed, setAnimSpeed] = useState(() => speed ?? 0.05);
   const [ballSize, setBallSize] = useState(1);
   const speedRef = useRef(animSpeed); speedRef.current = animSpeed;
   const ballSizeRef = useRef(ballSize); ballSizeRef.current = ballSize;
+  const modeRef = useRef(mode); modeRef.current = mode;
 
   const viewRef = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
   const resetViewRef = useRef<() => void>(() => {});
+  const scrubRef = useRef<(f: number) => void>(() => {});
+
+  // fetch the baked DEM frames for the case (synthetic canonical point). Missing bake -> fall back to davis.
+  useEffect(() => {
+    if (!demEnabled || !caseId) { setDem(null); setDemMiss(false); return; }
+    let cancel = false;
+    const base = import.meta.env.BASE_URL || '/';
+    fetchDemFrames(caseId, base).then((d) => {
+      if (cancel) return;
+      if (d) { setDem(d); setDemMiss(false); }
+      else { setDem(null); setDemMiss(true); setMode('davis'); }
+    }).catch(() => { if (!cancel) { setDem(null); setDemMiss(true); setMode('davis'); } });
+    return () => { cancel = true; };
+  }, [caseId, demEnabled]);
 
   const stepRef = useRef<((dtSec: number) => void) | null>(null);
   const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: true });
@@ -55,6 +83,7 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
     const W = el.clientWidth || 640;
     const H = height;
     const dark = theme === 'dark';
+    const useDem = mode === 'dem' && dem != null;
 
     const R = op.diameterM / 2; // m
     const L = op.lengthM; // m
@@ -106,110 +135,176 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
       disposables.push(liftGeo, liftMat);
     }
 
-    // the charge: N balls as instanced low-poly spheres. Each rides the shell then flies the Davis parabola.
-    const N = 1100;
-    const ballGeo = new THREE.IcosahedronGeometry(1, 1); disposables.push(ballGeo);
+    const ballGeo = useDem ? new THREE.IcosahedronGeometry(1, 0) : new THREE.IcosahedronGeometry(1, 1);
+    disposables.push(ballGeo);
     const ballMat = new THREE.MeshStandardMaterial({ metalness: 0.55, roughness: 0.4, flatShading: true }); disposables.push(ballMat);
-    const balls = new THREE.InstancedMesh(ballGeo, ballMat, N);
-    balls.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    scene.add(balls); disposables.push(balls);
-    const px = new Float32Array(N), py = new Float32Array(N), pz2 = new Float32Array(N);
-    const rho = new Float32Array(N), zc = new Float32Array(N), phi = new Float32Array(N);
-    const flying = new Uint8Array(N), tFly = new Float32Array(N), risen = new Uint8Array(N);
-    const lpx = new Float32Array(N), lpy = new Float32Array(N), lvx = new Float32Array(N), lvy = new Float32Array(N);
-    const spin = new Float32Array(N);
-    const ballR = Math.max(4, R * S * 0.02);
     const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _sc = new THREE.Vector3();
 
-    const setColor = (i: number, sp: number) => balls.setColorAt(i, viridis(0.15 + 0.85 * Math.min(1, sp)));
-    const seed = (i: number) => {
-      rho[i] = R * (0.45 + 0.53 * Math.sqrt(Math.random()));
-      zc[i] = (Math.random() - 0.5) * L * 0.94;
-      phi[i] = Math.PI + Math.random() * Math.PI;
-      flying[i] = 0; tFly[i] = 0; risen[i] = 0; spin[i] = Math.random() * 6.28;
-      setColor(i, 0.3);
-    };
-    for (let i = 0; i < N; i++) seed(i);
+    let step: (d: number) => void;
+    let renderStatic: () => void;
+    const box = new THREE.Box3(new THREE.Vector3(-R * S, -R * S, -L * S / 2), new THREE.Vector3(R * S, R * S, L * S / 2));
 
-    const writeInstance = (i: number) => {
-      spin[i] += 0.12 * speedRef.current;
-      _e.set(spin[i], spin[i] * 0.7, 0); _q.setFromEuler(_e); _sc.setScalar(ballR * ballSizeRef.current);
-      _m.compose(_v.set(px[i], py[i], pz2[i]), _q, _sc); balls.setMatrixAt(i, _m);
-    };
+    if (useDem) {
+      // ---- DEM replay: tile the slab `tiles` times along z, each tile at its own time-phase ----
+      const hdr = dem!.header;
+      const Nslab = hdr.N, F = hdr.F, tiles = Math.max(1, hdr.tiles), w = hdr.slabThicknessM;
+      const N = Nslab * tiles;
+      const balls = new THREE.InstancedMesh(ballGeo, ballMat, N);
+      balls.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      scene.add(balls); disposables.push(balls);
+      const ballR = Math.max(2.5, (hdr.ballDiameterM / 2) * S);
+      const cur = new Float32Array(Nslab * 3);
+      const prev = new Float32Array(Nslab * 3);
+      // per-tile axial base offset in metres, centered on the mill
+      const tileZ0 = (t: number) => t * w - (tiles * w) / 2;
 
-    const step = (d: number) => {
-      millGroup.rotation.z += omega * d;
-      for (let i = 0; i < N; i++) {
-        if (flying[i]) {
-          tFly[i] += d;
-          const t = tFly[i];
-          const x = lpx[i] + lvx[i] * t;
-          const y = lpy[i] + lvy[i] * t - 0.5 * G * t * t;
-          px[i] = x * S; py[i] = y * S; pz2[i] = zc[i] * S;
-          const landed = Math.hypot(x, y) >= rho[i] && t > 0.05;
-          if (landed || y < -R * 1.05) { flying[i] = 0; phi[i] = Math.PI + Math.random() * 0.7 * Math.PI; risen[i] = 0; }
-          setColor(i, Math.min(1, (Math.hypot(lvx[i], lvy[i]) - G * t) / (omega * R + 1) + 0.5));
-        } else {
-          phi[i] += omega * d;
-          const pm = ((phi[i] % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-          px[i] = Math.cos(pm) * rho[i] * S; py[i] = Math.sin(pm) * rho[i] * S; pz2[i] = zc[i] * S;
-          setColor(i, 0.25);
-          if (pm > 1.5 * Math.PI) risen[i] = 1;
-          const cosA = (omega * omega * rho[i]) / G;
-          if (cosA < 1 && risen[i] && pm >= 0 && pm <= Math.PI / 2) {
-            const alpha = Math.acos(cosA);
-            const phiDep = Math.atan2(Math.cos(alpha), Math.sin(alpha));
-            if (pm >= phiDep) {
-              flying[i] = 1; tFly[i] = 0;
-              const v = omega * rho[i];
-              lpx[i] = Math.cos(pm) * rho[i]; lpy[i] = Math.sin(pm) * rho[i];
-              lvx[i] = -v * Math.sin(pm); lvy[i] = v * Math.cos(pm);
-            }
+      const writeFrame = (fIdx: number) => {
+        let inst = 0;
+        for (let t = 0; t < tiles; t++) {
+          const ph = dem!.tilePhase(t);
+          dem!.readFrame(fIdx + ph, cur);
+          dem!.readFrame(fIdx + ph - 1, prev);
+          const z0 = tileZ0(t);
+          for (let i = 0; i < Nslab; i++) {
+            const o = i * 3;
+            const x = cur[o] * S, y = cur[o + 1] * S, z = (z0 + cur[o + 2]) * S;
+            const dx = cur[o] - prev[o], dy = cur[o + 1] - prev[o + 1], dz = cur[o + 2] - prev[o + 2];
+            const sp = Math.hypot(dx, dy, dz) * hdr.fps;                    // m/s
+            _sc.setScalar(ballR * ballSizeRef.current);
+            _m.compose(_v.set(x, y, z), _q.identity(), _sc);
+            balls.setMatrixAt(inst, _m);
+            balls.setColorAt(inst, viridis(0.12 + 0.88 * Math.min(1, sp / (omega * R + 1.5))));
+            inst++;
           }
         }
-        writeInstance(i);
-      }
+        // rotate the shell + lifters to match the baked charge advance (revsCovered over F frames)
+        millGroup.rotation.z = 2 * Math.PI * hdr.revsCovered * (((fIdx % F) + F) % F) / F;
+        balls.instanceMatrix.needsUpdate = true;
+        if (balls.instanceColor) balls.instanceColor.needsUpdate = true;
+      };
+
+      let f = frameRef.current;
+      let acc = 0;
+      step = (d: number) => {
+        acc += d * hdr.fps * 6;                 // advance ~ time * fps, sped up for a lively replay
+        if (acc >= 1) { f = (f + Math.floor(acc)) % F; acc -= Math.floor(acc); setFrameIdx(f); }
+        writeFrame(f);
+        controls.update();
+        renderer.render(scene, cam);
+      };
+      scrubRef.current = (fi: number) => { f = ((fi % F) + F) % F; writeFrame(f); renderer.render(scene, cam); };
+      renderStatic = () => { writeFrame(frameRef.current); renderer.render(scene, cam); };
+    } else {
+      // ---- Davis kinematic (single-particle analytic) ----
+      const N = 1100;
+      const balls = new THREE.InstancedMesh(ballGeo, ballMat, N);
+      balls.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      scene.add(balls); disposables.push(balls);
+      const px = new Float32Array(N), py = new Float32Array(N), pz2 = new Float32Array(N);
+      const rho = new Float32Array(N), zc = new Float32Array(N), phi = new Float32Array(N);
+      const flying = new Uint8Array(N), tFly = new Float32Array(N), risen = new Uint8Array(N);
+      const lpx = new Float32Array(N), lpy = new Float32Array(N), lvx = new Float32Array(N), lvy = new Float32Array(N);
+      const spin = new Float32Array(N);
+      const ballR = Math.max(4, R * S * 0.02);
+
+      const setColor = (i: number, sp: number) => balls.setColorAt(i, viridis(0.15 + 0.85 * Math.min(1, sp)));
+      const seedP = (i: number) => {
+        rho[i] = R * (0.45 + 0.53 * Math.sqrt(Math.random()));
+        zc[i] = (Math.random() - 0.5) * L * 0.94;
+        phi[i] = Math.PI + Math.random() * Math.PI;
+        flying[i] = 0; tFly[i] = 0; risen[i] = 0; spin[i] = Math.random() * 6.28;
+        setColor(i, 0.3);
+      };
+      for (let i = 0; i < N; i++) seedP(i);
+
+      const writeInstance = (i: number) => {
+        spin[i] += 0.12 * speedRef.current;
+        _e.set(spin[i], spin[i] * 0.7, 0); _q.setFromEuler(_e); _sc.setScalar(ballR * ballSizeRef.current);
+        _m.compose(_v.set(px[i], py[i], pz2[i]), _q, _sc); balls.setMatrixAt(i, _m);
+      };
+      step = (d: number) => {
+        millGroup.rotation.z += omega * d;
+        for (let i = 0; i < N; i++) {
+          if (flying[i]) {
+            tFly[i] += d;
+            const t = tFly[i];
+            const x = lpx[i] + lvx[i] * t;
+            const y = lpy[i] + lvy[i] * t - 0.5 * G * t * t;
+            px[i] = x * S; py[i] = y * S; pz2[i] = zc[i] * S;
+            const landed = Math.hypot(x, y) >= rho[i] && t > 0.05;
+            if (landed || y < -R * 1.05) { flying[i] = 0; phi[i] = Math.PI + Math.random() * 0.7 * Math.PI; risen[i] = 0; }
+            setColor(i, Math.min(1, (Math.hypot(lvx[i], lvy[i]) - G * t) / (omega * R + 1) + 0.5));
+          } else {
+            phi[i] += omega * d;
+            const pm = ((phi[i] % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            px[i] = Math.cos(pm) * rho[i] * S; py[i] = Math.sin(pm) * rho[i] * S; pz2[i] = zc[i] * S;
+            setColor(i, 0.25);
+            if (pm > 1.5 * Math.PI) risen[i] = 1;
+            const cosA = (omega * omega * rho[i]) / G;
+            if (cosA < 1 && risen[i] && pm >= 0 && pm <= Math.PI / 2) {
+              const alpha = Math.acos(cosA);
+              const phiDep = Math.atan2(Math.cos(alpha), Math.sin(alpha));
+              if (pm >= phiDep) {
+                flying[i] = 1; tFly[i] = 0;
+                const v = omega * rho[i];
+                lpx[i] = Math.cos(pm) * rho[i]; lpy[i] = Math.sin(pm) * rho[i];
+                lvx[i] = -v * Math.sin(pm); lvy[i] = v * Math.cos(pm);
+              }
+            }
+          }
+          writeInstance(i);
+        }
+        balls.instanceMatrix.needsUpdate = true;
+        if (balls.instanceColor) balls.instanceColor.needsUpdate = true;
+        controls.update();
+        renderer.render(scene, cam);
+      };
+      for (let i = 0; i < N; i++) { const pm = ((phi[i] % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI); px[i] = Math.cos(pm) * rho[i] * S; py[i] = Math.sin(pm) * rho[i] * S; pz2[i] = zc[i] * S; writeInstance(i); }
       balls.instanceMatrix.needsUpdate = true;
       if (balls.instanceColor) balls.instanceColor.needsUpdate = true;
-      controls.update();
-      renderer.render(scene, cam);
-    };
-
-    // initial instance matrices + colors
-    for (let i = 0; i < N; i++) { const pm = ((phi[i] % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI); px[i] = Math.cos(pm) * rho[i] * S; py[i] = Math.sin(pm) * rho[i] * S; pz2[i] = zc[i] * S; writeInstance(i); }
-    balls.instanceMatrix.needsUpdate = true;
-    if (balls.instanceColor) balls.instanceColor.needsUpdate = true;
+      scrubRef.current = () => {};
+      renderStatic = () => renderer.render(scene, cam);
+    }
 
     // camera: restore persisted POV, else fit the mill; expose reset
-    const box = new THREE.Box3(new THREE.Vector3(-R * S, -R * S, -L * S / 2), new THREE.Vector3(R * S, R * S, L * S / 2));
     if (viewRef.current) { cam.position.copy(viewRef.current.pos); controls.target.copy(viewRef.current.target); cam.updateProjectionMatrix(); controls.update(); }
     else fitCamera(cam, controls, box);
-    resetViewRef.current = () => { viewRef.current = null; fitCamera(cam, controls, box); renderer.render(scene, cam); };
+    resetViewRef.current = () => { viewRef.current = null; fitCamera(cam, controls, box); renderStatic(); };
 
     stepRef.current = step;
-    renderer.render(scene, cam);
+    renderStatic();
     controls.addEventListener('change', () => { viewRef.current = { pos: cam.position.clone(), target: controls.target.clone() }; renderer.render(scene, cam); });
 
     const ro = new ResizeObserver(() => { const w = el.clientWidth || W; renderer.setSize(w, H); cam.aspect = w / H; cam.updateProjectionMatrix(); renderer.render(scene, cam); });
     ro.observe(el);
 
     return () => {
-      stepRef.current = null; resetViewRef.current = () => {}; ro.disconnect();
+      stepRef.current = null; resetViewRef.current = () => {}; scrubRef.current = () => {}; ro.disconnect();
       viewRef.current = { pos: cam.position.clone(), target: controls.target.clone() };
       controls.dispose();
       for (const d of disposables) d.dispose();
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };
-  }, [op, theme, height]);
+  }, [op, theme, height, mode, dem]);
 
+  const isDem = mode === 'dem' && dem != null;
   return (
     <div className="cc-canvas-wrap">
       <div ref={ref} style={{ width: '100%', height }} />
       <div className="cc-canvas-banner">
         <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
-        <span>{es ? 'Carga cinemática (trayectorias de Davis), arrastrar para orbitar, no es un solve DEM' : 'Kinematic charge (Davis trajectories), drag to orbit, not a DEM solve'}</span>
+        {demEnabled && (
+          <span className="cc-seg" role="group" aria-label={es ? 'fuente de la carga' : 'charge source'}>
+            <button type="button" className={`chip ${mode === 'dem' ? 'on' : ''}`} disabled={!dem} onClick={() => setMode('dem')}>DEM</button>
+            <button type="button" className={`chip ${mode === 'davis' ? 'on' : ''}`} onClick={() => setMode('davis')}>{es ? 'Davis (cinemática)' : 'Davis (kinematic)'}</button>
+          </span>
+        )}
+        <span>{isDem
+          ? (es ? `DEM real horneado (milldem), ${dem!.header.N * dem!.header.tiles} partículas replicadas, arrastrar para orbitar` : `Real baked DEM (milldem), ${dem!.header.N * dem!.header.tiles} replayed particles, drag to orbit`)
+          : (es ? 'Carga cinemática (trayectorias de Davis), no es un solve DEM' : 'Kinematic charge (Davis trajectories), not a DEM solve')}</span>
       </div>
+      {demMiss && demEnabled && <div className="cc-cap cc-muted" style={{ padding: '0 0.6rem' }}>{es ? 'DEM horneado no disponible para este caso; mostrando la vista cinemática de Davis.' : 'No baked DEM for this case; showing the Davis kinematic view.'}</div>}
       <div className="cc-viz-controls">
         <label>{es ? 'velocidad' : 'speed'}
           <input type="range" min={0.05} max={4} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
@@ -219,6 +314,13 @@ export function Mill3D({ op, height = 380, speed = 0.05 }: { op: Operating; heig
           <input type="range" min={0.5} max={2.5} step={0.1} value={ballSize} onChange={(e) => setBallSize(+e.target.value)} />
           <b>{ballSize.toFixed(1)}x</b>
         </label>
+        {isDem && (
+          <label>{es ? 'cuadro' : 'frame'}
+            <input type="range" min={0} max={dem!.header.F - 1} step={1} value={frameIdx}
+              onFocus={() => viz.pause()} onChange={(e) => { const f = +e.target.value; setFrameIdx(f); scrubRef.current(f); }} />
+            <b>{frameIdx + 1}/{dem!.header.F}</b>
+          </label>
+        )}
         <button type="button" className="btn" onClick={() => resetViewRef.current()}>{es ? 'Restablecer vista' : 'Reset view'}</button>
       </div>
     </div>

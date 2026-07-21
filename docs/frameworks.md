@@ -9,3 +9,6 @@ The research-chosen methods + libraries ChargeCascade actually uses (each one is
   `@fasl-work/caos-app-shell` (+ the ⓘ Architecture modal).
 - [03, the learned models](frameworks/03_torch-onnx.md), the power surrogate + the scenario OOD-AE,
   torch → ONNX → onnxruntime-web.
+- [04, the DEM charge-motion lane](frameworks/04_dem-lane.md), real discrete-element charge motion baked offline
+  with milldem (the thin-3D slab, cross-platform, no C++/WSL), the soft-sphere contact model, the
+  `chargecascade.demframes/v1` artifact, the InstancedMesh replay + the power-field heatmap.

@@ -1,0 +1,47 @@
+{
+ "schema": "chargecascade.dem-powergrid/v1",
+ "ref_mill": {
+  "diameter_m": 4.0,
+  "length_m": 6.0,
+  "ball_diameter_m": 0.24,
+  "charge_density_bulk": 4.8
+ },
+ "phi_c_nodes": [
+  0.55,
+  0.68,
+  0.8,
+  0.92,
+  1.05
+ ],
+ "fill_nodes": [
+  0.15,
+  0.27,
+  0.4
+ ],
+ "power_kw": [
+  [
+   489.0299987792969,
+   612.8699951171875,
+   705.1500244140625,
+   831.1599731445312,
+   921.3699951171875
+  ],
+  [
+   719.9400024414062,
+   825.4299926757812,
+   950.2000122070312,
+   1156.0,
+   1529.5799560546875
+  ],
+  [
+   703.4600219726562,
+   818.0999755859375,
+   983.469970703125,
+   1164.8699951171875,
+   1543.52001953125
+  ]
+ ],
+ "engine": "milldem",
+ "engineVersion": "0.03.000",
+ "note": "Net DEM power [kW] on a coarse (phiC, J) grid for the reference mill (accelerated bake path: dt_scale + short settle). Bilinearly interpolate to the display grid in the browser; HF and C-model fields are computed live and exact."
+}

@@ -3,6 +3,33 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.26.000], 2026-07-20
+
+### Added (SOTA-ladder Units 6-8: the real DEM charge-motion lane)
+- **The DEM lane, baked with milldem** (Unit 6). New `data-pipeline/cclab/dem/` bakes real discrete-element
+  charge motion with the cross-platform **milldem** engine (PyPI `milldem` 0.2.0, MIT,
+  `fsantibanezleal/CAOS_MillDEM`; numpy core + numba JIT, no C++/WSL). Per canonical case it exports the
+  `chargecascade.demframes/v1` frame set (thin-3D slab, Uint16-quantized positions), the net DEM power +
+  torque arm + impact-KE spectrum (`power.json`), and the time-averaged `(r, theta)` charge outline +
+  toe/shoulder (`outline.json`), plus a coarse `(phiC, J)` DEM power grid. The thin-3D slab makes the net
+  power size-consistent and within ~10-20% of Hogg-Fuerstenau (validated in milldem's own
+  `tests/test_power3d.py`); a 2D disc slice cannot (its power/HF ratio shrinks with mill size). Contact model:
+  Cundall-Strack soft-sphere, Coulomb friction, Tsuji restitution damping. `validate.py` gates every bake
+  (power within band of HF, lifted charge, particles inside the shell, not fluidized).
+- **DEM in-browser replay** (Unit 7). `Mill3D.tsx` gains a DEM/Davis toggle: DEM replays the baked frames on an
+  `InstancedMesh` (the slab tiled along the axis, each tile at its own time-phase; exact under the periodic-axial
+  boundary), 10^4-3x10^4 particles coloured by frame-to-frame speed, scrubbable + pausable. New
+  `lib/demframes.ts` decoder, `viz/ChargeShapeOverlay.tsx` (the DEM occupancy on the analytic kidney with
+  toe/shoulder marked). The Davis kinematic view stays live as the analytic-reference toggle.
+- **Power-field heatmap** (Unit 8). New `lib/powerField.ts` + `viz/PowerFieldHeatmap.tsx`: net power over the
+  `phiC x J` plane, viridis intensity, toggles DEM / Hogg-Fuerstenau / C-model / `|DEM - HF|` spread, the
+  power-peak ridge, the centrifuging contour `r*/R = 1`, a crosshair kW readout and click-to-load `(phiC, J)`.
+  HF + C-model live and exact; DEM from the baked grid (interpolated, HF-ratio scaled to the current mill).
+- Honesty sweep: the Methodology "Charge motion" callout, the Architecture modal, and `docs/frameworks/`
+  (new `04_dem-lane.md`, updated `02_viz.md`) no longer say "kinematic, not DEM"; they describe the two views
+  and what is real vs transferred. New test: the power-field grid computer matches the engine at sampled cells.
+  All 25 frontend tests pass; DEM validation gate passes.
+
 ## [0.23.000], 2026-07-19
 
 ### Added (SOTA-ladder Unit 5: conformal UQ, jackknife+)

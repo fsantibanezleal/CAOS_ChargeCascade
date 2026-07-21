@@ -357,3 +357,55 @@ test('jackknife+ conformal intervals: valid construction + coverage meets the 1-
   assert.ok(rep.empirical >= rep.guarantee - 1e-9, `empirical coverage ${(rep.empirical * 100).toFixed(0)}% meets the 1-2*alpha=${(rep.guarantee * 100).toFixed(0)}% jackknife+ bound`);
   assert.ok(rep.cpLowerCI >= 0 && rep.cpUpperCI <= 1 && rep.cpLowerCI <= rep.empirical && rep.empirical <= rep.cpUpperCI, 'the Clopper-Pearson CI brackets the empirical coverage');
 });
+
+// ----- Unit 8: the power-field grid computer matches the engine (HF + C-model), exactly, at sampled cells -----
+test('power field, the grid computer matches evaluate() at sampled operating points (HF + C-model)', async () => {
+  const { computeField, sampleAt } = await import('../src/lib/powerField.ts');
+  // With no DEM grid, DEM/SPREAD are NaN but HF and C-model are the live engine, exactly. Check a few interior cells.
+  const fHF = computeField(BALL, 'HF', null, { nx: 21, ny: 11, phiMin: 0.5, phiMax: 1.0, jMin: 0.15, jMax: 0.40 });
+  const fCM = computeField(BALL, 'CMODEL', null, { nx: 21, ny: 11, phiMin: 0.5, phiMax: 1.0, jMin: 0.15, jMax: 0.40 });
+  for (const [ix, iy] of [[0, 0], [10, 5], [20, 10], [5, 8]] as const) {
+    const phi = 0.5 + (ix / 20) * 0.5;
+    const j = 0.15 + (iy / 10) * 0.25;
+    const exact = evaluate({ ...BALL, phiC: phi, fill: j });
+    // values are stored Float32, so compare to a float32-appropriate relative tolerance
+    const tol = (v: number) => Math.max(1e-3, Math.abs(v) * 1e-5);
+    assert.ok(Math.abs(fHF.values[iy * 21 + ix] - exact.phfKw) < tol(exact.phfKw), `HF cell (${phi.toFixed(2)},${j.toFixed(2)}) matches engine`);
+    assert.ok(Math.abs(fCM.values[iy * 21 + ix] - exact.pCModelNetKw) < tol(exact.pCModelNetKw), `C-model cell matches engine`);
+    assert.ok(Math.abs(sampleAt(BALL, 'HF', null, phi, j) - exact.phfKw) < 1e-6, 'sampleAt HF matches engine'); // sampleAt is float64
+  }
+  // the field carries a finite range and the per-cell centrifuging fraction (for the r*/R=1 contour)
+  assert.ok(fHF.vmax > fHF.vmin && fHF.vmin >= 0, 'HF field has a positive finite range');
+  assert.ok(fHF.centrifuging.some((c) => c > 0) && fHF.centrifuging.every((c) => c >= 0 && c <= 1), 'centrifuging fraction in [0,1], nonzero near phiC~1');
+});
+
+// ----- Unit 7 regression: the demframes decoder must handle an UNALIGNED body offset (a green build hid this) -----
+test('demframes decoder handles a non-2-byte-aligned body offset (Uint16 view alignment)', async () => {
+  const { decodeDemFrames } = await import('../src/lib/demframes.ts');
+  // Build a minimal chargecascade.demframes/v1 binary whose body offset (8 + headerLen + N) is ODD, which is
+  // exactly what broke `new Uint16Array(buf, oddOffset, ...)` (RangeError) and silently fell back to Davis.
+  const N = 3, F = 2;
+  const header = { schema: 'chargecascade.demframes/v1', caseId: 'T', N, F, fps: 25, quant: 16,
+    aabb: { min: [-1, -1, 0], max: [1, 1, 0.4] }, tiles: 2, slabThicknessM: 0.4, lengthM: 0.8,
+    radiusM: 1, ballDiameterM: 0.1, dt_sim: 1e-5, revsCovered: 1, sizeClassBytes: N, engine: 'milldem', engineVersion: 't' };
+  let hb = new TextEncoder().encode(JSON.stringify(header));
+  // force (8 + headerLen + N) to be ODD by padding the header string with a space if needed
+  if ((8 + hb.length + N) % 2 === 0) { const h2 = { ...header, _pad: ' ' }; hb = new TextEncoder().encode(JSON.stringify(h2)); }
+  assert.equal((8 + hb.length + N) % 2, 1, 'body offset is deliberately odd');
+  const bodyLen = F * N * 3;
+  const buf = new ArrayBuffer(8 + hb.length + N + bodyLen * 2);
+  const dv = new DataView(buf);
+  dv.setUint32(0, 0x314d4443, true);           // 'CDM1'
+  dv.setUint32(4, hb.length, true);
+  new Uint8Array(buf, 8, hb.length).set(hb);
+  new Uint8Array(buf, 8 + hb.length, N).set([0, 1, 2]);
+  const body = new Uint16Array(bodyLen).map((_, i) => (i * 1000) % 65535);
+  new Uint8Array(buf, 8 + hb.length + N).set(new Uint8Array(body.buffer)); // byte-copy (offset may be odd)
+  // must decode without throwing despite the odd offset
+  const dem = decodeDemFrames(buf);
+  assert.equal(dem.header.N, N); assert.equal(dem.header.F, F);
+  const out = new Float32Array(N * 3);
+  dem.readFrame(0, out);
+  assert.ok(Number.isFinite(out[0]) && out.length === N * 3, 'frame 0 decodes to finite positions');
+  assert.equal(dem.sizeClass[2], 2, 'size class decodes');
+});
