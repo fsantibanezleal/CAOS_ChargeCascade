@@ -4,6 +4,12 @@
 [![License](https://img.shields.io/github/license/fsantibanezleal/CAOS_ChargeCascade)](LICENSE)
 [![Version](https://img.shields.io/github/v/tag/fsantibanezleal/CAOS_ChargeCascade?label=version&sort=semver)](https://github.com/fsantibanezleal/CAOS_ChargeCascade/tags)
 [![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://chargecascade.fasl-work.com)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21518691-blue)](https://doi.org/10.5281/zenodo.21518691)
+
+Technical report (CC-BY-4.0): *"ChargeCascade: A Tumbling-Mill Charge-Motion and Power Workbench, and the Honest
+Disagreement of Standard Power Models"*, concept DOI [10.5281/zenodo.21518691](https://doi.org/10.5281/zenodo.21518691)
+(source in [`manuscripts/mill-charge-power/`](manuscripts/mill-charge-power/)). Central finding: the two standard
+closed-form power models (Hogg-Fuerstenau, Morrell) disagree by ~23%, shown transparently alongside a DEM estimate.
 
 **Live: <https://chargecascade.fasl-work.com>**, an interactive workbench for tumbling-mill (SAG / ball / rod)
 charge motion and power draw. From geometry, fill, ball size and the fraction of critical speed to the charge
