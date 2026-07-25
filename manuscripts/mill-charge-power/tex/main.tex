@@ -1,0 +1,236 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{balance}
+
+\graphicspath{{../figures/}}
+
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.75}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.80}
+
+\begin{document}
+
+\title{ChargeCascade: A Tumbling-Mill Charge-Motion\\ and Power Workbench, and the Honest\\ Disagreement of Standard Power Models}
+
+\author{Felipe~Santiba\~nez-Leal~\orcidlink{0000-0002-0150-3246}%
+\thanks{F. Santiba\~nez-Leal is with the CAOS open-research programme, Santiago, Chile
+(e-mail: fsantibanez@gmail.com; ORCID 0000-0002-0150-3246).}%
+\thanks{Technical report, 2026. Interactive workbench and reproducible pipeline (MIT) at
+\url{https://github.com/fsantibanezleal/CAOS_ChargeCascade}; live at \url{https://chargecascade.fasl-work.com}.}}
+
+\markboth{Technical Report, 2026}%
+{Santiba\~nez-Leal: A tumbling-mill charge-motion and power workbench}
+
+\maketitle
+
+\begin{abstract}
+The power a tumbling mill (SAG, ball or rod) draws is the single largest electricity cost in a concentrator, and
+predicting it, and the charge motion behind it, is a classic problem with more than one accepted answer.
+ChargeCascade is an interactive workbench that computes tumbling-mill charge motion and power live in the browser
+from geometry, fill, ball size and the fraction of critical speed, and, unusually, it shows where the accepted
+models \emph{disagree} rather than hiding it behind one. The charge motion follows Davis (1919) kinematics: a
+per-shell departure angle traces the shoulder, toe and cataract fan across the cascading, cataracting and
+centrifuging regimes, with the centrifuging onset landing exactly at the critical speed. The power is computed by
+two standard closed-form models, Hogg-Fuerstenau (with a disclosed effective-lift-arm calibration) and Morrell,
+and the report's central honest finding is that these two textbook models \emph{disagree by about $23\%$}
+(median, up to $29\%$) across ten cases, with a third estimate from a baked discrete-element simulation
+($5000$--$10000$ particles) landing around them rather than adjudicating between them. This is the true state of
+mill-power prediction, real cross-method uncertainty of order twenty percent, and the workbench displays all three
+side by side rather than pretending to a false precision. A learned surrogate reproduces the closed-form power to
+$5.2\%$ for instant what-ifs, guarded by an out-of-distribution detector that flags settings outside its training
+envelope. The engine is a single dependency-free source of physics truth; every number and figure regenerates
+from the committed artifacts.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Tumbling mill, SAG mill, ball mill, charge motion, mill power, Davis kinematics, Hogg-Fuerstenau, Morrell,
+discrete element method, surrogate model, comminution.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\IEEEPARstart{A}{} tumbling mill grinds ore by lifting a charge of balls and rock on a rotating shell and letting
+it cascade and cataract back down, and the power it draws to do so is the dominant energy cost of a concentrator.
+Predicting that power, and the charge motion that produces it, has a century of history and, importantly, more
+than one accepted model. The charge kinematics trace back to Davis~\cite{davis}: at a fraction $\phi_c=N/N_c$ of
+the critical speed $N_c=42.3/\sqrt{D-d}$, a ball on a shell of radius $r$ leaves the shell at a departure angle
+given by $\cos\alpha=\phi_c^2\,r/R$ and follows a ballistic arc, and summing over shells gives the shoulder, the
+toe and the cataract fan. The power has at least two standard closed-form answers, the Hogg-Fuerstenau torque-arm
+model~\cite{hogg} and the Morrell model~\cite{morrell}, and a higher-fidelity but expensive answer from the
+discrete element method~\cite{mishra,cleary98,cleary01}. These do not all agree, and much software and teaching
+quietly picks one and reports it as \emph{the} power.
+
+ChargeCascade is a workbench built on the opposite principle: compute the charge motion and the power from the
+cited models, live and in the browser, and show the reader where the models disagree. It runs Davis kinematics
+for the charge shape and regime, both the Hogg-Fuerstenau and the Morrell closed-form power models, and a set of
+baked discrete-element traces as a third estimate, and it puts them side by side. The report describes the
+workbench and states its central honest finding: the two standard closed-form power models disagree by about a
+fifth, which is the real uncertainty of mill-power prediction, and displaying it is more useful than concealing
+it. A learned surrogate accelerates the closed-form engine, and an out-of-distribution guard flags extrapolation.
+
+\section{Charge Motion: Davis Kinematics}\label{sec:motion}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig-regimes.pdf}
+\caption{Charge motion by Davis kinematics, across ten cases. \textbf{(a)} The shoulder and toe angles against
+the fraction of critical speed $\phi_c$: as $\phi_c$ rises the charge lifts higher (the shoulder rises, the toe
+advances) through the cascading and cataracting regimes, and at the critical speed the charge centrifuges (the
+shoulder collapses to zero and the toe to $180^\circ$, the charge pinned to the shell). \textbf{(b)} The
+centrifuging fraction is zero below the critical speed and turns on exactly at $\phi_c=1$, the exact onset Davis
+kinematics predicts.}
+\label{fig:regimes}
+\end{figure}
+
+The charge shape and regime follow from Davis kinematics evaluated over nine radial shells
+(Fig.~\ref{fig:regimes}). As the fraction of critical speed rises, the charge is carried higher before it departs,
+so the shoulder angle rises and the toe advances, and the motion passes through the literature regime bands:
+slumping and cascading at low speed (here $\phi_c\approx0.55$--$0.62$, shoulder near $70^\circ$), cataracting at
+intermediate speed ($\phi_c\approx0.75$--$0.78$, the ballistic fan that does the impact grinding in a SAG mill),
+and centrifuging at the critical speed. The centrifuging onset is exact: below $\phi_c=1$ no shell centrifuges,
+and at $\phi_c=1$ the outer shell pins to the wall, the shoulder collapses to zero and the toe to $180^\circ$
+(Fig.~\ref{fig:regimes}b). Because the critical speed and $\phi_c$ are derived from geometry, not fitted, the
+regime map is a property of the kinematics, and it reproduces the textbook picture, which is the check that
+licenses using the workbench to reason about charge motion.
+
+\section{Power: Where the Standard Models Disagree}\label{sec:power}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig-power.pdf}
+\caption{Net mill power per case, on a log axis, from two closed-form models and from a baked discrete-element
+simulation. The Hogg-Fuerstenau and Morrell closed-form models \emph{disagree by about $23\%$} (median; up to
+$29\%$): Morrell is consistently higher at cascading and cataracting speeds, and the two cross near the critical
+speed. The discrete-element estimate ($5000$--$10000$ particles) lands around them, sometimes below both, sometimes
+above, rather than settling the disagreement. This spread is the true uncertainty of mill-power prediction, and
+the workbench shows all three rather than reporting one as fact.}
+\label{fig:power}
+\end{figure}
+
+The power is where the honesty of the workbench matters most (Fig.~\ref{fig:power}, Table~\ref{tab:power}). Two
+standard closed-form models are computed: Hogg-Fuerstenau~\cite{hogg}, a torque-arm model with a disclosed
+effective-lift-arm calibration ($C_{\text{arm}}=0.80$, stated in the interface), and Morrell~\cite{morrell}. They
+do not agree. Across the ten cases the two disagree by a median of $23\%$ and by as much as $29\%$: Morrell draws
+consistently higher at the cascading and cataracting speeds that mills actually run at (for example
+$1139$~kW against $872$~kW on a cascading case), and the two only cross near the critical speed. A third estimate,
+from a baked discrete-element simulation of five to ten thousand particles, lands \emph{around} the two closed-form
+values, below both on some cases and above on others, rather than adjudicating between them. This is not a defect
+of the workbench; it is the real state of the field, mill-power models carry cross-method uncertainty of order
+twenty percent, and a tool that reports a single number to four significant figures is asserting a precision that
+does not exist. ChargeCascade shows the two closed-form models and the discrete-element estimate together, with
+the Hogg-Fuerstenau calibration disclosed, so a user sees the spread and can reason about it.
+
+\begin{table}[!t]
+\centering
+\caption{Net power by the two closed-form models and the baked DEM, representative cases. The closed-form models
+disagree by $\sim\!20$--$30\%$; DEM lands around them. \texttt{C-EMPTY} (empty mill) is a zero-power sanity check.}
+\label{tab:power}
+\footnotesize
+\begin{tabular}{@{}l c r r r@{}}
+\toprule
+Case & $\phi_c$ & Hogg-F. (kW) & Morrell (kW) & DEM (kW) \\
+\midrule
+S-CASCADE   & $0.55$ & $872$  & $1139$ & $649$  \\
+K-ROD       & $0.62$ & $704$  & $995$  & $699$  \\
+K-BALL      & $0.75$ & $1188$ & $1553$ & $1435$ \\
+D-HIGHFILL  & $0.75$ & $1256$ & $1642$ & $2005$ \\
+K-SAG       & $0.78$ & $6111$ & $7440$ & $4852$ \\
+C-CRITICAL  & $1.00$ & $1584$ & $1464$ & $1667$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The Learned Surrogate and Its Guard}\label{sec:surrogate}
+
+For instant what-if exploration the workbench runs a learned surrogate of the closed-form engine: a small
+multilayer perceptron (six inputs, two hidden layers of sixty-four units, mapping to power and centrifuging
+fraction) trained on the engine's outputs. It reproduces the closed-form power to a mean relative error of
+$5.2\%$ (with the centrifuging fraction exactly, since it is a kinematic threshold), fast enough to update as a
+user drags a control. Crucially, because a surrogate is only trustworthy inside the envelope it was trained on, a
+companion out-of-distribution detector flags settings outside that envelope, so a user who pushes the sliders to
+an untrained corner is warned that the surrogate is extrapolating rather than being silently misled. A separate
+learned-DEM increment, a graph-network simulator trained to roll the particle dynamics forward, is under
+development as the bridge to the baked DEM lane; it is disclosed as in-progress, not presented as validated. The
+surrogate accelerates the engine; it does not replace the disclosure of the underlying model disagreement, which
+remains front and centre.
+
+\section{Discussion and Scope}\label{sec:discuss}
+
+The workbench's contribution is as much epistemic as computational: it computes tumbling-mill charge motion and
+power from the cited models and, by showing the Hogg-Fuerstenau and Morrell models and the discrete-element
+estimate together, it makes the real uncertainty of mill-power prediction visible instead of hiding it. The scope
+is stated plainly. The Hogg-Fuerstenau effective-lift-arm calibration is a disclosed constant, not a fit to a
+specific mill, and it is shown; the Morrell model is used as published. The cases are physically reasonable
+synthetic configurations, not a specific plant, so the numbers are the models' behaviour, not a prediction for a
+given mill. The baked discrete-element traces are a higher-fidelity but still-modelled estimate at laboratory
+particle counts, not a measured power, and the learned-DEM graph-network surrogate is disclosed as in-development.
+The value is a transparent, reproducible workbench that treats mill-power prediction with the honesty its
+cross-method spread demands. None of this is hidden; the interface states the same on its methodology pages.
+
+\section{Conclusion}
+
+ChargeCascade computes tumbling-mill charge motion by Davis kinematics, reproducing the cascading-cataracting-%
+centrifuging progression with an exact centrifuging onset at the critical speed, and computes the power by two
+standard closed-form models plus a baked discrete-element estimate. Its central honest finding is that the two
+textbook power models disagree by about a fifth, and it displays that spread with the third estimate around it,
+rather than reporting one number as fact, because a fifth is the real uncertainty of mill-power prediction. A
+learned surrogate reproduces the closed-form power to $5.2\%$ with an out-of-distribution guard. The disclosure of
+the model disagreement, and of the one disclosed calibration, is the report's discipline, and the transparent,
+reproducible workbench is its contribution.
+
+\appendices
+\section{Reproduction}\label{app:repro}
+
+The committed artifacts under \texttt{data/derived/} carry the ten cases' engine outputs
+(\texttt{case-results.json}: $\phi_c$, regime, shoulder and toe angles, centrifuging fraction, and both the
+Hogg-Fuerstenau and Morrell power per case), the learned-surrogate metrics (\texttt{cc-learned.json}) and the
+baked DEM summaries (\texttt{data/dem/}). The figure scripts under
+\texttt{manuscripts/mill-charge-power/figures/} read those artifacts. The dependency-free physics engine is the
+single source of truth for the App, the experiments table and the offline bake, so re-running reproduces
+Table~\ref{tab:power} and Figs.~\ref{fig:regimes}--\ref{fig:power}.
+
+\balance
+
+\begin{thebibliography}{00}
+
+\bibitem{davis} E.~W. Davis, ``Fine crushing in ball-mills,'' \emph{Transactions of the American Institute of
+Mining Engineers}, vol.~61, pp.~250--296, 1919.
+
+\bibitem{hogg} R.~Hogg and D.~W. Fuerstenau, ``Power relations for tumbling mills,'' \emph{Transactions
+SME-AIME}, vol.~252, pp.~418--423, 1972.
+
+\bibitem{morrell} S.~Morrell, \emph{The Prediction of Power Draw in Wet Tumbling Mills}, Ph.D. dissertation,
+University of Queensland (JKMRC), Brisbane, Australia, 1993. doi:10.14264/252760.
+
+\bibitem{bond} F.~C. Bond, ``The third theory of comminution,'' \emph{Transactions of the American Institute of
+Mining, Metallurgical and Petroleum Engineers}, vol.~193, pp.~484--494, 1952.
+
+\bibitem{napier} T.~J. Napier-Munn, S.~Morrell, R.~D. Morrison, and T.~Kojovic, \emph{Mineral Comminution
+Circuits: Their Operation and Optimisation}. Brisbane: Julius Kruttschnitt Mineral Research Centre, 1996.
+
+\bibitem{mishra} B.~K. Mishra and R.~K. Rajamani, ``The discrete element method for the simulation of ball
+mills,'' \emph{Applied Mathematical Modelling}, vol.~16, no.~11, pp.~598--604, 1992.
+doi:10.1016/0307-904X(92)90035-2.
+
+\bibitem{cleary98} P.~W. Cleary, ``Predicting charge motion, power draw, segregation and wear in ball mills using
+discrete element methods,'' \emph{Minerals Engineering}, vol.~11, no.~11, pp.~1061--1080, 1998.
+doi:10.1016/S0892-6875(98)00093-4.
+
+\bibitem{cleary01} P.~W. Cleary, ``Charge behaviour and power consumption in ball mills: sensitivity to mill
+operating conditions, liner geometry and charge composition,'' \emph{International Journal of Mineral
+Processing}, vol.~63, no.~2, pp.~79--114, 2001. doi:10.1016/S0301-7516(01)00037-0.
+
+\end{thebibliography}
+
+\end{document}
