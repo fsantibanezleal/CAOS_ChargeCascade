@@ -1,0 +1,71 @@
+{
+ "schema": "chargecascade.gns-rollouts/v1",
+ "n": 9,
+ "frames": 150,
+ "rollouts": [
+  {
+   "case_id": "K-BALL",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2577,
+   "bytes": 721153
+  },
+  {
+   "case_id": "K-SAG",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.1405,
+   "bytes": 721165
+  },
+  {
+   "case_id": "K-ROD",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.3396,
+   "bytes": 721157
+  },
+  {
+   "case_id": "S-CASCADE",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2483,
+   "bytes": 721170
+  },
+  {
+   "case_id": "S-CATARACT",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2439,
+   "bytes": 721157
+  },
+  {
+   "case_id": "S-CENTRIFUGE",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2382,
+   "bytes": 721159
+  },
+  {
+   "case_id": "D-LOWFILL",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2237,
+   "bytes": 721156
+  },
+  {
+   "case_id": "D-HIGHFILL",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2706,
+   "bytes": 721157
+  },
+  {
+   "case_id": "C-CRITICAL",
+   "frames": 150,
+   "n": 800,
+   "node_err_over_R": 0.2419,
+   "bytes": 721157
+  }
+ ],
+ "note": "GNS rollouts replayed via the demframes/v1 schema (Mill3D mode 'gns'). node_err_over_R is the mean per-node position error vs the held-out DEM, normalized by mill radius (honest accuracy)."
+}

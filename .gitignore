@@ -55,3 +55,4 @@ models/*.pth
 .DS_Store
 Thumbs.db
 *.log
+data/gns/gns.pt

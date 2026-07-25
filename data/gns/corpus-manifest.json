@@ -1,0 +1,119 @@
+{
+ "schema": "chargecascade.gns-corpus/v1",
+ "n_rollouts": 9,
+ "dim": 2,
+ "n_train_particles": 800,
+ "rollouts": [
+  {
+   "case_id": "K-BALL",
+   "phi_c": 0.75,
+   "fill": 0.35,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "K-SAG",
+   "phi_c": 0.78,
+   "fill": 0.28,
+   "radius_m": 5.0,
+   "ball_diameter_m": 0.125,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "K-ROD",
+   "phi_c": 0.62,
+   "fill": 0.38,
+   "radius_m": 1.75,
+   "ball_diameter_m": 0.09,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "S-CASCADE",
+   "phi_c": 0.55,
+   "fill": 0.35,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "S-CATARACT",
+   "phi_c": 0.78,
+   "fill": 0.35,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "S-CENTRIFUGE",
+   "phi_c": 1.02,
+   "fill": 0.35,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "D-LOWFILL",
+   "phi_c": 0.75,
+   "fill": 0.2,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "D-HIGHFILL",
+   "phi_c": 0.75,
+   "fill": 0.42,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  },
+  {
+   "case_id": "C-CRITICAL",
+   "phi_c": 1.0,
+   "fill": 0.35,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.08,
+   "fps": 25,
+   "n": 800,
+   "T": 180
+  }
+ ],
+ "normalization": {
+  "vel_mean": [
+   0.0002424558624625206,
+   -0.0001272716763196513
+  ],
+  "vel_std": [
+   0.020872129127383232,
+   0.028329836204648018
+  ],
+  "acc_mean": [
+   -3.993291102233343e-06,
+   1.5043378880363889e-05
+  ],
+  "acc_std": [
+   0.024528181180357933,
+   0.025744549930095673
+  ],
+  "n_vel": 1288800,
+  "n_acc": 1281600
+ },
+ "note": "2D (x-y cross-section) charge-motion trajectories from the baked milldem DEM, for a GNS (Sanchez-Gonzalez et al. 2020). Positions in metres; velocity = frame-to-frame displacement."
+}
