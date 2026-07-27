@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   bondWKwhT, CASES, caseById, chargeMassT, criticalSpeedRpm, evaluate, hoggFuerstenauKw,
+  apparentChargeDensity, lifterDeparture,
 } from '../src/mill/index.ts';
 import type { Operating } from '../src/mill/index.ts';
 
@@ -408,4 +409,102 @@ test('demframes decoder handles a non-2-byte-aligned body offset (Uint16 view al
   dem.readFrame(0, out);
   assert.ok(Number.isFinite(out[0]) && out.length === N * 3, 'frame 0 decodes to finite positions');
   assert.equal(dem.sizeClass[2], 2, 'size class decodes');
+});
+
+// --- Charge apparent density from the two fillings (Hogg & Fuerstenau 1972) --------------------
+// Source: Golpayegani & Rezai (2022), PPMP 58(6) 153380, DOI 10.37190/ppmp/153380, their Eq. 2.
+test('apparent charge density: HF Eq. 2 reproduces its own limiting cases', () => {
+  const base = { fillTotal: 0.30, ballFill: 0.15, ballDensity: 7.8, slurryDensity: 2.7,
+                 mediaVoidage: 0.40, interstitialSlurryFill: 1.0 };
+  const rho = apparentChargeDensity(base);
+  // hand-evaluated: [(1-0.4)*7.8*0.15 + 2.7*1*0.4*0.15 + 2.7*(0.30-0.15)]/0.30
+  //               = [0.702 + 0.162 + 0.405]/0.30 = 1.269/0.30 = 4.23
+  assert.ok(Math.abs(rho - 4.23) < 1e-9, `expected 4.23 t/m^3, got ${rho}`);
+
+  // No balls at all (an AG mill) collapses to the slurry/rock density, independent of J.
+  for (const J of [0.1, 0.25, 0.45]) {
+    const ag = apparentChargeDensity({ ...base, fillTotal: J, ballFill: 0 });
+    assert.ok(Math.abs(ag - 2.7) < 1e-12, `AG mill should be pure ore density, got ${ag} at J=${J}`);
+  }
+  // An empty mill has no charge; must not divide by zero.
+  assert.equal(apparentChargeDensity({ ...base, fillTotal: 0 }), 0);
+
+  // Density rises monotonically with ball charge at constant total fill: steel displaces slurry.
+  let prev = -Infinity;
+  for (const Jb of [0, 0.05, 0.10, 0.20, 0.30]) {
+    const r = apparentChargeDensity({ ...base, fillTotal: 0.30, ballFill: Jb });
+    assert.ok(r > prev, `density must increase with ball charge (Jb=${Jb})`);
+    prev = r;
+  }
+  // Jb is clamped to J: balls are part of the charge, not additional to it.
+  assert.equal(apparentChargeDensity({ ...base, fillTotal: 0.30, ballFill: 0.90 }),
+               apparentChargeDensity({ ...base, fillTotal: 0.30, ballFill: 0.30 }));
+
+  // THE DIVISOR REGRESSION. Omitting the /J (the error the pass-1 summary contained) inflates the
+  // result by 1/J, a factor of ~3.33 here. Pin it so the divisor cannot be dropped again.
+  assert.ok(Math.abs(rho * 0.30 - 1.269) < 1e-9, 'numerator must be the mill-volume-weighted sum');
+});
+
+// --- Lifter departure (Vermeulen 1985) --------------------------------------------------------
+// Source: Vermeulen, J. S. Afr. Inst. Min. Metall. 85(2), 51-63, saimm.co.za/Journal/v085n02p041.pdf
+test('lifter departure: taller bars lift more, and friction raises the departure angle', () => {
+  // Vermeulen's proportions: d/2 = a and R = 27a.
+  const a = 0.04, R = 27 * a, d = 2 * a;
+  // Sub-critical by construction: the element centrifuges once omega^2 (R-a) >= g, and then no
+  // equilibrium point exists at all. Pick 75% of that onset.
+  const omega = 0.75 * Math.sqrt(9.81 / (R - a));
+  const davisPhi = 0.9;                        // reference Davis departure [rad], fixed across the sweep
+  const geom = (h: number, mu: number) => ({
+    radiusM: R, elementRadiusM: a, lifterHeightM: h, lifterWidthM: d, omega, frictionMu: mu,
+  });
+
+  // Vermeulen's Table III heights, in metres. Lift must grow with bar height: "the lift of lifter bars
+  // is a function of their height" is the paper's headline experimental finding.
+  const heights = [0.0063, 0.0127, 0.0200];
+  let prevLift = -Infinity;
+  for (const h of heights) {
+    const dep = lifterDeparture(geom(h, 0), davisPhi);
+    assert.ok(!dep.retained, `element must depart for h=${h}`);
+    assert.ok(dep.liftRad > prevLift, `lift must increase with lifter height (h=${h})`);
+    assert.ok(dep.slideTimeS > 0, 'departure must come strictly AFTER the equilibrium point');
+    prevLift = dep.liftRad;
+  }
+
+  // The element departs LATER than the equilibrium point, never at it. This is the paper's central
+  // argument: at equilibrium the acceleration along the bar is zero, so flight cannot start there.
+  const dep = lifterDeparture(geom(0.0127, 0), davisPhi);
+  assert.ok(dep.departurePhiRad > dep.equilibriumPhiRad,
+    'departure must be past the equilibrium angle, not at it');
+
+  // "Calculations with mu finite showed that, if the sliding friction is increased to 0.1, the effect is
+  // to increase the angle of departure by about 5 degrees."
+  const mu0 = lifterDeparture(geom(0.0127, 0), davisPhi).departurePhiRad;
+  const mu1 = lifterDeparture(geom(0.0127, 0.1), davisPhi).departurePhiRad;
+  assert.ok(mu1 > mu0, 'raising sliding friction must raise the departure angle');
+});
+
+test('lifter departure: lift is never negative, and matches the published ~20 deg for standard bars', () => {
+  const a = 0.04, R = 27 * a, d = 2 * a;
+  const hStd = 0.70 * (2 * a);   // Vermeulen: standard new bars are ~70% of a new rod DIAMETER high
+  const geom = (omega: number) => ({
+    radiusM: R, elementRadiusM: a, lifterHeightM: hStd, lifterWidthM: d, omega, frictionMu: 0,
+  });
+  const davisOf = (omega: number) => Math.acos(Math.min(1, (omega * omega * (R - a)) / 9.81));
+
+  // A lifter bar can only ever DELAY departure. Taken literally the sliding solution finishes before the
+  // Davis point on a slow mill with a low bar, which would imply the bar makes the charge leave EARLIER.
+  // That is impossible, so the bar governs only while it holds the element past Davis.
+  for (const phi of [0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9]) {
+    const omega = phi * Math.sqrt(9.81 / (R - a));
+    const dep = lifterDeparture(geom(omega), davisOf(omega));
+    assert.ok(dep.liftRad >= 0, `lift must never be negative (phiC~${phi}, got ${dep.liftRad})`);
+    assert.ok(dep.departurePhiRad >= davisOf(omega) - 1e-12,
+      `departure must never precede the bare-shell Davis departure (phiC~${phi})`);
+  }
+
+  // Magnitude check against the paper: standard bars "provide a lift of about 20 degrees".
+  const omega75 = 0.75 * Math.sqrt(9.81 / (R - a));
+  const lift75 = (lifterDeparture(geom(omega75), davisOf(omega75)).liftRad * 180) / Math.PI;
+  assert.ok(lift75 > 12 && lift75 < 28,
+    `standard-bar lift should be near the published ~20 deg, got ${lift75.toFixed(1)}`);
 });

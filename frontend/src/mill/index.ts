@@ -16,3 +16,7 @@ export { solvePhiCForPower, solvePhiCForCapacity, recommendPhiCForRegime, PHI_LO
 export type { PowerSolve, CapacitySolve, RegimeSolve } from './inverse.ts';
 export { validateMill, MILL_TYPES } from './contract.ts';
 export type { MillInput, ContractResult } from './contract.ts';
+export { apparentChargeDensity, ballFractionOfCharge, STATIC_MEDIA_VOIDAGE } from './density.ts';
+export type { ChargeComposition } from './density.ts';
+export { lifterDeparture, equilibriumPoint } from './lifter.ts';
+export type { LifterGeometry, LifterDeparture } from './lifter.ts';

@@ -8,6 +8,7 @@ import { CASCADE_CATARACT_PHIC, classifyRegime } from './regime.ts';
 import { bondWKwhT, chargeMassT, hoggFuerstenauKw, morrellFormKw } from './power.ts';
 import { morrellPower } from './morrell.ts';
 import { smcSpecificEnergy, throughputFromPower } from './smc.ts';
+import { resolveShoulder, resolvedChargeDensity } from './composition.ts';
 import type { MillResult, Operating, PowerPoint } from './types.ts';
 
 /** The real Morrell (1996) C-model for the operating point: the full continuum power integral, independent and
@@ -54,11 +55,16 @@ export function evaluate(op: Operating): MillResult {
   const geo = chargeGeometry(op.diameterM, op.ballTopMm, omega);
   const regime = classifyRegime(op.phiC, geo.fracCentrifuging);
 
-  const phfKw = hoggFuerstenauKw(op.diameterM, op.lengthM, op.chargeDensity, op.phiC, op.fill, op.liftAngleDeg);
-  const pMorrellKw = morrellFormKw(op.diameterM, op.lengthM, op.chargeDensity, op.phiC, op.fill, geo.shoulderDeg, geo.toeDeg);
+  // v0.27: density may be DERIVED from the two-filling composition, and the shoulder may be governed by
+  // the liner. Both fall back to the previous behaviour when the operating point does not describe them.
+  const rhoC = resolvedChargeDensity(op);
+  const shoulder = resolveShoulder(op, geo.shoulderDeg, omega);
+
+  const phfKw = hoggFuerstenauKw(op.diameterM, op.lengthM, rhoC, op.phiC, op.fill, op.liftAngleDeg);
+  const pMorrellKw = morrellFormKw(op.diameterM, op.lengthM, rhoC, op.phiC, op.fill, shoulder.shoulderDeg, geo.toeDeg);
   const cm = cModel(op, op.phiC); // the real Morrell C-model at the operating point
   const bondW = bondWKwhT(op.oreWi, op.feedF80um, op.prodP80um);
-  const mass = chargeMassT(op.diameterM, op.lengthM, op.fill, op.chargeDensity);
+  const mass = chargeMassT(op.diameterM, op.lengthM, op.fill, rhoC);
 
   // power vs phiC at the current J, D, L. Two independent models: Hogg-Fuerstenau (rigid-body torque arm) and the
   // real Morrell C-model (continuum charge shape). Raw curves are monotone in phiC; the regime/centrifuging overlay
@@ -99,7 +105,10 @@ export function evaluate(op: Operating): MillResult {
     omega,
     rMaxM: op.diameterM / 2 - op.ballTopMm / 1000 / 2,
     shells: geo.shells,
-    shoulderDeg: geo.shoulderDeg,
+    shoulderDeg: shoulder.shoulderDeg,
+    lifterLiftDeg: shoulder.liftDeg,
+    lifterGoverned: shoulder.lifterGoverned,
+    chargeDensityUsed: rhoC,
     toeDeg: geo.toeDeg,
     regime,
     fracCentrifuging: geo.fracCentrifuging,

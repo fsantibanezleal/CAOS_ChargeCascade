@@ -81,7 +81,10 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
     const el = ref.current;
     if (!el) return;
     const W = el.clientWidth || 640;
-    const H = height;
+    // height = 0 means FILL THE PARENT (the ADR-0070 focus stage). A fixed pixel height cannot express
+    // "own the viewport", and passing 0 straight through produced a 1280x2 canvas that rendered nothing
+    // while the build stayed green.
+    const H = height > 0 ? height : Math.max(1, ref.current?.clientHeight ?? 0);
     const dark = theme === 'dark';
     const useDem = mode === 'dem' && dem != null;
 
@@ -291,7 +294,7 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
   const isDem = mode === 'dem' && dem != null;
   return (
     <div className="cc-canvas-wrap">
-      <div ref={ref} style={{ width: '100%', height }} />
+      <div ref={ref} style={{ width: '100%', height: height > 0 ? height : '100%' }} />
       <div className="cc-canvas-banner">
         <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
         {demEnabled && (

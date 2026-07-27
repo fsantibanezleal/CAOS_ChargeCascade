@@ -124,3 +124,64 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   z-index: 5;
 }
+
+/* ---------------------------------------------------------------------------------------------
+   ADR-0070 scenario focus view. Additive: the .cc-layout App grid above is untouched.
+   The stage owns the viewport; the rail is the only chrome; KPIs are overlaid, not stacked.
+   --------------------------------------------------------------------------------------------- */
+.cc-focus { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 320px;
+  background: var(--color-bg); color: var(--color-fg); z-index: 40; }
+.cc-focus-stage { position: relative; overflow: hidden; display: flex; flex-direction: column; }
+/* The Mill3D root fills the stage; its banner floats over the canvas rather than stealing height.
+   A fixed-px canvas cannot "own the viewport", so the focus stage sizes it from the layout. */
+.cc-focus-stage > .cc-canvas-wrap { position: absolute; inset: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; }
+.cc-focus-stage > .cc-canvas-wrap > div:first-child { flex: 1 1 auto; min-height: 0; }
+/* Keep the Mill3D banner in FLOW at the bottom of the stage. Absolutely positioning it clipped its
+   trailing controls off the left edge; the canvas simply takes the remaining height instead. */
+.cc-focus-stage > .cc-canvas-wrap > .cc-canvas-banner { flex: 0 0 auto; position: relative;
+  z-index: 3; justify-content: center; flex-wrap: wrap; gap: 0.4rem;
+  background: var(--color-surface); border-top: 1px solid var(--color-border); padding: 0.35rem 0.6rem; }
+.cc-focus-badge { position: absolute; top: 14px; left: 16px; max-width: 46ch; inset: auto;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  border: 1px solid var(--color-border); border-radius: 10px; padding: 0.6rem 0.8rem;
+  backdrop-filter: blur(6px); pointer-events: none; }
+.cc-focus-badge-t { font-size: 1.05rem; font-weight: 700; color: var(--color-accent); }
+.cc-focus-badge-d { font-size: 0.82rem; color: var(--color-fg-subtle); margin-top: 0.25rem; line-height: 1.45; }
+.cc-focus-hud { position: absolute; inset: 108px auto auto 16px; display: flex; flex-direction: column;
+  gap: 0.35rem; width: auto; height: auto; pointer-events: none; z-index: 2; }
+.cc-focus-hud-item { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  border: 1px solid var(--color-border); border-radius: 9px; padding: 0.35rem 0.6rem; min-width: 74px;
+  text-align: center; backdrop-filter: blur(6px); }
+.cc-focus-hud-v { font-family: var(--font-mono, monospace); font-size: 0.98rem; font-weight: 700; }
+.cc-focus-hud-v.accent { color: var(--color-accent); }
+.cc-focus-hud-v.blue { color: #4c8dff; }
+.cc-focus-hud-l { font-size: 0.6rem; text-align: right; color: var(--color-fg-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.cc-focus-exit { position: absolute; inset: 14px 16px auto auto; width: auto; height: auto;
+  font-size: 0.78rem; color: var(--color-fg-subtle); text-decoration: none;
+  border: 1px solid var(--color-border); border-radius: 8px; padding: 0.3rem 0.6rem;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent); }
+.cc-focus-exit:hover { color: var(--color-accent); }
+.cc-focus-rail { border-left: 1px solid var(--color-border); background: var(--color-surface);
+  padding: 0.9rem 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.55rem; }
+.cc-focus-rail-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
+  padding-bottom: 0.4rem; border-bottom: 1px solid var(--color-border); }
+.cc-focus-title { font-size: 0.95rem; font-weight: 700; }
+.cc-focus-sub { font-size: 0.72rem; color: var(--color-fg-faint); font-family: var(--font-mono, monospace); }
+.cc-focus-mode { font-size: 0.72rem; border: 1px solid var(--color-border); background: transparent;
+  color: var(--color-fg-subtle); border-radius: 7px; padding: 0.25rem 0.55rem; cursor: pointer; }
+.cc-focus-mode:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.cc-focus-ctl { display: flex; flex-direction: column; gap: 0.2rem; }
+.cc-focus-ctl-l { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--color-fg-subtle); }
+.cc-focus-ctl-l b { font-family: var(--font-mono, monospace); color: var(--color-fg); }
+.cc-focus-ctl input[type="range"] { width: 100%; accent-color: var(--color-accent); }
+.cc-focus-note { font-size: 0.7rem; color: var(--color-fg-faint); line-height: 1.5; margin-top: 0.4rem;
+  border-top: 1px solid var(--color-border); padding-top: 0.5rem; }
+.cc-focus-scenarios { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
+.cc-focus-scenarios a { font-size: 0.66rem; font-family: var(--font-mono, monospace); text-decoration: none;
+  border: 1px solid var(--color-border); border-radius: 6px; padding: 0.18rem 0.4rem; color: var(--color-fg-subtle); }
+.cc-focus-scenarios a.on, .cc-focus-scenarios a:hover { color: var(--color-accent); border-color: var(--color-accent); }
+@media (max-width: 860px) {
+  .cc-focus { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .cc-focus-rail { border-left: none; border-top: 1px solid var(--color-border); max-height: 46vh; }
+}
