@@ -20,3 +20,5 @@ export { apparentChargeDensity, ballFractionOfCharge, STATIC_MEDIA_VOIDAGE } fro
 export type { ChargeComposition } from './density.ts';
 export { lifterDeparture, equilibriumPoint } from './lifter.ts';
 export type { LifterGeometry, LifterDeparture } from './lifter.ts';
+export { LiveDem } from './livedem.ts';
+export type { LiveDemConfig, LiveDemStats } from './livedem.ts';

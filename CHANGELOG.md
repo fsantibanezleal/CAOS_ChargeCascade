@@ -3,6 +3,49 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.28.000], 2026-07-27
+
+### Added (the live DEM lane: parameters answered by physics, not by a lookup)
+- **A real 2D soft-sphere DEM running in the browser** (`mill/livedem.ts`). Until now neither lane could
+  answer an operating question in real time: the analytic lane is a single-element kinematic model with
+  no particle interactions, and the DEM lane is baked on a 7x5 `(phiC, J)` grid so only those two
+  dimensions respond. Restitution, colour-by-velocity, impact-energy spectra and per-lifter wear need
+  actual contacts computed now, and none of them can be bolted onto a replay.
+  Linear (Hooke) normal spring with viscous damping plus Coulomb friction, the same contact family as
+  `milldem`, so the offline 3D bake remains a valid reference. Uniform-grid neighbour search;
+  deterministic PRNG so a configuration always reproduces.
+- **Contact parameters as controls, with a source.** Defaults `e = 0.30` and `mu = 0.75` from Mhadhbi
+  (2021), Adv. Mater. Phys. Chem. 11:167-175, DOI 10.4236/ampc.2021.1110016. Restitution spans roughly
+  0.05 to 0.9 across the literature, so it is a slider, never a constant.
+- **Focus view gains a lane switch** (`Analytic + baked DEM` / `Live DEM (2D)`), Run/Pause, Trails, three
+  colour modes (material / speed / impact), a restitution slider, and a log-binned **impact-energy
+  spectrum**. The HUD grows to 15 readouts while live, adding particle count, mean speed, centre-of-mass
+  arm and contacts per step.
+
+### Scope and honesty
+- The live lane is a **2D cross-section for interactive understanding**. It does NOT supersede the
+  offline 3D `milldem` bake, which stays the validation reference precisely because a 2D disc slice
+  cannot be size-consistent in power.
+- The impact-energy histogram is an **energy distribution only**. It is deliberately not presented as a
+  breakage rate or a product size: that link comes from Datta and Rajamani, unread here, and asserting
+  it from a histogram would be inventing the result.
+- **No wear model.** Archard-type wear is unresearched, so the reference tool's per-lifter wear profile
+  is absent rather than approximated.
+
+### Fixed (four defects found by testing physical invariants, not by compiling)
+- **Pairwise damping had the wrong sign.** With `n_hat` running i to j, approach gives `vn < 0`, so
+  `- cn*vn` reduces repulsion on approach and adds it on separation: an energy pump. Measured mean speed
+  4000 m/s and 1e10 J before the fix.
+- **The lifter force pushed along a fixed tangential direction regardless of which side the particle was
+  on, undamped.** A perpetual one-sided shove: a stationary mill climbed monotonically from 1.2 to
+  19 m/s. Rewritten as a two-sided radial wall with a signed normal and damping against the bar velocity.
+- **Seeding solved the half-width on the shell circle rather than the reachable circle** `(R - a)`, so
+  edge particles started marginally outside the shell; and a 2.05a lattice pitch with 0.15a jitter seeded
+  neighbours already overlapping, which a stiff spring converts into an explosion.
+- **`step()` silently capped at 400 substeps and returned void**, so a caller asking for 1.2 s quietly got
+  0.27 s and the charge appeared frozen. It now returns the time actually advanced; `advance()` runs a
+  full duration for offline checks.
+
 ## [0.27.000], 2026-07-27
 
 ### Added (the operating variables the app could not express, plus the ADR-0070 focus route)

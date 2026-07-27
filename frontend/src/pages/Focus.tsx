@@ -15,6 +15,8 @@ import { Link, useParams } from 'react-router-dom';
 import { useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, recommendPhiCForRegime, type Operating, type Regime } from '../mill/index.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
+import { LiveMill2D, type ColourMode } from '../viz/LiveMill2D.tsx';
+import type { LiveDemStats } from '../mill/index.ts';
 
 /** What each regime IS, in one sentence, shown on the stage. The point of the focus view is that you can
  *  learn the concept from the motion in front of you without leaving for a docs tab. */
@@ -96,6 +98,42 @@ function PowerCurve({ pts, phiC, es }: { pts: { phiC: number; phf: number }[]; p
   );
 }
 
+
+/** Impact-energy histogram, log-binned. This is an ENERGY DISTRIBUTION and nothing more: it is NOT a
+ *  breakage rate and NOT a product size. The link from a collision spectrum to breakage comes from
+ *  Datta and Rajamani, which is unread here, so asserting it from this histogram would be inventing
+ *  the result. */
+function ImpactSpectrum({ energies, es }: { energies: number[]; es: boolean }) {
+  const W = 288, H = 76, pad = 4, BINS = 18;
+  const pos = energies.filter((e) => e > 0);
+  const bins = new Array(BINS).fill(0);
+  if (pos.length) {
+    const lo = Math.log10(Math.max(1e-9, Math.min(...pos)));
+    const hi = Math.log10(Math.max(...pos));
+    const span = Math.max(1e-6, hi - lo);
+    for (const e of pos) {
+      const k = Math.min(BINS - 1, Math.floor(((Math.log10(e) - lo) / span) * BINS));
+      bins[k]++;
+    }
+  }
+  const max = Math.max(1, ...bins);
+  const bw = (W - 2 * pad) / BINS;
+  return (
+    <div className="cc-focus-plot">
+      <div className="cc-focus-plot-t">{es ? 'Espectro de energia de impacto (log)' : 'Impact-energy spectrum (log)'}</div>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
+           aria-label={es ? 'espectro de impacto' : 'impact spectrum'}>
+        {bins.map((c, i) => (
+          <rect key={i} x={pad + i * bw + 0.6} width={Math.max(1, bw - 1.2)}
+                y={H - pad - (c / max) * (H - 2 * pad)} height={(c / max) * (H - 2 * pad)}
+                fill="var(--color-accent)" opacity={0.85} />
+        ))}
+      </svg>
+      <div className="cc-focus-plot-l">{pos.length} {es ? 'colisiones/paso' : 'collisions/step'}</div>
+    </div>
+  );
+}
+
 export default function Focus() {
   const { caseId } = useParams();
   const lang = useShellLang();
@@ -114,6 +152,14 @@ export default function Focus() {
     frictionMu: theCase.op.frictionMu ?? 0,
   }));
   const [advanced, setAdvanced] = useState(false);
+  // Lane switch. `analytic` is the Davis/Vermeulen kinematic view plus the baked DEM replay;
+  // `live` is the in-browser 2D DEM, where a parameter change is answered by the physics rather
+  // than by a grid lookup.
+  const [lane, setLane] = useState<'analytic' | 'live'>('analytic');
+  const [running, setRunning] = useState(false);   // starts PAUSED: no autoplay compute bomb
+  const [colour, setColour] = useState<ColourMode>('speed');
+  const [trails, setTrails] = useState(false);
+  const [liveStats, setLiveStats] = useState<LiveDemStats | null>(null);
   // Regime presets, like the reference tool's Deslizamiento / Cascada / Catarata / Centrifugado.
   // The target speed is SOLVED for the current geometry by the engine (recommendPhiCForRegime), not
   // hardcoded: the band edges move with D, media size and fill, so a fixed phiC would land in the
@@ -124,6 +170,20 @@ export default function Focus() {
   };
   const set = (k: keyof Operating, v: number) => setOp((o) => ({ ...o, [k]: v }));
   const r = useMemo(() => evaluate(op), [op]);
+  const liveCfg = useMemo(() => ({
+    millRadiusM: op.diameterM / 2,
+    particleRadiusM: Math.max(0.02, op.ballTopMm / 1000 / 2),
+    fill: op.fill,
+    omega: r.omega,
+    restitution: op.restitutionE ?? 0.30,
+    friction: op.frictionMu ?? 0.75,
+    lifterCount: op.lifterCount ?? 16,
+    lifterHeightM: op.lifterHeightM ?? 0.05,
+    particleDensity: op.ballDensity ?? 7.8,
+    maxParticles: 1400,
+    seed: 42,
+  }), [op.diameterM, op.ballTopMm, op.fill, r.omega, op.restitutionE, op.frictionMu,
+       op.lifterCount, op.lifterHeightM, op.ballDensity]);
 
   const hud = [
     { v: `${r.nRpm.toFixed(1)}`, l: 'rpm', tone: 'accent' },
@@ -138,11 +198,21 @@ export default function Focus() {
     { v: `${r.shells.length}`, l: es ? 'capas' : 'shells' },
     { v: `${r.ncRpm.toFixed(1)}`, l: es ? 'rpm critica' : 'critical rpm' },
   ];
+  if (lane === 'live' && liveStats) {
+    hud.push(
+      { v: `${liveStats.n}`, l: es ? 'particulas' : 'particles' },
+      { v: `${liveStats.meanSpeed.toFixed(2)}`, l: es ? 'vel media m/s' : 'mean speed m/s' },
+      { v: `${liveStats.comOffsetM.toFixed(2)} m`, l: es ? 'brazo CoM' : 'CoM arm' },
+      { v: `${liveStats.contacts}`, l: es ? 'contactos/paso' : 'contacts/step' },
+    );
+  }
 
   return (
     <div className="cc-focus">
       <div className="cc-focus-stage">
-        <Mill3D op={op} caseId={theCase.id} height={0} />
+        {lane === 'analytic'
+          ? <Mill3D op={op} caseId={theCase.id} height={0} />
+          : <LiveMill2D cfg={liveCfg} running={running} colour={colour} showTrails={trails} onStats={setLiveStats} />}
         {/* HUD is rendered after the canvas so it stacks above it; it is positioned against the
             canvas region (see .cc-focus-canvasarea) so a wrapping banner can never overlap it. */}
         <div className="cc-focus-badge">
@@ -200,6 +270,38 @@ export default function Focus() {
                     onChange={(v) => set('ballTopMm', v)} />
             <Slider label={es ? 'Angulo de reposo ' : 'Repose angle '} unit=" deg" value={op.liftAngleDeg}
                     min={20} max={50} step={1} onChange={(v) => set('liftAngleDeg', v)} />
+          </>
+        )}
+
+        <div className="cc-focus-lane">
+          <button type="button" className={lane === 'analytic' ? 'on' : ''} onClick={() => setLane('analytic')}>
+            {es ? 'Analitico + DEM baked' : 'Analytic + baked DEM'}
+          </button>
+          <button type="button" className={lane === 'live' ? 'on' : ''} onClick={() => setLane('live')}>
+            {es ? 'DEM en vivo (2D)' : 'Live DEM (2D)'}
+          </button>
+        </div>
+
+        {lane === 'live' && (
+          <>
+            <div className="cc-focus-presets">
+              <button type="button" onClick={() => setRunning((v) => !v)} className={running ? 'on' : ''}>
+                {running ? (es ? 'Pausar' : 'Pause') : (es ? 'Simular' : 'Run')}
+              </button>
+              <button type="button" onClick={() => setTrails((v) => !v)} className={trails ? 'on' : ''}>
+                {es ? 'Estelas' : 'Trails'}
+              </button>
+            </div>
+            <div className="cc-focus-presets cc-focus-three">
+              {(['material', 'speed', 'impact'] as ColourMode[]).map((c) => (
+                <button key={c} type="button" onClick={() => setColour(c)} className={colour === c ? 'on' : ''}>
+                  {c === 'material' ? 'Material' : c === 'speed' ? (es ? 'Velocidad' : 'Speed') : (es ? 'Impacto' : 'Impact')}
+                </button>
+              ))}
+            </div>
+            <Slider label={es ? 'Restitucion e ' : 'Restitution e '} value={op.restitutionE ?? 0.30}
+                    min={0.05} max={0.90} step={0.01} onChange={(v) => set('restitutionE', v)} />
+            <ImpactSpectrum energies={liveStats?.impactEnergies ?? []} es={es} />
           </>
         )}
 

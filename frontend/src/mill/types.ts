@@ -46,6 +46,9 @@ export interface Operating {
   lifterHeightM?: number;    // h, lifter bar height [m]; standard is ~70% of a new media DIAMETER
   lifterWidthM?: number;     // d, lifter bar width [m]; standard is ~1 media diameter
   frictionMu?: number;       // mu, sliding friction between element and bar. Vermeulen's best film fit was 0.
+  restitutionE?: number;     // e, coefficient of restitution, LIVE DEM lane only. Default 0.30
+                             // (Mhadhbi 2021, DOI 10.4236/ampc.2021.1110016). It spans roughly
+                             // 0.05 to 0.9 across the literature, so it is a control, never a constant.
 }
 
 /** one radial shell of the charge: its departure angle + the cataract trajectory it flies. */
