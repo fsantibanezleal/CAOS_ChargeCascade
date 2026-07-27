@@ -5,7 +5,10 @@ additional cases on a grid of (fraction-of-critical-speed, fractional-fill) for 
 writing demframes.bin files the gen_dem_corpus.py reads. Each case takes ~1-3 min of CPU (milldem).
 """
 from __future__ import annotations
-import math, struct, json, time
+import json
+import math
+import struct
+import time
 from pathlib import Path
 import numpy as np
 import milldem
@@ -63,7 +66,8 @@ def _write(path: Path, case_id: str, frames: np.ndarray, radii: np.ndarray, sim:
     F, N, _ = frames.shape
     R = sim.cfg.diameter_m / 2
     w = sim.w
-    aabb_min = [-R, -R, 0.0]; aabb_max = [R, R, w]
+    aabb_min = [-R, -R, 0.0]
+    aabb_max = [R, R, w]
     q = np.zeros_like(radii)
     size_class = np.clip((q * 3.999).astype(np.uint8), 0, 3)
     header = {
@@ -82,8 +86,11 @@ def _write(path: Path, case_id: str, frames: np.ndarray, radii: np.ndarray, sim:
     q16 = np.clip(np.round((frames.astype(np.float64) - lo) / span * QUANT_MAX), 0, QUANT_MAX).astype("<u2")
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "wb") as f:
-        f.write(b"CDM1"); f.write(struct.pack("<I", len(hb))); f.write(hb)
-        f.write(size_class.tobytes()); f.write(q16.tobytes(order="C"))
+        f.write(b"CDM1")
+        f.write(struct.pack("<I", len(hb)))
+        f.write(hb)
+        f.write(size_class.tobytes())
+        f.write(q16.tobytes(order="C"))
     header["bytes"] = path.stat().st_size
     (DEM_DIR / f"{case_id}.power.json").write_text(json.dumps({
         "schema": "chargecascade.dem-power/v1",

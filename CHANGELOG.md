@@ -3,6 +3,68 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.27.000], 2026-07-27
+
+### Added (the operating variables the app could not express, plus the ADR-0070 focus route)
+- **Charge density from the TWO fillings** (`mill/density.ts`). Hogg & Fuerstenau (1972), as reproduced in
+  Golpayegani & Rezai (2022), Physicochem. Probl. Miner. Process. 58(6) 153380, DOI 10.37190/ppmp/153380,
+  their Eq. 2: `rho_ap = [(1-phi) rho_b Jb + rho_p Jp phi Jb + rho_p (J - Jb)] / J`. The charge now splits
+  into media and pulp with their own densities, so "raise the ball charge at constant total load" and "mill
+  a denser ore" are answerable questions instead of missing ones. HF-consistent on purpose: the power lane
+  IS Hogg-Fuerstenau, and pairing it with Morrell's differently-defined density would be a silent
+  inconsistency. A regression test pins the `/J` divisor, whose omission inflates density by 1/J (about
+  3.3x at J = 0.30).
+- **Lifter-aware departure** (`mill/lifter.ts`). Vermeulen (1985), J. S. Afr. Inst. Min. Metall. 85(2)
+  51-63. His central result contradicts the model the app had: an element CANNOT begin flight where the
+  forces on it balance, because the acceleration along the lifter face is exactly zero there. It arrives at
+  rest, slides down the face with growing acceleration, and departs at the bar edge, so the departure angle
+  is set by sliding dynamics and lifter HEIGHT rather than by a force balance. Confirmed by high-speed film,
+  which also shows the departure velocity carrying a 50-60% radial component the equilibrium picture says is
+  zero. The ODE (his eq. 26) is integrated by RK4 with his boundary conditions rather than evaluating his
+  closed form, because the source PDF's text layer mangled the constants in the closed form. Pure rolling is
+  deliberately NOT implemented: his Table III rejects it against film. Validated on magnitude, not just
+  monotonicity: standard bars give 18.7 deg of lift at phiC 0.75 against his published "about 20 degrees".
+- **Scenario focus route** `/focus/<caseId>` ([ADR-0070](https://github.com/fsantibanezleal/CAOS_ChargeCascade)).
+  Additive: the six pages, the App tab layout and all 14 tabs are untouched. Renders outside the app shell so
+  the stage owns the viewport (measured 80.0% at 1600x900). One right-hand parameter rail, KPIs overlaid as
+  an 11-item HUD instead of stacked as cards, the regime named ON the stage with a plain-language line, four
+  regime presets whose target speed is SOLVED per geometry (band edges move with D, media size and fill, so
+  a hardcoded phiC would land in the wrong regime), a net-power-vs-phiC curve with the operating point
+  marked, and a basic/advanced toggle. Deep-linkable per scenario.
+- Engine inputs, all OPTIONAL so every existing case, bake and artifact is byte-identical: `ballFill` (Jb),
+  `ballDensity`, `slurryDensity`, `mediaVoidage`, `interstitialSlurryFill`, `lifterCount`, `lifterHeightM`,
+  `lifterWidthM`, `frictionMu`. `MillResult` gains `lifterLiftDeg`, `lifterGoverned` and `chargeDensityUsed`.
+
+### Fixed
+- **The charge-shape overlay compared two angle conventions as if they were one.** `ray()` draws in the polar
+  frame, but the analytic shoulder/toe are degrees FROM VERTICAL and were passed through unconverted, so the
+  analytic markers were drawn at the wrong azimuth and disagreed with the DEM markers by construction.
+- **DEM charge edges were not wrap-safe.** Raw percentiles of `atan2` output collapse toward +/-180 whenever
+  the charge crosses the branch cut, and it does: regenerated outlines show arcs spanning up to 247 deg. Now
+  unwrapped around the occupancy-weighted circular mean. `outline/v2` emits BOTH conventions explicitly plus
+  an `angle_convention` block.
+- **`Mill3D` could not fill a container.** A fixed pixel height cannot express "own the viewport"; height 0
+  now means fill the parent. Passing 0 previously produced a 1280x2 canvas that rendered nothing while the
+  build stayed green.
+- **The GNS evaluation had no held-out set.** Corpus v1 loaded every rollout, the trainer optimized on all of
+  them, and `bake_rollouts` then scored each case against the DEM it had trained on while calling that
+  "held-out". Corpus v2 withholds the whole phiC = 0.85 grid row plus canonical S-CATARACT (38 train / 6
+  holdout), fits normalization on train only, and reports train and held-out error separately.
+
+### Data
+- 35-case parametric `(phiC, J)` DEM grid baked with milldem; the GNS corpus grows from 9 to 44 rollouts.
+
+### Honesty
+- **The GNS surrogate is still NOT shipped.** Trained 120 epochs on GPU over the larger corpus, held-out
+  one-step normalized-acceleration MSE is 0.3747 against a pre-registered ship threshold of 0.30. It fails,
+  so the frontend `gns` mode stays unwired. Held-out is indistinguishable from train (0.3752), so there is no
+  overfitting to fix: the limit is model capacity, features, or the single-reference-mill corpus design, and
+  more cases of the same mill will not close it.
+- The DEM toe/shoulder numbers remain an occupancy envelope, not a physical toe. Frame and wrap are fixed;
+  the measure is not.
+- The focus stage is still the Davis kinematic view, as its banner states. Restitution, wear, impact-energy
+  spectra and colour-by-velocity need a live DEM lane that does not exist yet.
+
 ## [0.26.000], 2026-07-20
 
 ### Added (SOTA-ladder Units 6-8: the real DEM charge-motion lane)
