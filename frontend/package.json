@@ -1,14 +1,14 @@
 {
   "name": "chargecascade-frontend",
   "private": true,
-  "version": "0.28.000",
+  "version": "0.28.001",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
     "dev": "vite",
     "prebuild": "node copy-data.mjs",
     "build": "tsc --noEmit && vite build",
-    "postbuild": "node spa-404.mjs",
+    "postbuild": "node spa-404.mjs && node prerender-routes.mjs",
     "preview": "vite preview",
     "test": "node --import tsx --test test/mill.test.ts"
   },
