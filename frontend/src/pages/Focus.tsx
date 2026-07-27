@@ -13,7 +13,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useShellLang } from '@fasl-work/caos-app-shell';
-import { CASES, caseById, evaluate, type Operating, type Regime } from '../mill/index.ts';
+import { CASES, caseById, evaluate, recommendPhiCForRegime, type Operating, type Regime } from '../mill/index.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
 
 /** What each regime IS, in one sentence, shown on the stage. The point of the focus view is that you can
@@ -69,6 +69,33 @@ function Slider({ label, unit, value, min, max, step, onChange }: {
   );
 }
 
+
+/** The power curve the engine already computes, drawn small in the rail with the operating point
+ *  marked. The reference tool carries a power plot; ours had the data and was not showing it here. */
+function PowerCurve({ pts, phiC, es }: { pts: { phiC: number; phf: number }[]; phiC: number; es: boolean }) {
+  const W = 288, H = 92, pad = 4;
+  if (pts.length < 2) return null;
+  const xs = pts.map((p) => p.phiC), ys = pts.map((p) => p.phf);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y1 = Math.max(...ys) || 1;
+  const sx = (v: number) => pad + ((v - x0) / (x1 - x0 || 1)) * (W - 2 * pad);
+  const sy = (v: number) => H - pad - (v / y1) * (H - 2 * pad);
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${sx(p.phiC).toFixed(1)},${sy(p.phf).toFixed(1)}`).join(' ');
+  const here = pts.reduce((a, b) => (Math.abs(b.phiC - phiC) < Math.abs(a.phiC - phiC) ? b : a));
+  return (
+    <div className="cc-focus-plot">
+      <div className="cc-focus-plot-t">{es ? 'Potencia neta vs phiC' : 'Net power vs phiC'}</div>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
+           aria-label={es ? 'curva de potencia' : 'power curve'}>
+        <path d={d} fill="none" stroke="var(--color-accent)" strokeWidth="1.6" />
+        <line x1={sx(here.phiC)} x2={sx(here.phiC)} y1={pad} y2={H - pad}
+              stroke="var(--color-fg-faint)" strokeDasharray="3 3" strokeWidth="1" />
+        <circle cx={sx(here.phiC)} cy={sy(here.phf)} r="3.2" fill="var(--color-accent)" />
+      </svg>
+      <div className="cc-focus-plot-l">{here.phf.toFixed(0)} kW @ phiC {here.phiC.toFixed(2)}</div>
+    </div>
+  );
+}
+
 export default function Focus() {
   const { caseId } = useParams();
   const lang = useShellLang();
@@ -87,6 +114,14 @@ export default function Focus() {
     frictionMu: theCase.op.frictionMu ?? 0,
   }));
   const [advanced, setAdvanced] = useState(false);
+  // Regime presets, like the reference tool's Deslizamiento / Cascada / Catarata / Centrifugado.
+  // The target speed is SOLVED for the current geometry by the engine (recommendPhiCForRegime), not
+  // hardcoded: the band edges move with D, media size and fill, so a fixed phiC would land in the
+  // wrong regime as soon as any of those changed.
+  const applyRegime = (want: Regime) => {
+    const s = recommendPhiCForRegime(op, want);
+    if (s.phiCRec != null) set('phiC', +s.phiCRec.toFixed(3));
+  };
   const set = (k: keyof Operating, v: number) => setOp((o) => ({ ...o, [k]: v }));
   const r = useMemo(() => evaluate(op), [op]);
 
@@ -99,6 +134,9 @@ export default function Focus() {
     { v: `${r.shoulderDeg.toFixed(0)}deg`, l: es ? 'hombro' : 'shoulder' },
     { v: `${r.lifterLiftDeg.toFixed(0)}deg`, l: es ? 'aporte lifter' : 'lifter lift' },
     { v: `${(r.fracCentrifuging * 100).toFixed(0)}%`, l: es ? 'centrifugando' : 'centrifuging' },
+    { v: `${r.toeDeg.toFixed(0)}deg`, l: es ? 'pie' : 'toe' },
+    { v: `${r.shells.length}`, l: es ? 'capas' : 'shells' },
+    { v: `${r.ncRpm.toFixed(1)}`, l: es ? 'rpm critica' : 'critical rpm' },
   ];
 
   return (
@@ -124,6 +162,15 @@ export default function Focus() {
           <button className="cc-focus-mode" onClick={() => setAdvanced((a) => !a)}>
             {advanced ? (es ? 'Basico' : 'Basic') : (es ? 'Avanzado' : 'Advanced')}
           </button>
+        </div>
+
+        <div className="cc-focus-presets">
+          {(['slumping', 'cascading', 'cataracting', 'centrifuging'] as Regime[]).map((rg) => (
+            <button key={rg} type="button" onClick={() => applyRegime(rg)}
+                    className={r.regime === rg ? 'on' : ''}>
+              {REGIME_LABEL[rg][es ? 'es' : 'en']}
+            </button>
+          ))}
         </div>
 
         <Slider label={es ? 'Velocidad (phiC) ' : 'Speed (phiC) '} value={op.phiC} min={0.3} max={1.1} step={0.01}
@@ -155,6 +202,8 @@ export default function Focus() {
                     min={20} max={50} step={1} onChange={(v) => set('liftAngleDeg', v)} />
           </>
         )}
+
+        <PowerCurve pts={r.powerCurve} phiC={op.phiC} es={es} />
 
         <div className="cc-focus-note">
           {es

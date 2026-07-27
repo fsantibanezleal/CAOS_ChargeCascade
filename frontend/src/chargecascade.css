@@ -185,3 +185,12 @@
   .cc-focus { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
   .cc-focus-rail { border-left: none; border-top: 1px solid var(--color-border); max-height: 46vh; }
 }
+.cc-focus-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
+.cc-focus-presets button { font-size: 0.7rem; padding: 0.3rem 0.35rem; cursor: pointer;
+  border: 1px solid var(--color-border); border-radius: 7px; background: transparent; color: var(--color-fg-subtle); }
+.cc-focus-presets button:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.cc-focus-presets button.on { color: var(--color-accent); border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent); font-weight: 600; }
+.cc-focus-plot { border-top: 1px solid var(--color-border); padding-top: 0.5rem; margin-top: 0.3rem; }
+.cc-focus-plot-t { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-fg-faint); }
+.cc-focus-plot-l { font-size: 0.7rem; font-family: var(--font-mono, monospace); color: var(--color-fg-subtle); text-align: right; }
