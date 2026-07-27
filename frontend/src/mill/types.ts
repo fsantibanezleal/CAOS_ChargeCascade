@@ -30,6 +30,22 @@ export interface Operating {
   slurrySolidsS?: number;    // S, slurry volumetric solids fraction (default 0.5)
   dischargeType?: 'grate' | 'dry' | 'overflow'; // overflow adds the slurry-pool term (default grate)
   dynamicVoidage?: boolean;  // use Golpayegani & Rezai (2023) speed/fill voidage (default off)
+  // --- Two-filling charge composition (v0.27). OPTIONAL and additive ------------------------------
+  // When `ballFill` is given, `chargeDensity` is DERIVED from the composition via the Hogg & Fuerstenau
+  // (1972) apparent-density relation instead of being taken as the user's lumped number. Leaving these
+  // undefined preserves the previous single-density behaviour exactly, so no existing case changes.
+  ballFill?: number;         // Jb, fractional mill filling BY STEEL BALLS (0..fill). Jb = 0 is an AG mill.
+  ballDensity?: number;      // rho_b, steel ball density [t/m^3], ~7.8 forged steel
+  slurryDensity?: number;    // rho_p, slurry / pulp density [t/m^3]
+  mediaVoidage?: number;     // phi, grinding-media voidage (default 0.40 static)
+  interstitialSlurryFill?: number; // Jp, fraction of ball-charge voids holding slurry (default 1.0)
+  // --- Lifter bars (v0.27). OPTIONAL and additive -------------------------------------------------
+  // When `lifterHeightM` is given, the shoulder comes from the Vermeulen (1985) sliding-departure model
+  // instead of the bare-shell Davis angle. Undefined = no lifters modelled = previous behaviour.
+  lifterCount?: number;      // number of lifter bars around the shell (affects the 3D view + wear, not the departure of a single element)
+  lifterHeightM?: number;    // h, lifter bar height [m]; standard is ~70% of a new media DIAMETER
+  lifterWidthM?: number;     // d, lifter bar width [m]; standard is ~1 media diameter
+  frictionMu?: number;       // mu, sliding friction between element and bar. Vermeulen's best film fit was 0.
 }
 
 /** one radial shell of the charge: its departure angle + the cataract trajectory it flies. */
@@ -51,6 +67,9 @@ export interface MillResult {
   rMaxM: number;               // outer reachable shell radius [m]
   shells: Shell[];
   shoulderDeg: number;         // outer-layer departure (shoulder) angle [deg from vertical]
+  lifterLiftDeg: number;       // lift the modelled lifter bars add over the bare-shell Davis shoulder [deg]; 0 when no liner is modelled
+  lifterGoverned: boolean;     // true when the liner governed the departure (held the element past the Davis angle)
+  chargeDensityUsed: number;   // rho_c actually used [t/m^3]: derived from the two-filling composition when given, else the lumped input
   toeDeg: number;              // toe angle [deg]
   regime: Regime;
   fracCentrifuging: number;    // fraction of shells that centrifuge (0..1)
