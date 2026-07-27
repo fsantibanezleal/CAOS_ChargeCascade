@@ -95,14 +95,29 @@ def _radius_graph(pos: "torch.Tensor", r: float) -> tuple["torch.Tensor", "torch
 class Corpus:
     """Loads the rollout corpus and yields single-step training samples (velocity history -> target accel)."""
 
-    def __init__(self, corpus_dir: Path = CORPUS_DIR, manifest_path: Path | None = None):
+    def __init__(self, corpus_dir: Path = CORPUS_DIR, manifest_path: Path | None = None,
+                 split: str | None = "train"):
+        """`split='train'` loads only training rollouts; `'holdout'` only held-out ones; None loads all.
+
+        Defaulting to `train` is deliberate. Before the v2 corpus this class loaded EVERY rollout and the
+        trainer optimized on all of them, so the rollout error later reported as "vs the held-out DEM" was
+        in fact measured on cases the model had been trained on. That number described memorization.
+        """
         self.manifest = json.loads((GNS_DIR / "corpus-manifest.json").read_text(encoding="utf-8"))
         self.norm = self.manifest["normalization"]
+        self.split = split
         self.rollouts = []
+        self.case_ids = []
         for m in self.manifest["rollouts"]:
+            # v1 manifests carry no per-rollout split; treat them as train so old corpora still load.
+            if split is not None and m.get("split", "train") != split:
+                continue
             z = np.load(corpus_dir / f"{m['case_id']}.npz")
             self.rollouts.append({"pos": z["positions"], "type": z["particle_type"],
                                   "radius_m": m["radius_m"], "ball_d": m["ball_diameter_m"]})
+            self.case_ids.append(m["case_id"])
+        if not self.rollouts:
+            raise SystemExit(f"corpus has no rollouts for split={split!r}; rebuild with `python -m cclab.gns.gen_dem_corpus`")
         self.acc_mean = np.array(self.norm["acc_mean"], dtype=np.float32)
         self.acc_std = np.array(self.norm["acc_std"], dtype=np.float32)
 
@@ -127,6 +142,40 @@ def _node_features(pos_hist: np.ndarray, ptype: np.ndarray, R: float, type_embed
     rad = np.linalg.norm(cur, axis=1, keepdims=True)         # [N,1] distance from axis
     wall = np.concatenate([np.clip((R - rad) / R, 0, 1), rad / R], axis=1)  # [N,2] normalized wall features
     return vhist.astype(np.float32), wall.astype(np.float32), vel[-1].astype(np.float32)
+
+
+@torch.no_grad() if _HAS_TORCH else (lambda f: f)
+def _eval_split(model, train_corpus, acc_mean, acc_std, device, seed: int, split: str,
+                n_samples: int = 300) -> float:
+    """Mean one-step normalized-acceleration MSE over `n_samples` random frames of `split`.
+
+    No history noise here: noise is a training stability trick, and adding it at evaluation would
+    measure robustness to synthetic jitter instead of accuracy. Uses its own RNG so the number does
+    not shift when the training schedule changes.
+    """
+    corpus = train_corpus if train_corpus.split == split else Corpus(split=split)
+    rng = np.random.default_rng(seed + 1000)
+    model.eval()
+    tot, n = 0.0, 0
+    for _ in range(n_samples):
+        ri, t = corpus.sample_indices(rng)
+        roll = corpus.rollouts[ri]
+        R = roll["radius_m"]
+        pos_hist = roll["pos"][t - corpus.c_history: t + 1]
+        target_acc = (roll["pos"][t + 1] - 2 * roll["pos"][t] + roll["pos"][t - 1]).astype(np.float32)
+        vhist, wall, _ = _node_features(pos_hist, roll["type"], R)
+        cur = torch.tensor(pos_hist[-1], device=device)
+        tembed = model.type_embed(torch.tensor(roll["type"], device=device))
+        node_feat = torch.cat([torch.tensor(vhist, device=device), tembed, torch.tensor(wall, device=device)], dim=-1)
+        src, dst = _radius_graph(cur, corpus.connectivity_radius(roll))
+        rel = cur[src] - cur[dst]
+        edge_feat = torch.cat([rel, rel.norm(dim=-1, keepdim=True)], dim=-1)
+        pred = model(node_feat, edge_feat, src, dst, cur.shape[0])
+        tgt = (torch.tensor(target_acc, device=device) - acc_mean) / acc_std
+        tot += float(((pred - tgt) ** 2).mean())
+        n += 1
+    model.train()
+    return tot / max(n, 1)
 
 
 def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 3e-4, seed: int = 42) -> dict:
@@ -172,12 +221,27 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
         mean = tot / steps_per_epoch
         hist.append(mean)
         print(f"[gns-train] epoch {ep + 1}/{epochs}  loss {mean:.5f}", flush=True)
+
+    # One-step accuracy on rollouts the optimizer never saw. Reported next to the training loss so the
+    # two can never be confused again; a normalized-acceleration MSE near 1.0 means the model explains
+    # about none of the acceleration variance, since the targets are normalized to unit variance.
+    holdout_mse = _eval_split(model, corpus, acc_mean, acc_std, device, seed, split="holdout")
+    train_mse = _eval_split(model, corpus, acc_mean, acc_std, device, seed, split="train")
+    print(f"[gns-train] one-step normalized-accel MSE  train {train_mse:.4f}  HELD-OUT {holdout_mse:.4f}", flush=True)
+
     GNS_DIR.mkdir(parents=True, exist_ok=True)
     torch.save({"state_dict": model.state_dict(), "acc_mean": corpus.acc_mean.tolist(),
                 "acc_std": corpus.acc_std.tolist(), "c_history": C_HISTORY, "n_blocks": N_BLOCKS,
                 "hidden": HIDDEN}, GNS_DIR / "gns.pt")
-    metrics = {"schema": "chargecascade.gns-metrics/v1", "device": device, "epochs": epochs,
+    metrics = {"schema": "chargecascade.gns-metrics/v2", "device": device, "epochs": epochs,
                "final_loss": hist[-1], "loss_history": [round(h, 5) for h in hist],
+               "one_step_normalized_accel_mse": {"train": round(train_mse, 5), "holdout": round(holdout_mse, 5)},
+               "split": corpus.manifest.get("split"),
+               "train_cases": corpus.case_ids,
+               "note": "Targets are normalized to unit variance, so MSE ~ 1.0 means the model explains "
+                       "~none of the acceleration variance and 1 - MSE is the fraction explained. The "
+                       "holdout figure is the only one that describes generalization; before corpus v2 the "
+                       "trainer used every rollout and no such figure existed.",
                "n_rollouts": len(corpus.rollouts), "blocks": N_BLOCKS, "hidden": HIDDEN, "c_history": C_HISTORY}
     (GNS_DIR / "gns-metrics.json").write_text(json.dumps(metrics, indent=1), encoding="utf-8")
     print(f"[gns-train] saved {GNS_DIR / 'gns.pt'} (final loss {hist[-1]:.5f})", flush=True)
