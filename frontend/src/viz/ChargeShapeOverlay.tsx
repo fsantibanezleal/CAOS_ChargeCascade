@@ -64,7 +64,15 @@ export function ChargeShapeOverlay({ outline, analyticToeDeg, analyticShoulderDe
     ctx.strokeStyle = sub; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
 
-    // toe/shoulder radial markers: analytic (solid) vs DEM (dashed)
+    // toe/shoulder radial markers: analytic (solid) vs DEM (dashed).
+    //
+    // `ray` draws in the POLAR frame (theta CCW from +x), but the engine reports shoulder/toe as
+    // degrees FROM VERTICAL (shoulder from the upward vertical, toe from the downward vertical on the
+    // descending side). Those were previously handed to `ray` unconverted, so the analytic markers were
+    // drawn at the wrong azimuth and disagreed with the DEM markers by construction. Convert both.
+    const shoulderTheta = (degFromVertical: number) => 90 - degFromVertical;
+    const toeTheta = (degFromVertical: number) => -90 - degFromVertical;
+
     const ray = (deg: number, color: string, dash: number[], label: string) => {
       const a = deg * Math.PI / 180;
       ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash);
@@ -73,11 +81,14 @@ export function ChargeShapeOverlay({ outline, analyticToeDeg, analyticShoulderDe
       ctx.fillStyle = color; ctx.font = '10px system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(label, cx + Math.cos(-a) * (rad + 14), cy + Math.sin(-a) * (rad + 14));
     };
-    ray(analyticShoulderDeg, '#6ea8ff', [], es ? 'hombro (an.)' : 'shoulder (an.)');
-    ray(analyticToeDeg, '#f0883e', [], es ? 'pie (an.)' : 'toe (an.)');
+    ray(shoulderTheta(analyticShoulderDeg), '#6ea8ff', [], es ? 'hombro (an.)' : 'shoulder (an.)');
+    ray(toeTheta(analyticToeDeg), '#f0883e', [], es ? 'pie (an.)' : 'toe (an.)');
     if (outline) {
-      ray(outline.shoulder_deg, '#3fb950', [5, 3], 'DEM');
-      ray(outline.toe_deg, '#3fb950', [5, 3], 'DEM');
+      // outline v2 carries the polar angles directly; v1 only had *_deg, which WERE polar theta.
+      const sTh = outline.shoulder_theta_deg ?? outline.shoulder_deg;
+      const tTh = outline.toe_theta_deg ?? outline.toe_deg;
+      ray(sTh, '#3fb950', [5, 3], 'DEM');
+      ray(tTh, '#3fb950', [5, 3], 'DEM');
     }
 
     ctx.fillStyle = fg; ctx.font = '11px system-ui, sans-serif'; ctx.textAlign = 'left';
