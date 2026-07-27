@@ -16,6 +16,7 @@ trajectories and the corpus-wide normalization statistics the GNS needs (velocit
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -40,6 +41,38 @@ def _subsample(n: int, radii: np.ndarray, keep: int, seed: int = 0) -> np.ndarra
     return np.sort(order[np.linspace(0, n - 1, keep).astype(np.int64)])
 
 
+GRID_ID_RE = re.compile(r"^G-p(?P<phi>\d+\.\d+)-J(?P<fill>\d+\.\d+)$")
+
+
+def _operating_point(case_id: str) -> tuple[float, float] | None:
+    """Recover (phi_c, fill) for a case id.
+
+    Two families of baked cases feed the corpus. The 9 CANONICAL cases carry their operating point in
+    `cclab.cases.mill_cases.CASES`. The parametric GRID cases baked by `cclab.gns.bake_grid` are not in
+    CASES by design (they are training fodder, not published cases) and encode their operating point in
+    the id itself, `G-p<phiC>-J<fill>`. Returning (0.0, 0.0) for an unknown id would silently poison the
+    corpus: the operating point is a conditioning input, so a whole family of rollouts labelled phiC=0
+    teaches the GNS that a stationary mill produces cataracting motion. Unknown ids are rejected instead.
+    """
+    c = next((c for c in CASES if c.id == case_id), None)
+    if c is not None:
+        return float(c.phi_c), float(c.fill)
+    m = GRID_ID_RE.match(case_id)
+    if m is not None:
+        return float(m.group("phi")), float(m.group("fill"))
+    return None
+
+
+def baked_case_ids() -> list[str]:
+    """Every baked rollout: the canonical cases first (stable order), then the parametric grid, sorted."""
+    canonical = [c.id for c in CASES if (DEM_DIR / f"{c.id}.demframes.bin").exists()]
+    grid = sorted(
+        p.name[: -len(".demframes.bin")]
+        for p in DEM_DIR.glob("G-*.demframes.bin")
+    )
+    return canonical + grid
+
+
 def rollout_from_case(case_id: str) -> dict | None:
     """Read a baked demframes and return a GNS rollout dict, or None if the bake is missing/too short."""
     path = DEM_DIR / f"{case_id}.demframes.bin"
@@ -54,13 +87,17 @@ def rollout_from_case(case_id: str) -> dict | None:
     idx = _subsample(N, radii, min(N_TRAIN, N))
     pos2d = frames[:, idx, :2].astype(np.float32)          # [F, n, 2]
     ptype = size_class[idx].astype(np.int64)               # [n] static type = size class
-    c = next((c for c in CASES if c.id == case_id), None)
+    op = _operating_point(case_id)
+    if op is None:
+        print(f"[gns-corpus] {case_id}: SKIPPED (no operating point; not in CASES and not a G-p*-J* id)", flush=True)
+        return None
+    phi_c, fill = op
     return {
         "case_id": case_id,
         "positions": pos2d,                                # [T, n, 2] metres, T=F
         "particle_type": ptype,                            # [n]
-        "phi_c": float(c.phi_c) if c else 0.0,
-        "fill": float(c.fill) if c else 0.0,
+        "phi_c": phi_c,
+        "fill": fill,
         "radius_m": float(header["radiusM"]),
         "ball_diameter_m": float(header["ballDiameterM"]),
         "fps": int(header["fps"]),
@@ -89,14 +126,14 @@ def _stats(rollouts: list[dict]) -> dict:
 def build_corpus() -> dict:
     CORPUS_DIR.mkdir(parents=True, exist_ok=True)
     rollouts, meta = [], []
-    for c in CASES:
-        r = rollout_from_case(c.id)
+    for case_id in baked_case_ids():
+        r = rollout_from_case(case_id)
         if r is None:
             continue
-        np.savez_compressed(CORPUS_DIR / f"{c.id}.npz", positions=r["positions"], particle_type=r["particle_type"])
+        np.savez_compressed(CORPUS_DIR / f"{case_id}.npz", positions=r["positions"], particle_type=r["particle_type"])
         rollouts.append(r)
         meta.append({k: r[k] for k in ("case_id", "phi_c", "fill", "radius_m", "ball_diameter_m", "fps", "n", "T")})
-        print(f"[gns-corpus] {c.id}: T={r['T']} n={r['n']} phiC={r['phi_c']} J={r['fill']}", flush=True)
+        print(f"[gns-corpus] {case_id}: T={r['T']} n={r['n']} phiC={r['phi_c']} J={r['fill']}", flush=True)
     if not rollouts:
         raise SystemExit("no baked DEM frames found; run `python -m cclab.dem` first")
     stats = _stats(rollouts)
