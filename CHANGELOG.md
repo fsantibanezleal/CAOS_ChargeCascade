@@ -3,6 +3,19 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.28.001], 2026-07-27
+
+### Fixed
+- **Deep links returned HTTP 404 while rendering correctly** (BL-009). `spa-404.mjs` copies index.html to
+  404.html, which makes `/focus/<caseId>` WORK in a browser, but Pages serves it with a 404 status. A
+  human sees the page; a link unfurler, a crawler or an uptime check sees a broken URL. ADR-0070 requires
+  the scenario focus route to be shareable and teachable from, so this was a real gap against that
+  requirement rather than a cosmetic one.
+  New `prerender-routes.mjs` materializes a real `<route>/index.html` for every routed URL, so Pages
+  answers **200**: the five standard sub-pages plus one focus route per canonical case (15 routes).
+  Case ids are parsed from `src/mill/cases.ts`, so a new case gets a shareable focus URL automatically
+  and the route list cannot drift from the case registry. The 404.html fallback stays as the safety net.
+
 ## [0.28.000], 2026-07-27
 
 ### Added (the live DEM lane: parameters answered by physics, not by a lookup)
