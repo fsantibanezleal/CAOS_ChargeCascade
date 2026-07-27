@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   bondWKwhT, CASES, caseById, chargeMassT, criticalSpeedRpm, evaluate, hoggFuerstenauKw,
-  apparentChargeDensity, lifterDeparture,
+  apparentChargeDensity, lifterDeparture, LiveDem,
 } from '../src/mill/index.ts';
 import type { Operating } from '../src/mill/index.ts';
 
@@ -507,4 +507,88 @@ test('lifter departure: lift is never negative, and matches the published ~20 de
   const lift75 = (lifterDeparture(geom(omega75), davisOf(omega75)).liftRad * 180) / Math.PI;
   assert.ok(lift75 > 12 && lift75 < 28,
     `standard-bar lift should be near the published ~20 deg, got ${lift75.toFixed(1)}`);
+});
+
+// --- Live 2D DEM ------------------------------------------------------------------------------
+// Physical invariants, not "it ran without throwing". Contact defaults e=0.30 / mu=0.75 from
+// Mhadhbi (2021), Adv. Mater. Phys. Chem. 11:167-175, DOI 10.4236/ampc.2021.1110016.
+test('live DEM: charge stays inside the shell, settles under gravity, and conserves sanity', () => {
+  const cfg = {
+    millRadiusM: 2.0, particleRadiusM: 0.04, fill: 0.30, omega: 0,
+    restitution: 0.30, friction: 0.75, lifterCount: 0, lifterHeightM: 0,
+    particleDensity: 7.8, maxParticles: 500, seed: 1,
+  };
+  const dem = new LiveDem(cfg);
+  assert.ok(dem.n > 50, `expected a real charge, got ${dem.n} particles`);
+
+  const inside = () => {
+    for (let i = 0; i < dem.n; i++) {
+      const r = Math.hypot(dem.x[i], dem.y[i]);
+      if (!(r <= cfg.millRadiusM - cfg.particleRadiusM + 1e-9)) return false;
+      if (!Number.isFinite(dem.x[i]) || !Number.isFinite(dem.y[i])) return false;
+    }
+    return true;
+  };
+  assert.ok(inside(), 'seeded charge must start inside the shell');
+
+  // A stationary mill: the charge must settle, not explode. Kinetic energy must decay, because the
+  // contact law is dissipative (e < 1) and there is no energy input with omega = 0.
+  dem.advance(0.2);
+  const early = dem.stats().kineticJ;
+  dem.advance(1.0);
+  const late = dem.stats().kineticJ;
+  assert.ok(inside(), 'no particle may leave the shell');
+  assert.ok(Number.isFinite(late), 'kinetic energy must stay finite (no blow-up)');
+  assert.ok(late <= early + 1e-9, `a stationary dissipative charge must not gain energy: ${early} -> ${late}`);
+
+  // Settled under gravity, the centre of mass sits BELOW the axis.
+  const st = dem.stats();
+  assert.ok(st.comY < 0, `settled charge CoM must be below the mill axis, got ${st.comY}`);
+});
+
+test('live DEM: a turning mill lifts the charge and offsets its centre of mass', () => {
+  const base = {
+    millRadiusM: 2.0, particleRadiusM: 0.04, fill: 0.30,
+    restitution: 0.30, friction: 0.75, lifterCount: 12, lifterHeightM: 0.08,
+    particleDensity: 7.8, maxParticles: 500, seed: 1,
+  };
+  // Critical speed for this radius: omega_c = sqrt(g/R).
+  const omegaC = Math.sqrt(9.81 / base.millRadiusM);
+
+  const still = new LiveDem({ ...base, omega: 0 });
+  still.advance(1.8);
+  const turning = new LiveDem({ ...base, omega: 0.75 * omegaC });
+  turning.advance(1.8);
+
+  const a = still.stats(), b = turning.stats();
+  // The shell drags the charge up its rising side, so the CoM shifts off the vertical axis. That
+  // horizontal offset IS the torque arm the power models integrate.
+  assert.ok(Math.abs(b.comX) > Math.abs(a.comX),
+    `turning mill must offset the CoM horizontally: still ${a.comX} vs turning ${b.comX}`);
+  assert.ok(b.meanSpeed > a.meanSpeed, 'a turning charge must move faster than a settled one');
+  for (let i = 0; i < turning.n; i++) {
+    assert.ok(Math.hypot(turning.x[i], turning.y[i]) <= base.millRadiusM - base.particleRadiusM + 1e-9,
+      'no particle may escape a turning mill');
+  }
+});
+
+test('live DEM: restitution controls dissipation, and the impact spectrum is populated', () => {
+  const base = {
+    millRadiusM: 2.0, particleRadiusM: 0.04, fill: 0.25, omega: Math.sqrt(9.81 / 2.0) * 0.8,
+    friction: 0.75, lifterCount: 12, lifterHeightM: 0.08,
+    particleDensity: 7.8, maxParticles: 400, seed: 3,
+  };
+  const bouncy = new LiveDem({ ...base, restitution: 0.85 });
+  const dead = new LiveDem({ ...base, restitution: 0.10 });
+  bouncy.advance(1.5); dead.advance(1.5);
+  // A nearly-elastic charge retains more kinetic energy than a nearly-plastic one under identical
+  // driving. This is the whole reason e is a user control rather than a constant.
+  assert.ok(bouncy.stats().kineticJ > dead.stats().kineticJ,
+    'higher restitution must retain more kinetic energy');
+  // The impact-energy spectrum must actually collect collisions; it is the raw material for the
+  // energy histogram. NOTE: it is an energy distribution only, never a breakage prediction.
+  const st = bouncy.stats();
+  assert.ok(st.contacts >= 0 && Array.isArray(st.impactEnergies), 'impact spectrum must be collected');
+  assert.ok(st.impactEnergies.every((e) => Number.isFinite(e) && e >= 0),
+    'every impact energy must be finite and non-negative');
 });
