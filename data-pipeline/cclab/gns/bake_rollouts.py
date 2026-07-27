@@ -67,6 +67,11 @@ def _rollout(model, acc_mean, acc_std, c_history, pos0_hist, ptype, R, ball_d, f
     return np.asarray(out, dtype=np.float32)
 
 
+def _split_of(case_id: str) -> str:
+    from .gen_dem_corpus import split_of
+    return split_of(case_id)
+
+
 def bake_case_rollout(case_id: str, frames: int = ROLLOUT_FRAMES) -> dict | None:
     if not _HAS_TORCH or not (GNS_DIR / "gns.pt").exists():
         return None
@@ -83,7 +88,9 @@ def bake_case_rollout(case_id: str, frames: int = ROLLOUT_FRAMES) -> dict | None
     model, am, asd, c_history = _load_model()
     pos0 = pos[:c_history + 1]                                             # seed from the real DEM start
     pred = _rollout(model, am, asd, c_history, pos0, ptype, R, ball_d, frames)   # [frames, N, 2]
-    # position error vs the held-out DEM at the same nodes over the overlap window
+    # position error vs the DEM ground truth at the same nodes over the overlap window. Whether this is
+    # a generalization number depends ENTIRELY on the case's split, which is why it is carried through
+    # to the per-rollout record below: for a `train` case this measures memorization.
     overlap = min(frames, pos.shape[0] - (c_history + 1))
     if overlap > 0:
         gt = pos[c_history + 1: c_history + 1 + overlap]
@@ -98,7 +105,8 @@ def bake_case_rollout(case_id: str, frames: int = ROLLOUT_FRAMES) -> dict | None
     hdr = write_demframes(DEM_DIR / f"{case_id}.gns.bin", frames3d, radii, case_id=case_id, R=R, w=w,
                           length_m=float(header["lengthM"]), ball_diameter_m=ball_d,
                           dt_sim=float(header["dt_sim"]), revs=float(header.get("revsCovered", 0.0)))
-    return {"case_id": case_id, "frames": frames, "n": N, "node_err_over_R": round(err, 4), "bytes": hdr["bytes"]}
+    return {"case_id": case_id, "split": _split_of(case_id), "frames": frames, "n": N,
+            "node_err_over_R": round(err, 4), "bytes": hdr["bytes"]}
 
 
 def bake_all(frames: int = ROLLOUT_FRAMES) -> dict:
@@ -108,10 +116,24 @@ def bake_all(frames: int = ROLLOUT_FRAMES) -> dict:
         r = bake_case_rollout(m["case_id"], frames)
         if r:
             results.append(r)
-            print(f"[gns-bake] {r['case_id']}: {r['frames']} frames, node err/R {r['node_err_over_R']}", flush=True)
-    out = {"schema": "chargecascade.gns-rollouts/v1", "n": len(results), "frames": frames, "rollouts": results,
+            print(f"[gns-bake] {r['case_id']} [{r['split']}]: {r['frames']} frames, "
+                  f"node err/R {r['node_err_over_R']}", flush=True)
+    hold = [r["node_err_over_R"] for r in results if r["split"] == "holdout"]
+    train = [r["node_err_over_R"] for r in results if r["split"] == "train"]
+    summary = {
+        "holdout": {"n": len(hold),
+                    "mean_node_err_over_R": round(float(np.mean(hold)), 4) if hold else None,
+                    "max_node_err_over_R": round(float(np.max(hold)), 4) if hold else None},
+        "train": {"n": len(train),
+                  "mean_node_err_over_R": round(float(np.mean(train)), 4) if train else None,
+                  "max_node_err_over_R": round(float(np.max(train)), 4) if train else None},
+    }
+    out = {"schema": "chargecascade.gns-rollouts/v2", "n": len(results), "frames": frames,
+           "summary": summary, "rollouts": results,
            "note": "GNS rollouts replayed via the demframes/v1 schema (Mill3D mode 'gns'). node_err_over_R is the "
-                   "mean per-node position error vs the held-out DEM, normalized by mill radius (honest accuracy)."}
+                   "mean per-node position error vs the DEM, normalized by mill radius. ONLY the `holdout` rows "
+                   "describe generalization; `train` rows are cases the optimizer saw. The v1 schema labelled all "
+                   "of them 'held-out', which was false: v1 had no split and every case was trained on."}
     (GNS_DIR / "rollouts.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     return out
 

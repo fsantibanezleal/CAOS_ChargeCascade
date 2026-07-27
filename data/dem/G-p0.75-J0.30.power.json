@@ -1,0 +1,6 @@
+{
+ "schema": "chargecascade.dem-power/v1",
+ "net_power_kw": 1658.19,
+ "n_particles": 500,
+ "engine": "milldem"
+}

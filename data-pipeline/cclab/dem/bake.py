@@ -146,8 +146,28 @@ def write_demframes(path: Path, frames: np.ndarray, radii: np.ndarray, *, case_i
 
 
 def _outline(frames: np.ndarray, R: float, nr: int = 24, nth: int = 72) -> dict:
-    """Time-averaged (r/R, theta) occupancy of the charge + toe/shoulder angles. theta is measured CCW from +x;
-    the mill turns CCW (omega>0), so the charge lifts on the +x/-y side and sheds toward the toe."""
+    """Time-averaged (r/R, theta) occupancy of the charge + toe/shoulder angles.
+
+    Two things were wrong before and are fixed here.
+
+    1. **Branch-cut sensitivity.** The edges were plain 5th/95th percentiles of `atan2` output. That
+       array is circular: a charge arc that crosses the +/-180 cut lands at both ends of the sorted
+       array, so the percentiles collapse toward +/-180 and report an arc that does not exist. The
+       edges are now taken after unwrapping every angle around the occupancy-weighted circular mean,
+       which is cut-free wherever the charge is contiguous (it always is for a tumbling charge).
+
+    2. **Frame mismatch with the analytic engine.** This function measures theta CCW from +x, while
+       `frontend/src/mill/charge.ts` reports `shoulderDeg` and `toeDeg` as degrees FROM VERTICAL
+       (shoulder from the upward vertical, toe from the downward vertical, both positive magnitudes).
+       Reading one against the other made the DEM numbers look inverted versus the analytic
+       convention. Both conventions are now emitted explicitly: `*_theta_deg` in the polar frame the
+       occupancy overlay draws in, and `*_deg` in the engine's from-vertical convention so the DEM
+       and analytic readouts are directly comparable.
+
+    The mill turns CCW (omega > 0), so the wall carries charge UP the +x side: the charge bed runs
+    from the toe (trailing, lower-left) counter-clockwise through the bottom to the shoulder
+    (leading, upper-right). Leading edge = max unwrapped angle, trailing edge = min.
+    """
     xs = frames[:, :, 0].ravel()
     ys = frames[:, :, 1].ravel()
     r = np.hypot(xs, ys) / R
@@ -158,16 +178,33 @@ def _outline(frames: np.ndarray, R: float, nr: int = 24, nth: int = 72) -> dict:
     shell = (r >= 0.7) & (r <= 1.0)
     ang = th[shell]
     if ang.size > 50:
-        toe_deg = float(np.percentile(ang, 5))
-        shoulder_deg = float(np.percentile(ang, 95))
+        rad = np.radians(ang)
+        centre = math.degrees(math.atan2(np.sin(rad).mean(), np.cos(rad).mean()))   # circular mean
+        rel = (ang - centre + 180.0) % 360.0 - 180.0                                # unwrap to (-180, 180]
+        toe_theta = float(np.percentile(rel, 5) + centre)                           # trailing edge
+        shoulder_theta = float(np.percentile(rel, 95) + centre)                     # leading edge (CCW)
+        toe_theta = (toe_theta + 180.0) % 360.0 - 180.0
+        shoulder_theta = (shoulder_theta + 180.0) % 360.0 - 180.0
+        # engine convention: degrees from vertical, positive magnitudes.
+        # shoulder measured from the UPWARD vertical (+y, theta=+90); toe from the DOWNWARD vertical (-y, theta=-90).
+        shoulder_deg = abs((90.0 - shoulder_theta + 180.0) % 360.0 - 180.0)
+        toe_deg = abs((-90.0 - toe_theta + 180.0) % 360.0 - 180.0)
     else:
-        toe_deg = shoulder_deg = 0.0
+        toe_theta = shoulder_theta = toe_deg = shoulder_deg = 0.0
     return {
-        "schema": "chargecascade.dem-outline/v1",
+        "schema": "chargecascade.dem-outline/v2",
         "nr": nr, "nth": nth, "r_range": [0.0, 1.0], "theta_range_deg": [-180.0, 180.0],
         "occupancy": occ.astype(np.float32).round(4).tolist(),  # [nr][nth], row-major, 0..1
+        "toe_theta_deg": round(toe_theta, 2), "shoulder_theta_deg": round(shoulder_theta, 2),
         "toe_deg": round(toe_deg, 2), "shoulder_deg": round(shoulder_deg, 2),
-        "note": "theta CCW from +x; occupancy time-averaged over the captured steady-state window.",
+        "angle_convention": {
+            "theta_deg": "CCW from +x, in (-180, 180]; the frame the occupancy grid is binned in",
+            "deg": "degrees from vertical, matching frontend/src/mill/charge.ts: shoulder from the "
+                   "upward vertical, toe from the downward vertical, both positive",
+            "edges": "circular-mean unwrap then 5th/95th percentile of the outer shell (r/R 0.7..1.0); "
+                     "leading edge (CCW) = shoulder, trailing = toe",
+        },
+        "note": "occupancy time-averaged over the captured steady-state window.",
     }
 
 

@@ -1,11 +1,26 @@
 {
- "schema": "chargecascade.gns-corpus/v1",
- "n_rollouts": 9,
+ "schema": "chargecascade.gns-corpus/v2",
+ "n_rollouts": 44,
  "dim": 2,
  "n_train_particles": 800,
+ "split": {
+  "rule": "holdout = the entire phiC=0.85 grid row (interpolation in speed, bracketed by trained rows) plus the canonical case(s) ['S-CATARACT'] (transfer to a different mill geometry and charge grading)",
+  "n_train": 38,
+  "n_holdout": 6,
+  "holdout_cases": [
+   "S-CATARACT",
+   "G-p0.85-J0.15",
+   "G-p0.85-J0.22",
+   "G-p0.85-J0.30",
+   "G-p0.85-J0.38",
+   "G-p0.85-J0.45"
+  ],
+  "normalization_fitted_on": "train"
+ },
  "rollouts": [
   {
    "case_id": "K-BALL",
+   "split": "train",
    "phi_c": 0.75,
    "fill": 0.35,
    "radius_m": 2.0,
@@ -16,6 +31,7 @@
   },
   {
    "case_id": "K-SAG",
+   "split": "train",
    "phi_c": 0.78,
    "fill": 0.28,
    "radius_m": 5.0,
@@ -26,6 +42,7 @@
   },
   {
    "case_id": "K-ROD",
+   "split": "train",
    "phi_c": 0.62,
    "fill": 0.38,
    "radius_m": 1.75,
@@ -36,6 +53,7 @@
   },
   {
    "case_id": "S-CASCADE",
+   "split": "train",
    "phi_c": 0.55,
    "fill": 0.35,
    "radius_m": 2.0,
@@ -46,6 +64,7 @@
   },
   {
    "case_id": "S-CATARACT",
+   "split": "holdout",
    "phi_c": 0.78,
    "fill": 0.35,
    "radius_m": 2.0,
@@ -56,6 +75,7 @@
   },
   {
    "case_id": "S-CENTRIFUGE",
+   "split": "train",
    "phi_c": 1.02,
    "fill": 0.35,
    "radius_m": 2.0,
@@ -66,6 +86,7 @@
   },
   {
    "case_id": "D-LOWFILL",
+   "split": "train",
    "phi_c": 0.75,
    "fill": 0.2,
    "radius_m": 2.0,
@@ -76,6 +97,7 @@
   },
   {
    "case_id": "D-HIGHFILL",
+   "split": "train",
    "phi_c": 0.75,
    "fill": 0.42,
    "radius_m": 2.0,
@@ -86,6 +108,7 @@
   },
   {
    "case_id": "C-CRITICAL",
+   "split": "train",
    "phi_c": 1.0,
    "fill": 0.35,
    "radius_m": 2.0,
@@ -93,27 +116,412 @@
    "fps": 25,
    "n": 800,
    "T": 180
+  },
+  {
+   "case_id": "G-p0.45-J0.15",
+   "split": "train",
+   "phi_c": 0.45,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.45-J0.22",
+   "split": "train",
+   "phi_c": 0.45,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.45-J0.30",
+   "split": "train",
+   "phi_c": 0.45,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.45-J0.38",
+   "split": "train",
+   "phi_c": 0.45,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.45-J0.45",
+   "split": "train",
+   "phi_c": 0.45,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.55-J0.15",
+   "split": "train",
+   "phi_c": 0.55,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.55-J0.22",
+   "split": "train",
+   "phi_c": 0.55,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.55-J0.30",
+   "split": "train",
+   "phi_c": 0.55,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.55-J0.38",
+   "split": "train",
+   "phi_c": 0.55,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.55-J0.45",
+   "split": "train",
+   "phi_c": 0.55,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.65-J0.15",
+   "split": "train",
+   "phi_c": 0.65,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.65-J0.22",
+   "split": "train",
+   "phi_c": 0.65,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.65-J0.30",
+   "split": "train",
+   "phi_c": 0.65,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.65-J0.38",
+   "split": "train",
+   "phi_c": 0.65,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.65-J0.45",
+   "split": "train",
+   "phi_c": 0.65,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.75-J0.15",
+   "split": "train",
+   "phi_c": 0.75,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.75-J0.22",
+   "split": "train",
+   "phi_c": 0.75,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.75-J0.30",
+   "split": "train",
+   "phi_c": 0.75,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.75-J0.38",
+   "split": "train",
+   "phi_c": 0.75,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.75-J0.45",
+   "split": "train",
+   "phi_c": 0.75,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.85-J0.15",
+   "split": "holdout",
+   "phi_c": 0.85,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.85-J0.22",
+   "split": "holdout",
+   "phi_c": 0.85,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.85-J0.30",
+   "split": "holdout",
+   "phi_c": 0.85,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.85-J0.38",
+   "split": "holdout",
+   "phi_c": 0.85,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.85-J0.45",
+   "split": "holdout",
+   "phi_c": 0.85,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.95-J0.15",
+   "split": "train",
+   "phi_c": 0.95,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.95-J0.22",
+   "split": "train",
+   "phi_c": 0.95,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.95-J0.30",
+   "split": "train",
+   "phi_c": 0.95,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.95-J0.38",
+   "split": "train",
+   "phi_c": 0.95,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p0.95-J0.45",
+   "split": "train",
+   "phi_c": 0.95,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p1.05-J0.15",
+   "split": "train",
+   "phi_c": 1.05,
+   "fill": 0.15,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 251,
+   "T": 180
+  },
+  {
+   "case_id": "G-p1.05-J0.22",
+   "split": "train",
+   "phi_c": 1.05,
+   "fill": 0.22,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 367,
+   "T": 180
+  },
+  {
+   "case_id": "G-p1.05-J0.30",
+   "split": "train",
+   "phi_c": 1.05,
+   "fill": 0.3,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 500,
+   "T": 180
+  },
+  {
+   "case_id": "G-p1.05-J0.38",
+   "split": "train",
+   "phi_c": 1.05,
+   "fill": 0.38,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
+  },
+  {
+   "case_id": "G-p1.05-J0.45",
+   "split": "train",
+   "phi_c": 1.05,
+   "fill": 0.45,
+   "radius_m": 2.0,
+   "ball_diameter_m": 0.24,
+   "fps": 25,
+   "n": 588,
+   "T": 180
   }
  ],
  "normalization": {
   "vel_mean": [
-   0.0002424558624625206,
-   -0.0001272716763196513
+   0.0006958354497328401,
+   -0.0012619761982932687
   ],
   "vel_std": [
-   0.020872129127383232,
-   0.028329836204648018
+   0.015243331901729107,
+   0.019648876041173935
   ],
   "acc_mean": [
-   -3.993291102233343e-06,
-   1.5043378880363889e-05
+   -2.0338297872513067e-06,
+   2.4594535716460086e-05
   ],
   "acc_std": [
-   0.024528181180357933,
-   0.025744549930095673
+   0.016421014443039894,
+   0.01733732968568802
   ],
-  "n_vel": 1288800,
-  "n_acc": 1281600
+  "n_vel": 3609356,
+  "n_acc": 3589192
  },
  "note": "2D (x-y cross-section) charge-motion trajectories from the baked milldem DEM, for a GNS (Sanchez-Gonzalez et al. 2020). Positions in metres; velocity = frame-to-frame displacement."
 }

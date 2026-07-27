@@ -87,7 +87,13 @@ export interface DemPower {
 }
 export interface DemOutline {
   schema: string; nr: number; nth: number; r_range: [number, number]; theta_range_deg: [number, number];
-  occupancy: number[][]; toe_deg: number; shoulder_deg: number; note: string;
+  occupancy: number[][];
+  /** degrees from vertical, matching the analytic engine (shoulder from up, toe from down). */
+  toe_deg: number; shoulder_deg: number;
+  /** polar theta, CCW from +x, the frame the occupancy grid is binned in. outline/v2 only. */
+  toe_theta_deg?: number; shoulder_theta_deg?: number;
+  angle_convention?: Record<string, string>;
+  note: string;
 }
 export interface DemPowerGrid {
   schema: string; ref_mill: { diameter_m: number; length_m: number; ball_diameter_m: number; charge_density_bulk: number };
