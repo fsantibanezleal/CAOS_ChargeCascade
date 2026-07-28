@@ -307,10 +307,19 @@ html, body { overflow-x: hidden; }
 
 /* ONE row of tabs, at the top. A tab that combines several views carries a caret and opens its list on
    press. Two permanent rows of navigation chrome is the thing this replaces. */
+/* THE ROW MUST NOT CLIP.
+   `overflow-x: auto` was the real reason the dropdown was unusable, and it defeated two separate
+   attempts to fix the pointer path. In CSS a box cannot have `overflow-y: visible` while the other axis
+   is anything but visible: the declared `overflow-y: visible` silently computes to `auto`, so the row
+   clipped its own dropdown vertically. The menu was being cut off at the row's bottom edge, which is
+   exactly where the pointer walk measured it vanishing (+27px), not at the button edge (+19px) where a
+   gap problem would have shown.
+   With grouping there are only four or five top-level tabs, so the row does not need to scroll. If a
+   product ever has enough groups to overflow, the menu must be positioned fixed rather than the row
+   being allowed to clip. */
 .cc-tabrow { display: flex; flex-wrap: nowrap; gap: 0.3rem; align-items: center; min-width: 0;
-  max-width: 100%; overflow-x: auto; overflow-y: visible; flex: 0 0 auto;
-  border-bottom: 1px solid var(--color-border); padding-bottom: 0.45rem; margin-bottom: 0.8rem;
-  scrollbar-width: none; }
+  max-width: 100%; overflow: visible; flex: 0 0 auto;
+  border-bottom: 1px solid var(--color-border); padding-bottom: 0.45rem; margin-bottom: 0.8rem; }
 .cc-tabrow::-webkit-scrollbar { display: none; }
 .cc-tabwrap { position: relative; flex: 0 0 auto; }
 .cc-tab { white-space: nowrap; cursor: pointer; font-size: 0.88rem; font-weight: 600;
@@ -319,10 +328,22 @@ html, body { overflow-x: hidden; }
 .cc-tab:hover { color: var(--color-accent); }
 .cc-tab.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
 .cc-caret { margin-left: 0.4rem; font-size: 0.62rem; opacity: 0.75; }
-.cc-tabmenu { position: absolute; top: calc(100% + 0.35rem); left: 0; z-index: 60; min-width: 180px;
-  display: flex; flex-direction: column; gap: 0.15rem; padding: 0.3rem;
-  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 9px;
+/* NO DEAD GAP, AT ALL, between the tab and its menu.
+   Two attempts failed here and both failed the same way. `top: calc(100% + 0.35rem)` left ~6px of
+   nothing under the tab; replacing that with `margin-top` moved the same dead strip rather than removing
+   it. Either way a real pointer crosses a band that belongs to neither the button nor the menu, so
+   pointerleave fires on the wrapper and the menu closes before the cursor arrives. Measured by walking
+   the cursor down a pixel at a time: closed at +19px, then at +27px. A synthetic .click() teleports onto
+   the item and never crosses the band, which is why the automated test passed while the control could
+   not be used by hand.
+   The menu box now begins EXACTLY at the button's bottom edge (top:100%, no margin) and carries its
+   visual breathing room as internal padding, so the pointer never leaves the hover target. */
+.cc-tabmenu { position: absolute; top: 100%; left: 0; z-index: 60; min-width: 190px;
+  display: flex; flex-direction: column; gap: 0.15rem;
+  padding: 0.5rem 0.3rem 0.3rem; margin: 0;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0 9px 9px 9px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.cc-tabwrap { position: relative; flex: 0 0 auto; }
 .cc-tabmenu button { text-align: left; white-space: nowrap; cursor: pointer; font-size: 0.82rem;
   padding: 0.34rem 0.55rem; border-radius: 6px; border: none; background: transparent; color: var(--color-fg-subtle); }
 .cc-tabmenu button:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); color: var(--color-accent); }

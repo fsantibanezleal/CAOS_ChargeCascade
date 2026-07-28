@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, validateMill, MILL_TYPES, type MillInput, type MillType, type Operating, type Regime } from '../mill/index.ts';
@@ -47,6 +47,7 @@ export default function Tool() {
   const [caseId, setCaseId] = useState('K-BALL');
   const [activeTab, setActiveTab] = useState('charge3d');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [railSection, setRailSection] = useState<'case' | 'mill'>('case');
   const [realMillId, setRealMillId] = useState(REAL_MILLS[0].id);
   const realMill = useMemo(() => REAL_MILLS.find((m) => m.id === realMillId)!, [realMillId]);
@@ -583,8 +584,13 @@ export default function Tool() {
             const multi = mine.length > 1;
             return (
               <div key={g.id} className="cc-tabwrap"
-                   onMouseEnter={() => { if (multi) setOpenMenu(g.id); }}
-                   onMouseLeave={() => setOpenMenu((m) => (m === g.id ? null : m))}>
+                   onPointerEnter={() => { if (multi) { if (closeTimer.current) clearTimeout(closeTimer.current); setOpenMenu(g.id); } }}
+                   onPointerLeave={() => {
+                     // A short grace period, so brushing past an edge does not dismiss the menu the
+                     // instant the pointer wobbles. Without it the control is unusable by hand.
+                     if (closeTimer.current) clearTimeout(closeTimer.current);
+                     closeTimer.current = setTimeout(() => setOpenMenu((m) => (m === g.id ? null : m)), 240);
+                   }}>
                 <button role="tab" aria-selected={activeHere}
                         aria-haspopup={multi ? 'menu' : undefined}
                         aria-expanded={multi ? openMenu === g.id : undefined}
