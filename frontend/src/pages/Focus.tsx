@@ -10,7 +10,7 @@
 // visualization with a plain-language line; progressive disclosure via a basic/advanced toggle inside the
 // view instead of across tabs; every exposed control recomputes live; deep-linkable per scenario.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, recommendPhiCForRegime, type Operating, type Regime } from '../mill/index.ts';
@@ -165,23 +165,35 @@ function WearProfile({ wear, es }: { wear: Float64Array | null; es: boolean }) {
   );
 }
 
-export default function Focus() {
-  const { caseId } = useParams();
-  const lang = useShellLang();
-  const es = lang === 'es';
-  const theCase = useMemo(() => caseById(caseId ?? CASES[0].id), [caseId]);
-  const [op, setOp] = useState<Operating>(() => ({
+
+/** The operating point for a case, with the optional composition and liner fields filled in so the focus
+ *  rail can move them. Spreads the case FIRST, so a case that defines them wins over the defaults. */
+function seedOp(theCase: { op: Operating }): Operating {
+  return {
     ...theCase.op,
-    // Seed the composition and liner fields so the focus view can move them. They are OPTIONAL on
-    // Operating, so a case that does not define them keeps the legacy single-density behaviour until a
-    // control here is touched. Spread the case FIRST so a case that DOES define them wins.
     ballFill: theCase.op.ballFill ?? Math.min(0.15, theCase.op.fill),
     ballDensity: theCase.op.ballDensity ?? 7.8,
     slurryDensity: theCase.op.slurryDensity ?? 2.7,
     lifterCount: theCase.op.lifterCount ?? 16,
     lifterHeightM: theCase.op.lifterHeightM ?? 0.7 * (theCase.op.ballTopMm / 1000),
     frictionMu: theCase.op.frictionMu ?? 0,
-  }));
+    restitutionE: theCase.op.restitutionE ?? 0.30,
+  };
+}
+
+export default function Focus() {
+  const { caseId } = useParams();
+  const lang = useShellLang();
+  const es = lang === 'es';
+  const theCase = useMemo(() => caseById(caseId ?? CASES[0].id), [caseId]);
+  const [op, setOp] = useState<Operating>(() => seedOp(theCase));
+
+  // A scenario chip changes the ROUTE, which changes `theCase`. Without this, `op` keeps the state it was
+  // seeded with on mount and the simulation never changes: the chips move the URL and the title while the
+  // mill stays exactly as it was. That is precisely what a scenario selector must not do, and it made
+  // every chip a no-op. Re-seed whenever the selected case changes.
+  useEffect(() => { setOp(seedOp(theCase)); }, [theCase.id]);
+
   const [advanced, setAdvanced] = useState(false);
   // Lane switch. `analytic` is the Davis/Vermeulen kinematic view plus the baked DEM replay;
   // `live` is the in-browser 2D DEM, where a parameter change is answered by the physics rather
