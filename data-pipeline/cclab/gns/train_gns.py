@@ -38,8 +38,9 @@ except Exception:  # pragma: no cover
 from .gen_dem_corpus import CORPUS_DIR, GNS_DIR
 
 C_HISTORY = 5          # velocity-history length fed to the encoder (Sanchez-Gonzalez use ~5)
-HIDDEN = 64            # MLP width
-N_BLOCKS = 8           # message-passing blocks (~10 in the reference; 8 for a light didactic model)
+HIDDEN = 128           # MLP width. Raised 64 -> 128 for v3: the v2 model UNDERFIT (held-out 0.3747 was
+                       # indistinguishable from train 0.3752, so capacity, not data, was the binding limit).
+N_BLOCKS = 10          # message-passing blocks, now matching the Sanchez-Gonzalez reference depth
 NOISE_STD = 3e-4       # random-walk velocity noise injected during training
 DEFAULT_EPOCHS = 40
 
@@ -64,7 +65,13 @@ if _HAS_TORCH:
             super().__init__()
             self.c_history = c_history
             self.type_embed = nn.Embedding(n_types, 8)
-            node_in = 2 * c_history + 8 + 2      # velocity history (2*C) + type embed (8) + wall features (2)
+            # v3 adds the OPERATING POINT to the node state. Until now the model received velocity
+            # history, a type embedding and wall distance, and NOTHING about the mill's condition, so it
+            # could not distinguish a slow mill from a fast one or a light charge from a heavy one except
+            # by inferring it from a 5-frame velocity window. The corpus conditions every rollout on
+            # (phiC, J); the model simply never saw them. That is a feature gap, not a data shortage, and
+            # it is the first thing the v2 null result pointed at.
+            node_in = 2 * c_history + 8 + 2 + 2  # vel history (2C) + type (8) + wall (2) + (phiC, J)
             edge_in = 2 + 1                      # relative position (2) + distance (1)
             self.node_enc = _mlp([node_in, hidden, hidden])
             self.edge_enc = _mlp([edge_in, hidden, hidden])
@@ -114,7 +121,8 @@ class Corpus:
                 continue
             z = np.load(corpus_dir / f"{m['case_id']}.npz")
             self.rollouts.append({"pos": z["positions"], "type": z["particle_type"],
-                                  "radius_m": m["radius_m"], "ball_d": m["ball_diameter_m"]})
+                                  "radius_m": m["radius_m"], "ball_d": m["ball_diameter_m"],
+                                  "phi_c": float(m.get("phi_c", 0.0)), "fill": float(m.get("fill", 0.0))})
             self.case_ids.append(m["case_id"])
         if not self.rollouts:
             raise SystemExit(f"corpus has no rollouts for split={split!r}; rebuild with `python -m cclab.gns.gen_dem_corpus`")
@@ -166,7 +174,10 @@ def _eval_split(model, train_corpus, acc_mean, acc_std, device, seed: int, split
         vhist, wall, _ = _node_features(pos_hist, roll["type"], R)
         cur = torch.tensor(pos_hist[-1], device=device)
         tembed = model.type_embed(torch.tensor(roll["type"], device=device))
-        node_feat = torch.cat([torch.tensor(vhist, device=device), tembed, torch.tensor(wall, device=device)], dim=-1)
+        op = torch.tensor([[roll["phi_c"], roll["fill"]]], device=device, dtype=torch.float32
+                          ).expand(cur.shape[0], 2)
+        node_feat = torch.cat([torch.tensor(vhist, device=device), tembed,
+                               torch.tensor(wall, device=device), op], dim=-1)
         src, dst = _radius_graph(cur, corpus.connectivity_radius(roll))
         rel = cur[src] - cur[dst]
         edge_feat = torch.cat([rel, rel.norm(dim=-1, keepdim=True)], dim=-1)
@@ -186,6 +197,9 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
     corpus = Corpus()
     model = MillGNS().to(device)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
+    # v2 trained at a flat LR and its epoch loss oscillated between 0.42 and 0.66 for the last 60
+    # epochs, never settling. Cosine decay lets it actually converge instead of bouncing.
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, epochs))
     acc_std = torch.tensor(corpus.acc_std, device=device)
     acc_mean = torch.tensor(corpus.acc_mean, device=device)
     rng = np.random.default_rng(seed)
@@ -207,7 +221,10 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
             vhist, wall, _ = _node_features(pos_hist, roll["type"], R)
             cur = torch.tensor(pos_hist[-1], device=device)
             tembed = model.type_embed(torch.tensor(roll["type"], device=device))
-            node_feat = torch.cat([torch.tensor(vhist, device=device), tembed, torch.tensor(wall, device=device)], dim=-1)
+            op = torch.tensor([[roll["phi_c"], roll["fill"]]], device=device, dtype=torch.float32
+                              ).expand(cur.shape[0], 2)
+            node_feat = torch.cat([torch.tensor(vhist, device=device), tembed,
+                                   torch.tensor(wall, device=device), op], dim=-1)
             src, dst = _radius_graph(cur, rc)
             rel = cur[src] - cur[dst]
             edge_feat = torch.cat([rel, rel.norm(dim=-1, keepdim=True)], dim=-1)
@@ -220,7 +237,8 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
             tot += float(loss)
         mean = tot / steps_per_epoch
         hist.append(mean)
-        print(f"[gns-train] epoch {ep + 1}/{epochs}  loss {mean:.5f}", flush=True)
+        sched.step()
+        print(f"[gns-train] epoch {ep + 1}/{epochs}  loss {mean:.5f}  lr {sched.get_last_lr()[0]:.2e}", flush=True)
 
     # One-step accuracy on rollouts the optimizer never saw. Reported next to the training loss so the
     # two can never be confused again; a normalized-acceleration MSE near 1.0 means the model explains
@@ -233,7 +251,7 @@ def train(epochs: int = DEFAULT_EPOCHS, steps_per_epoch: int = 400, lr: float = 
     torch.save({"state_dict": model.state_dict(), "acc_mean": corpus.acc_mean.tolist(),
                 "acc_std": corpus.acc_std.tolist(), "c_history": C_HISTORY, "n_blocks": N_BLOCKS,
                 "hidden": HIDDEN}, GNS_DIR / "gns.pt")
-    metrics = {"schema": "chargecascade.gns-metrics/v2", "device": device, "epochs": epochs,
+    metrics = {"schema": "chargecascade.gns-metrics/v3", "device": device, "epochs": epochs,
                "final_loss": hist[-1], "loss_history": [round(h, 5) for h in hist],
                "one_step_normalized_accel_mse": {"train": round(train_mse, 5), "holdout": round(holdout_mse, 5)},
                "split": corpus.manifest.get("split"),
@@ -259,7 +277,8 @@ def smoke() -> None:
     vhist = torch.randn(N, 2 * C_HISTORY)
     wall = torch.rand(N, 2)
     tembed = model.type_embed(torch.zeros(N, dtype=torch.long))
-    node_feat = torch.cat([vhist, tembed, wall], dim=-1)
+    op = torch.tensor([[0.75, 0.30]]).expand(N, 2)      # (phiC, J), the v3 conditioning
+    node_feat = torch.cat([vhist, tembed, wall, op], dim=-1)
     src, dst = _radius_graph(pos, 0.4)
     rel = pos[src] - pos[dst]
     edge_feat = torch.cat([rel, rel.norm(dim=-1, keepdim=True)], dim=-1)
