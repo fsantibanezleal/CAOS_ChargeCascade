@@ -3,6 +3,22 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.29.002], 2026-07-28
+
+### Fixed
+- **The page was WIDER than the viewport and had to be dragged sideways.** Making the tab bar a single
+  `nowrap` row let its intrinsic width (all 12 tabs) size its grid column, because a flex or grid item
+  defaults to `min-width: auto` and refuses to shrink below its content. `overflow-x: auto` on the row
+  does nothing until its ancestors are allowed to shrink. Measured: document scrollWidth **1817 on a
+  1600 viewport**, so reaching the right edge required a horizontal drag. Every ancestor of the
+  scrollable row now carries `min-width: 0` and is capped at 100%.
+- **The page was TALLER than the viewport,** so the footer needed a scroll to reach. The App is a
+  fixed-size surface: header, body and footer fit exactly, and scrolling happens inside the panel that
+  owns the content, not on the document.
+  Verified at 1280x800, 1600x900 and 2560x1440: scrollWidth equals viewport width, scrollHeight equals
+  viewport height, body at 100% width, at every size.
+- Both fixes also land in the shared shell, so no other product inherits the overflow.
+
 ## [0.29.001], 2026-07-28
 
 ### Fixed

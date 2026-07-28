@@ -230,3 +230,26 @@
   scroll-behavior: smooth; }
 .tablist::-webkit-scrollbar { display: none; }
 .tablist .tab, .tablist button { flex: 0 0 auto; white-space: nowrap; }
+
+/* ---------------------------------------------------------------------------------------------
+   CONTAINED LAYOUT. The App must be exactly the viewport: full width, never wider, and no vertical
+   scroll to reach the footer.
+
+   What was broken: making the tab bar `nowrap` let its INTRINSIC width (all 12-18 tabs in one row)
+   size its grid column, because a flex/grid item defaults to `min-width: auto` and refuses to shrink
+   below its content. Measured: document scrollWidth 1817 on a 1600 viewport, so the page had to be
+   dragged sideways to reach its own right edge. `overflow-x: auto` on the tablist does nothing until
+   the ancestors are allowed to shrink.
+
+   The rule: every ancestor of a scrollable row needs `min-width: 0`, and the row is capped at 100%.
+   --------------------------------------------------------------------------------------------- */
+.cc-layout { max-width: 100%; overflow-x: hidden; }
+.cc-main, .cc-main .tabs, .cc-main .tabpanel { min-width: 0; max-width: 100%; }
+.cc-main .tablist { min-width: 0; max-width: 100%; width: 100%; }
+.cc-vizstack, .cc-main .tabpanel > * { min-width: 0; max-width: 100%; }
+
+/* The App page is a FIXED-SIZE surface: header + body + footer fit the viewport exactly, and the
+   scrolling happens INSIDE the panel that owns the content, not on the document. Chasing a footer that
+   sits 25px below the fold is not a layout, it is an accident. */
+html, body { overflow-x: hidden; }
+.page-body.cc-layout { height: calc(100dvh - var(--cc-chrome, 150px)); max-height: calc(100dvh - var(--cc-chrome, 150px)); }
