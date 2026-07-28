@@ -253,3 +253,52 @@
    sits 25px below the fold is not a layout, it is an accident. */
 html, body { overflow-x: hidden; }
 .page-body.cc-layout { height: calc(100dvh - var(--cc-chrome, 150px)); max-height: calc(100dvh - var(--cc-chrome, 150px)); }
+
+/* One-row case selector. Replaces four labelled chip blocks that consumed about a dozen rows of the
+   rail for eleven cases, which is what made the rail scroll before the user touched anything. */
+.cc-select { width: 100%; padding: 0.45rem 0.55rem; border-radius: 8px; font-size: 0.84rem;
+  background: var(--color-bg); color: var(--color-fg); border: 1px solid var(--color-border); }
+.cc-select:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+/* Two-level view navigation: five groups on top, the sub-tabs of the current group below. */
+.cc-groupbar { display: flex; gap: 0.35rem; flex-wrap: nowrap; overflow-x: auto; min-width: 0;
+  max-width: 100%; margin-bottom: 0.5rem; scrollbar-width: none; }
+.cc-groupbar::-webkit-scrollbar { display: none; }
+.cc-group { flex: 0 0 auto; white-space: nowrap; cursor: pointer; font-size: 0.86rem; font-weight: 650;
+  padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid var(--color-border);
+  background: transparent; color: var(--color-fg-subtle); }
+.cc-group:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.cc-group.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
+
+/* The rail scrolls only if it genuinely must, and never leaves a control half visible. */
+.cc-side { scrollbar-width: thin; }
+
+/* One-row case selector. Replaces four labelled chip blocks that consumed about a dozen rows of the
+   rail for eleven cases, which is what made the rail scroll before the user touched anything. */
+.cc-select { width: 100%; padding: 0.45rem 0.55rem; border-radius: 8px; font-size: 0.84rem;
+  background: var(--color-bg); color: var(--color-fg); border: 1px solid var(--color-border); }
+.cc-select:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+/* Two-level view navigation: five groups on top, the sub-tabs of the current group below. */
+.cc-groupbar { display: flex; gap: 0.35rem; flex-wrap: nowrap; overflow-x: auto; min-width: 0;
+  max-width: 100%; margin-bottom: 0.5rem; scrollbar-width: none; }
+.cc-groupbar::-webkit-scrollbar { display: none; }
+.cc-group { flex: 0 0 auto; white-space: nowrap; cursor: pointer; font-size: 0.86rem; font-weight: 650;
+  padding: 0.4rem 0.85rem; border-radius: 8px; border: 1px solid var(--color-border);
+  background: transparent; color: var(--color-fg-subtle); }
+.cc-group:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.cc-group.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
+
+/* The rail scrolls only if it genuinely must, and never leaves a control half visible. */
+.cc-side { scrollbar-width: thin; }
+
+/* SIZED CONTAINERS, NOT SCROLLBARS. The rail is a fixed-height container; its content is split into
+   sections and one shows at a time, so every control is reachable without scrolling. Measured before:
+   rail 566px, content 801px, so 235px of controls were below the fold on first paint. */
+.cc-railnav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
+.cc-railnav button { cursor: pointer; font-size: 0.78rem; font-weight: 650; padding: 0.35rem 0.4rem;
+  border-radius: 8px; border: 1px solid var(--color-border); background: transparent; color: var(--color-fg-subtle); }
+.cc-railnav button:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.cc-railnav button.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
+.cc-railsec { display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; }
+.cc-railsec.hide { display: none; }

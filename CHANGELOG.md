@@ -3,6 +3,30 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.30.000], 2026-07-28
+
+### Changed (layout and navigation, per ADR-0071)
+- **The case selector is one grouped dropdown**, not four labelled blocks of chips. Eleven cases across
+  four categories cost about twelve vertical rows of the rail; a `select` with `optgroup` says the same
+  thing in one row and keeps the categories.
+- **Thirteen flat tabs became five groups** (Charge motion, Power, Learned, Validation, Custom mill) with
+  the sub-tabs of the current group shown beneath. Thirteen siblings is a list, not an architecture: it
+  forces the user to read every label to find one view.
+- **The rail shows one section at a time** (Case, Mill). It was 566px tall with 801px of content, so 235px
+  of controls sat below the fold on first paint and the user had to scroll a navigation panel before
+  touching anything. A container that cannot show its own controls is a sizing failure; the fix is to size
+  the container and split the content, not to add a scrollbar.
+
+### Verified (measured at 1280x800 and 1600x900, both themes)
+- rail overflow **235px -> 0**; tab rows **1**; document scrollWidth == viewport width; scrollHeight ==
+  viewport height; case selector is a select with 4 optgroups.
+- Harness: `tools/visual-verify/_ux.mjs` and `_fit.mjs` in CAOS_MANAGE.
+
+### Note
+These rules are general, not specific to this product. They are written up as **ADR-0071 (sized
+containers, no incidental scrolling, bounded navigation depth)** and the containment, full-width
+workbench class and single-row tab bar are in the shared shell, so every product inherits them.
+
 ## [0.29.002], 2026-07-28
 
 ### Fixed
