@@ -3,6 +3,26 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.31.000], 2026-07-28
+
+### Fixed (the focus view appeared to show the same mill whatever you selected)
+- **The camera kept the previous mill's point of view when the case changed.** The POV was persisted
+  unconditionally (`if (viewRef.current) restore; else fit`), so switching from K-SAG (large diameter,
+  short) to K-ROD (long, narrow) framed the rod mill with the SAG's camera: small, off-centre, and
+  reading exactly as "it still shows the same mill" even though the engine had switched. The POV is now
+  kept only while the mill GEOMETRY is unchanged, and refit whenever diameter, length or type changes,
+  so a manual orbit still survives a slider move.
+- **The mill occupied a fraction of the stage.** The fit margin was 1.5x the required distance, so the
+  instrument was a thumbnail inside a stage that is 80% of the viewport, which defeats the point of a
+  focus view. Now 1.12x.
+
+### Verified
+- Case switching renders genuinely different machines: K-SAG, K-ROD and K-BALL each frame their own
+  geometry, screenshot-checked.
+- The stage responds to the controls, measured by hashing the rendered stage: **3 distinct renders**
+  across phiC 0.40 / 0.75 / 1.05 (530 / 993 / 1390 kW) and **2 distinct renders** across fill 0.10 / 0.45
+  (43 t / 126 t). The picture was always parameter-driven; the camera was hiding it.
+
 ## [0.30.002], 2026-07-28
 
 ### Fixed
