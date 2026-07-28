@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, validateMill, MILL_TYPES, type MillInput, type MillType, type Operating, type Regime } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
@@ -457,6 +458,12 @@ export default function Tool() {
   return (
     <div className="page-body cc-layout">
       <aside className="cc-side">
+        <Link className="cc-focus-enter" to={`/focus/${caseId}`}>
+          <span className="cc-focus-enter-t">{es ? 'Modo enfoque' : 'Focus mode'}</span>
+          <span className="cc-focus-enter-d">
+            {es ? 'Abrir este escenario a pantalla completa, con DEM en vivo' : 'Open this scenario full screen, with live DEM'}
+          </span>
+        </Link>
         <div className="cc-card">
           <div className="cc-card-t">{es ? 'Fuente' : 'Source'}</div>
           <div className="cc-chips">

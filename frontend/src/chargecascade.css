@@ -202,3 +202,31 @@
 .cc-focus-lane button.on { color: var(--color-accent); border-color: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 12%, transparent); font-weight: 600; }
 .cc-focus-presets.cc-focus-three { grid-template-columns: 1fr 1fr 1fr; }
+
+/* ADR-0070 entry control: the App's way into the scenario focus view. Without it the route existed but
+   was unreachable except by typing a URL, which is not "entered from the App by an expand control". */
+.cc-focus-enter { display: block; text-decoration: none; border: 1px solid var(--color-accent);
+  border-radius: 10px; padding: 0.55rem 0.75rem; margin-bottom: 0.2rem;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.cc-focus-enter:hover { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.cc-focus-enter-t { display: block; font-size: 0.86rem; font-weight: 700; color: var(--color-accent); }
+.cc-focus-enter-d { display: block; font-size: 0.72rem; color: var(--color-fg-subtle); margin-top: 0.15rem; line-height: 1.4; }
+
+/* FULL-WIDTH WORKBENCH.
+   The shared shell caps every page at --maxw (1200px), which is the right measure for PROSE and the
+   wrong one for an instrument: on a 1600px display it discards 400px, and on a 2560px display it
+   discards more than half the screen. That single rule is why the App visualization reads as a
+   thumbnail across the whole product line. Prose pages keep the reading width; the App does not.
+   Applied locally here so it ships now; the same fix is in the shell for every other app. */
+.page-body.cc-layout { max-width: none; padding-inline: 1.25rem; }
+
+/* SINGLE-LINE TAB BAR.
+   `flex-wrap: wrap` lets a 14-to-18 tab bar spill onto a second and third row, and every extra row is
+   vertical space taken from the instrument below it, permanently, on every render. A tab bar is
+   navigation chrome: it gets ONE row and scrolls horizontally when it does not fit.
+   Scrollbar is hidden but the row stays scrollable by wheel, trackpad, drag and keyboard. */
+.tablist { flex-wrap: nowrap !important; overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 0.4rem; margin-bottom: 0.9rem;
+  scroll-behavior: smooth; }
+.tablist::-webkit-scrollbar { display: none; }
+.tablist .tab, .tablist button { flex: 0 0 auto; white-space: nowrap; }

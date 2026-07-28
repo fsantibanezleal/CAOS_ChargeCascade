@@ -27,8 +27,16 @@
 // DOI 10.4236/ampc.2021.1110016. Both are exposed as controls because restitution spans roughly 0.05 to
 // 0.9 across the literature; see CAOS_MANAGE wip/chargecascade-analysis-mode/research-pass3-contact-2026-07-27.md.
 //
-// NOT IMPLEMENTED, deliberately: any wear model (Archard is unresearched), and any mapping from the
-// impact-energy spectrum to a breakage rate or product size (that link is Datta & Rajamani's, unread).
+// WEAR. Archard (1953), in the incremental DEM form used by the bulk-handling literature:
+//     V = W * F_n * s          wear volume at a contact  (W = Archard wear constant, Pa^-1)
+//     h = V / A                wear depth over the contact patch
+// (as stated in arXiv:2509.08637 eqs 3-4, citing Archard 1953, Hutchings 1992, Jayasundara & Zhu 2022).
+// Accumulated PER LIFTER BAR from the actual contact normal force and the actual tangential sliding
+// distance in each substep, so the profile is a consequence of the simulation rather than a decoration.
+//
+// STILL NOT IMPLEMENTED, deliberately: any mapping from the impact-energy spectrum to a breakage rate
+// or a product size. That link is Datta and Rajamani's and is unread here; a histogram alone does not
+// establish it, and asserting it would be inventing the result.
 
 export interface LiveDemConfig {
   millRadiusM: number;
@@ -41,6 +49,10 @@ export interface LiveDemConfig {
   lifterCount: number;
   lifterHeightM: number;
   particleDensity: number;  // [t/m^3]
+  /** Archard wear constant W [Pa^-1]. Steel-on-steel abrasive wear is small; the default is a
+   *  demonstration scale that makes a profile visible in seconds of simulated time rather than a
+   *  calibrated plant value, and the UI says so. */
+  wearConstant?: number;
   /** hard cap so a slider can never launch a compute bomb */
   maxParticles?: number;
   seed?: number;
@@ -64,6 +76,10 @@ export interface LiveDemStats {
   kineticJ: number;
   /** simulated time [s] */
   timeS: number;
+  /** cumulative Archard wear volume per lifter bar [m^3], index = bar number */
+  lifterWear: Float64Array;
+  /** total charge-on-shell wear volume [m^3] */
+  shellWear: number;
 }
 
 const TWO_PI = Math.PI * 2;
@@ -95,10 +111,13 @@ export class LiveDem {
   private next: Int32Array = new Int32Array(0);
   private lastImpacts: number[] = [];
   private lastContacts = 0;
+  private wear: Float64Array = new Float64Array(0);   // Archard volume per lifter bar [m^3]
+  private shellWearV = 0;
 
   constructor(cfg: LiveDemConfig) {
     const maxParticles = cfg.maxParticles ?? 2400;
-    this.cfg = { ...cfg, maxParticles, seed: cfg.seed ?? 42 } as Required<LiveDemConfig>;
+    this.cfg = { ...cfg, maxParticles, seed: cfg.seed ?? 42,
+                 wearConstant: cfg.wearConstant ?? 1e-7 } as Required<LiveDemConfig>;
     const R = cfg.millRadiusM, a = cfg.particleRadiusM;
 
     // Particle count from the areal filling, capped. A 2D cross-section fills by AREA, so
@@ -133,6 +152,7 @@ export class LiveDem {
     this.heads = new Int32Array(this.nx * this.ny);
     this.next = new Int32Array(this.n);
 
+    this.wear = new Float64Array(Math.max(1, cfg.lifterCount));
     this.seedCharge();
   }
 
@@ -200,7 +220,7 @@ export class LiveDem {
    * |s| < a. The normal points AWAY from the bar on whichever side the particle actually is, and the
    * response is damped against the bar's material velocity like any other wall.
    */
-  private lifterContact(px: number, py: number): { nx: number; ny: number; pen: number } | null {
+  private lifterContact(px: number, py: number): { nx: number; ny: number; pen: number; bar: number } | null {
     const { lifterCount: L, lifterHeightM: h, millRadiusM: R, particleRadiusM: a } = this.cfg;
     if (L <= 0 || h <= 0) return null;
     const r = Math.hypot(px, py);
@@ -216,7 +236,8 @@ export class LiveDem {
     const pen = a - Math.abs(s);
     if (pen <= 0) return null;
     const sign = s >= 0 ? 1 : -1;                     // push away from the bar, on the particle's side
-    return { nx: sign * -Math.sin(barAng), ny: sign * Math.cos(barAng), pen };
+    const bar = ((k % L) + L) % L;                    // which bar, for per-bar wear attribution
+    return { nx: sign * -Math.sin(barAng), ny: sign * Math.cos(barAng), pen, bar };
   }
 
   /**
@@ -313,6 +334,7 @@ export class LiveDem {
         if (vt > 1e-9) {
           const ft = Math.min(mu * Math.abs(fn), this.kt * vt * dt);
           ftx = -ft * (vtx / vt); fty = -ft * (vty / vt);
+          this.shellWearV += this.cfg.wearConstant * Math.abs(fn) * (vt * dt);
         }
         fx[i] += fn * nxv + ftx; fy[i] += fn * nyv + fty;
         if (vn < 0) { this.lastImpacts.push(0.5 * this.m * vn * vn); this.lastContacts++; }
@@ -332,6 +354,8 @@ export class LiveDem {
           if (vt > 1e-9) {
             const ft = Math.min(mu * fn, this.kt * vt * dt);
             fx[i] -= ft * (vtx / vt); fy[i] -= ft * (vty / vt);
+            // Archard: dV = W * F_n * ds, with ds the tangential slip over this substep.
+            this.wear[lift.bar] += this.cfg.wearConstant * fn * (vt * dt);
           }
           if (vn < 0) { this.lastImpacts.push(0.5 * this.m * vn * vn); this.lastContacts++; }
         }
@@ -377,6 +401,8 @@ export class LiveDem {
       impactEnergies: this.lastImpacts,
       kineticJ: ke,
       timeS: this.t,
+      lifterWear: this.wear,
+      shellWear: this.shellWearV,
     };
   }
 
