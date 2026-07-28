@@ -134,6 +134,37 @@ function ImpactSpectrum({ energies, es }: { energies: number[]; es: boolean }) {
   );
 }
 
+
+/** Per-lifter wear profile, Archard (1953): V = W * F_n * s, accumulated per bar from the ACTUAL
+ *  contact normal force and tangential slip in the live simulation. The bars are ordered around the
+ *  shell, so an uneven profile means the charge is loading some bars harder than others.
+ *  The wear constant W is a DEMONSTRATION scale, not a calibrated plant value; the caption says so. */
+function WearProfile({ wear, es }: { wear: Float64Array | null; es: boolean }) {
+  const W = 288, H = 76, pad = 4;
+  const vals = wear ? Array.from(wear) : [];
+  const max = Math.max(1e-30, ...vals);
+  const bw = vals.length ? (W - 2 * pad) / vals.length : 0;
+  const total = vals.reduce((a, b) => a + b, 0);
+  return (
+    <div className="cc-focus-plot">
+      <div className="cc-focus-plot-t">{es ? 'Desgaste por lifter (Archard)' : 'Per-lifter wear (Archard)'}</div>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
+           aria-label={es ? 'perfil de desgaste' : 'wear profile'}>
+        {vals.map((v, i) => (
+          <rect key={i} x={pad + i * bw + 0.5} width={Math.max(1, bw - 1)}
+                y={H - pad - (v / max) * (H - 2 * pad)} height={Math.max(0.5, (v / max) * (H - 2 * pad))}
+                fill="#2ea043" opacity={0.9} />
+        ))}
+      </svg>
+      <div className="cc-focus-plot-l">
+        {total > 0
+          ? `${total.toExponential(2)} m3 ${es ? 'total, escala demostrativa' : 'total, demonstration scale'}`
+          : (es ? 'sin desgaste aun, pulsa Simular' : 'no wear yet, press Run')}
+      </div>
+    </div>
+  );
+}
+
 export default function Focus() {
   const { caseId } = useParams();
   const lang = useShellLang();
@@ -302,6 +333,7 @@ export default function Focus() {
             <Slider label={es ? 'Restitucion e ' : 'Restitution e '} value={op.restitutionE ?? 0.30}
                     min={0.05} max={0.90} step={0.01} onChange={(v) => set('restitutionE', v)} />
             <ImpactSpectrum energies={liveStats?.impactEnergies ?? []} es={es} />
+            <WearProfile wear={liveStats?.lifterWear ?? null} es={es} />
           </>
         )}
 

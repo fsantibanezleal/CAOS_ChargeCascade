@@ -3,6 +3,42 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.29.000], 2026-07-28
+
+### Fixed (the focus view was unreachable, and the layout wasted the screen)
+- **The focus view had NO entry control and could only be reached by typing a URL.** v0.28.001 shipped the
+  route, the deep links, the live DEM lane and the whole parameter rail with no way to open any of it from
+  the App, and it was reported as complete. Fetching the URL passed; screenshots of the route passed;
+  neither check could see that no user could get there. There is now a **Focus mode** control at the top of
+  the App rail that opens the focus view on the currently selected scenario, and the return control lands
+  back on the App with that scenario intact.
+- **The App was capped at a 1200px reading measure.** The shared shell applies `max-width: var(--maxw)` to
+  every page, which is correct for prose and wrong for an instrument: on a 1600px display it discarded
+  400px, and on a 2560px display more than half the screen. This one rule is why the visualization reads as
+  a thumbnail across the whole product line. The App route now uses the full viewport; prose pages keep the
+  reading width. Fixed in the shared shell (`.page-body.wide`) so every product gets it, and locally here
+  so it ships without waiting for a shell release.
+- **The tab bar wrapped onto multiple rows.** `flex-wrap: wrap` let a 12-to-18 tab bar spill onto a second
+  and third row, and every extra row was vertical space taken from the instrument permanently, on every
+  render. The tab bar is navigation chrome: it now gets ONE row and scrolls horizontally when it does not
+  fit. Fixed in the shell and locally.
+
+Measured effect of the last two together: the App visualization went from **21.8% to 38.8%** of the
+viewport, and the tab bar from two rows to one (48px).
+
+### Added
+- **Per-lifter wear profile**, Archard (1953) in the incremental DEM form `V = W * F_n * s`, with depth
+  `h = V / A` (as stated in arXiv:2509.08637 eqs 3-4, citing Archard 1953, Hutchings 1992, Jayasundara and
+  Zhu 2022). Accumulated per lifter bar from the ACTUAL contact normal force and tangential slip in each
+  substep, so an uneven profile is a consequence of the simulation rather than a decoration. The wear
+  constant is a demonstration scale, not a calibrated plant value, and the caption says so.
+
+### Verification
+- A new **flow gate** verifies the route by CLICKING, never by requesting a URL: load the App, click the
+  entry control, assert the focus view rendered, click return, assert the App rendered. This is the check
+  that would have caught the unreachable-page failure. Passing in both themes and both languages, with the
+  App at 100% width and the focus stage at 80% of the viewport.
+
 ## [0.28.001], 2026-07-27
 
 ### Fixed
