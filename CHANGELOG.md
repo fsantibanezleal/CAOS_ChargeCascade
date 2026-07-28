@@ -3,6 +3,35 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.30.002], 2026-07-28
+
+### Fixed
+- **The combined-tab dropdown could not be used with a real mouse.** The tab row carried
+  `overflow-x: auto`, and in CSS a box cannot have `overflow-y: visible` while the other axis is anything
+  else: the declared value silently computes to `auto`, so the row clipped its own dropdown. Hovering
+  opened the menu and it vanished the moment the pointer moved toward it.
+  Two earlier attempts blamed the gap between the tab and the menu and changed nothing, because the gap
+  was never the cause. The measurement said so and was misread: the menu disappeared at **+27px**, the
+  row's bottom edge, not at **+19px**, the button's edge, which is where a gap problem would appear.
+  With grouping there are only four or five top-level tabs, so the row no longer needs to scroll and no
+  longer clips.
+
+### Verification
+- The tab gate now walks the pointer down **one pixel at a time** and then clicks by moving, instead of
+  using `.click()`, which teleports onto the target and never crosses the space between the tab and the
+  menu. That synthetic jump is why an automated test passed on a control nobody could operate by hand.
+  Harness: `tools/visual-verify/_mousewalk.mjs`.
+
+### Honesty (GNS v3)
+- The GNS surrogate was retrained with the structural changes the v2 null called for: the operating point
+  `(phiC, J)` added to the node features (the model had never received it, so it could not tell a fast
+  mill from a slow one except by inferring it from a 5-frame velocity window), hidden width 64 -> 128,
+  10 message-passing blocks, cosine LR decay over 150 epochs.
+  Held-out one-step MSE improved **0.3747 -> 0.3502**, and it **still fails** the pre-registered 0.30
+  threshold, so the `gns` mode remains unwired. Train is now 0.3445 against a held-out 0.3502: a real gap
+  has appeared where v2 had none, which says capacity is no longer the binding limit and the
+  single-reference-mill corpus is. The next attempt must vary mill geometry, not train longer.
+
 ## [0.30.001], 2026-07-28
 
 ### Fixed (the navigation I shipped in 0.30.000 was wrong, and the page still did not fit)
