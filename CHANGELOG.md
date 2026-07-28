@@ -3,6 +3,17 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.29.001], 2026-07-28
+
+### Fixed
+- **The scenario chips in the focus view did nothing.** `op` was seeded once by `useState` and never
+  re-synced when the route changed, so clicking K-SAG, K-ROD, C-CRITICAL or any other case changed the
+  URL and the title while the mill stayed exactly as it was. Every chip was a no-op wearing the costume
+  of a control. `op` is now re-seeded whenever the selected case changes.
+  Verified by a new scenario gate that clicks each chip and asserts the ENGINE OUTPUT changes, not the
+  URL: 6 scenarios now yield 6 distinct states (K-BALL 993 kW / 106 t, K-SAG 8840 kW / 477 t, K-ROD
+  500 kW / 79 t, C-CRITICAL 1324 kW at 100% critical). Before the fix they were identical.
+
 ## [0.29.000], 2026-07-28
 
 ### Fixed (the focus view was unreachable, and the layout wasted the screen)
