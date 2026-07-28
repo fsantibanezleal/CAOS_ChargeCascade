@@ -30,7 +30,9 @@ function fitCamera(cam: THREE.PerspectiveCamera, controls: OrbitControls, box: T
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z) || 1000;
-  const dist = (maxDim / 2) / Math.tan((cam.fov * Math.PI) / 360) * 1.5;
+  // 1.5 left the mill occupying a small fraction of the stage, which is the whole point of a focus
+  // view defeated. 1.12 frames it with a modest margin and no clipping.
+  const dist = (maxDim / 2) / Math.tan((cam.fov * Math.PI) / 360) * 1.12;
   controls.target.copy(center);
   cam.position.set(center.x + dist * 0.55, center.y + dist * 0.4, center.z + dist * 0.85);
   cam.near = Math.max(1, dist / 200); cam.far = dist * 12; cam.updateProjectionMatrix();
@@ -57,6 +59,7 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
   const ballSizeRef = useRef(ballSize); ballSizeRef.current = ballSize;
   const modeRef = useRef(mode); modeRef.current = mode;
 
+  const geoSigRef = useRef<string>('');
   const viewRef = useRef<{ pos: THREE.Vector3; target: THREE.Vector3 } | null>(null);
   const resetViewRef = useRef<() => void>(() => {});
   const scrubRef = useRef<(f: number) => void>(() => {});
@@ -269,7 +272,15 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
       renderStatic = () => renderer.render(scene, cam);
     }
 
-    // camera: restore persisted POV, else fit the mill; expose reset
+    // Camera: keep the user's point of view WITHIN a mill, but refit when the MILL ITSELF changes.
+    //
+    // The POV was persisted unconditionally, so selecting a different case kept the previous mill's
+    // framing. Switching from K-SAG (large diameter, short) to K-ROD (long, narrow) left the rod mill
+    // rendered small and off-centre inside a stage sized for the SAG, which reads exactly as "it still
+    // shows the same mill" and makes the case selector look broken even though the engine had switched.
+    // The POV is only worth preserving while the thing being viewed is the same thing.
+    const geoSig = `${op.diameterM}x${op.lengthM}x${op.millType}`;
+    if (geoSigRef.current !== geoSig) { viewRef.current = null; geoSigRef.current = geoSig; }
     if (viewRef.current) { cam.position.copy(viewRef.current.pos); controls.target.copy(viewRef.current.target); cam.updateProjectionMatrix(); controls.update(); }
     else fitCamera(cam, controls, box);
     resetViewRef.current = () => { viewRef.current = null; fitCamera(cam, controls, box); renderStatic(); };
