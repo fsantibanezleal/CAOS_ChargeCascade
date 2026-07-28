@@ -6,7 +6,9 @@
 .cc-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.4rem; align-items: stretch;
   height: calc(100dvh - 150px); min-height: 470px; }
 .cc-side { display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; overflow-y: auto; padding-right: 3px; }
-.cc-main { min-width: 0; min-height: 0; display: flex; }
+/* Column, not row. As a ROW, anything placed before the panel became a sibling COLUMN beside
+   it, which is how a tab bar rendered as four 650px-tall vertical bars. */
+.cc-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .cc-main .tabs { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .cc-main .tablist { flex: 0 0 auto; }
 .cc-main .tabpanel { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
@@ -302,3 +304,46 @@ html, body { overflow-x: hidden; }
 .cc-railnav button.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
 .cc-railsec { display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; }
 .cc-railsec.hide { display: none; }
+
+/* ONE row of tabs, at the top. A tab that combines several views carries a caret and opens its list on
+   press. Two permanent rows of navigation chrome is the thing this replaces. */
+.cc-tabrow { display: flex; flex-wrap: nowrap; gap: 0.3rem; align-items: center; min-width: 0;
+  max-width: 100%; overflow-x: auto; overflow-y: visible; flex: 0 0 auto;
+  border-bottom: 1px solid var(--color-border); padding-bottom: 0.45rem; margin-bottom: 0.8rem;
+  scrollbar-width: none; }
+.cc-tabrow::-webkit-scrollbar { display: none; }
+.cc-tabwrap { position: relative; flex: 0 0 auto; }
+.cc-tab { white-space: nowrap; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+  padding: 0.42rem 0.85rem; border-radius: 8px; border: 1px solid transparent;
+  background: transparent; color: var(--color-fg-subtle); }
+.cc-tab:hover { color: var(--color-accent); }
+.cc-tab.on { color: var(--color-bg); background: var(--color-accent); border-color: var(--color-accent); }
+.cc-caret { margin-left: 0.4rem; font-size: 0.62rem; opacity: 0.75; }
+.cc-tabmenu { position: absolute; top: calc(100% + 0.35rem); left: 0; z-index: 60; min-width: 180px;
+  display: flex; flex-direction: column; gap: 0.15rem; padding: 0.3rem;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.cc-tabmenu button { text-align: left; white-space: nowrap; cursor: pointer; font-size: 0.82rem;
+  padding: 0.34rem 0.55rem; border-radius: 6px; border: none; background: transparent; color: var(--color-fg-subtle); }
+.cc-tabmenu button:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); color: var(--color-accent); }
+.cc-tabmenu button.on { color: var(--color-accent); font-weight: 700; }
+.cc-tabpanel { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
+
+/* NO MAGIC CHROME NUMBER.
+   The App height was `calc(100dvh - 150px)`, a guess at header + footer. Measured at 1600x900 the real
+   chrome is header 57 + footer 70 = 127, PLUS a 48px page-body bottom padding, so 175. The guess was
+   25px short, which is exactly the residual scroll, and the 48px padding is the dead gap between the
+   content and the footer.
+
+   Fix the cause instead of re-guessing: make the shell exactly one viewport tall and let flex distribute
+   it. Header and footer take what they need, the page takes the rest, and no number has to be maintained
+   when either changes. */
+.app-shell { height: 100dvh; min-height: 100dvh; overflow: hidden; }
+.app-shell > .page { flex: 1 1 auto; min-height: 0; display: flex; }
+.page-body.cc-layout { height: auto; max-height: none; flex: 1 1 auto; min-height: 0;
+  padding-top: 1rem; padding-bottom: 1rem; }
+
+/* The shell footer carries `margin-top: 3rem`, which is right for a PROSE page (it separates the last
+   paragraph from the chrome) and wrong for a viewport-filling app, where it is simply 48px of dead
+   space between the content and the footer. Measured: exactly the 48px gap. */
+.app-shell .site-footer { margin-top: 0; }

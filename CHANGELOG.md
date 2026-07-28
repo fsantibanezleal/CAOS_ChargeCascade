@@ -3,6 +3,24 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.30.001], 2026-07-28
+
+### Fixed (the navigation I shipped in 0.30.000 was wrong, and the page still did not fit)
+- **ONE row of tabs, at the top, with combined tabs opening on hover.** 0.30.000 put a group bar ABOVE
+  the shell tab bar, which is TWO permanent rows of chrome, the exact thing being complained about. Worse,
+  `.cc-main` is a flex ROW, so the group bar became a sibling COLUMN beside the panel and rendered as four
+  650px-tall vertical bars down the middle of the screen. It is now a single 45px row: a tab that combines
+  several views carries a caret, hovering reveals its list, and you pick from the same tab.
+- **The chrome height was a hardcoded guess.** The App used `calc(100dvh - 150px)` while the real chrome
+  measured 175px (header 57 + footer 70 + 48px body padding), so the page was 25px too tall and needed a
+  small scroll. The shell is now exactly one viewport tall and flex distributes it, so no constant has to
+  be maintained when the header or footer changes.
+- **The 48px gap above the footer** was the shell's `.site-footer { margin-top: 3rem }`, correct for a
+  prose page and dead space in a viewport-filling app.
+
+Verified at 1280x800, 1600x900 and 2560x1440: `scrollHeight == innerHeight`, gap between content and
+footer **0**, footer bottom exactly at the viewport bottom, one tab row, no horizontal overflow.
+
 ## [0.30.000], 2026-07-28
 
 ### Changed (layout and navigation, per ADR-0071)

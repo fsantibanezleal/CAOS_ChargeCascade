@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Tabs, useShellLang } from '@fasl-work/caos-app-shell';
+import { useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, MILL_PRESETS, recommendPhiCForRegime, solvePhiCForCapacity, validateMill, MILL_TYPES, type MillInput, type MillType, type Operating, type Regime } from '../mill/index.ts';
 import { runOod, runSurrogate } from '../lib/ort.ts';
 import { loadLearned } from '../lib/artifacts.ts';
@@ -45,7 +45,8 @@ export default function Tool() {
   const es = useShellLang() === 'es';
   const [source, setSource] = useState<'synthetic' | 'real'>('synthetic');
   const [caseId, setCaseId] = useState('K-BALL');
-  const [tabGroup, setTabGroup] = useState('motion');
+  const [activeTab, setActiveTab] = useState('charge3d');
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [railSection, setRailSection] = useState<'case' | 'mill'>('case');
   const [realMillId, setRealMillId] = useState(REAL_MILLS[0].id);
   const realMill = useMemo(() => REAL_MILLS.find((m) => m.id === realMillId)!, [realMillId]);
@@ -470,6 +471,12 @@ export default function Tool() {
     },
   ];
 
+  // If the active view disappears (switching Synthetic <-> Real changes the tab set), fall back to the
+  // first one that still exists instead of rendering nothing.
+  useEffect(() => {
+    if (tabs.length && !tabs.some((x) => x.id === activeTab)) setActiveTab(tabs[0].id);
+  }, [source, tabs.length, activeTab]);
+
   return (
     <div className="page-body cc-layout">
       <aside className="cc-side">
@@ -568,18 +575,51 @@ export default function Tool() {
         </div>
       </aside>
       <main className="cc-main">
-        <div className="cc-groupbar" role="tablist" aria-label={es ? 'grupos de vistas' : 'view groups'}>
-          {TAB_GROUPS.filter((g) => tabs.some((t) => g.members.includes(t.id))).map((g) => (
-            <button key={g.id} role="tab" aria-selected={tabGroup === g.id}
-                    className={`cc-group ${tabGroup === g.id ? 'on' : ''}`}
-                    onClick={() => setTabGroup(g.id)}>{es ? g.es : g.en}</button>
-          ))}
+        <div className="cc-tabrow" role="tablist" aria-label={es ? 'vistas del molino' : 'mill views'}>
+          {TAB_GROUPS.filter((g) => tabs.some((x) => g.members.includes(x.id))).map((g) => {
+            const mine = tabs.filter((x) => g.members.includes(x.id));
+            const activeHere = mine.some((x) => x.id === activeTab);
+            const shown = activeHere ? mine.find((x) => x.id === activeTab)! : mine[0];
+            const multi = mine.length > 1;
+            return (
+              <div key={g.id} className="cc-tabwrap"
+                   onMouseEnter={() => { if (multi) setOpenMenu(g.id); }}
+                   onMouseLeave={() => setOpenMenu((m) => (m === g.id ? null : m))}>
+                <button role="tab" aria-selected={activeHere}
+                        aria-haspopup={multi ? 'menu' : undefined}
+                        aria-expanded={multi ? openMenu === g.id : undefined}
+                        className={`cc-tab ${activeHere ? 'on' : ''}`}
+                        onClick={() => {
+                          if (!multi) { setActiveTab(mine[0].id); setOpenMenu(null); return; }
+                          // Pressing a combined tab reveals its list; pressing again closes it.
+                          setOpenMenu(openMenu === g.id ? null : g.id);
+                          if (!activeHere) setActiveTab(shown.id);
+                        }}>
+                  {activeHere ? shown.label : (es ? g.es : g.en)}{multi ? <span className="cc-caret">v</span> : null}
+                </button>
+                {multi && openMenu === g.id && (
+                  <div className="cc-tabmenu" role="menu">
+                    {mine.map((x) => (
+                      <button key={x.id} role="menuitem"
+                              className={x.id === activeTab ? 'on' : ''}
+                              onClick={() => { setActiveTab(x.id); setOpenMenu(null); }}>{x.label}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        <Tabs key={tabGroup}
-              tabs={tabs
-                .filter((t) => (TAB_GROUPS.find((g) => g.id === tabGroup)?.members ?? []).includes(t.id))
-                .map((t) => ({ ...t, content: <PanelBoundary key={`${source}-${caseId}-${realMillId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))}
-              ariaLabel={es ? 'vistas del molino' : 'mill views'} />
+        <div className="cc-tabpanel">
+          {(() => {
+            const cur = tabs.find((x) => x.id === activeTab) ?? tabs[0];
+            return cur ? (
+              <PanelBoundary key={`${source}-${caseId}-${realMillId}-${cur.id}`} lang={es ? 'es' : 'en'}>
+                {cur.content}
+              </PanelBoundary>
+            ) : null;
+          })()}
+        </div>
       </main>
     </div>
   );
