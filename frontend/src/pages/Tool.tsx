@@ -28,10 +28,25 @@ const CAT_ES: Record<string, string> = {
 const MILLS: MillType[] = ['ball', 'sag', 'rod', 'ag'];
 const kw = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(2)} MW` : `${v.toFixed(0)} kW`);
 
+
+/** Thirteen sibling tabs is a list, not an information architecture: it makes the user read every
+ *  label to find one view, and it is what pushed the tab bar past the width of the screen. The views
+ *  group naturally into five questions a person actually asks, and the sub-tab row only appears for
+ *  the group in hand. */
+const TAB_GROUPS: { id: string; en: string; es: string; members: string[] }[] = [
+  { id: 'motion',   en: 'Charge motion', es: 'Movimiento',  members: ['charge3d', 'chargeshape', 'traj', 'regime'] },
+  { id: 'power',    en: 'Power',         es: 'Potencia',    members: ['power', 'field', 'comminution', 'gauges'] },
+  { id: 'learned',  en: 'Learned',       es: 'Aprendido',   members: ['whatif', 'anomaly', 'sens'] },
+  { id: 'validate', en: 'Validation',    es: 'Validacion',  members: ['realval'] },
+  { id: 'custom',   en: 'Custom mill',   es: 'Molino propio', members: ['custom'] },
+];
+
 export default function Tool() {
   const es = useShellLang() === 'es';
   const [source, setSource] = useState<'synthetic' | 'real'>('synthetic');
   const [caseId, setCaseId] = useState('K-BALL');
+  const [tabGroup, setTabGroup] = useState('motion');
+  const [railSection, setRailSection] = useState<'case' | 'mill'>('case');
   const [realMillId, setRealMillId] = useState(REAL_MILLS[0].id);
   const realMill = useMemo(() => REAL_MILLS.find((m) => m.id === realMillId)!, [realMillId]);
   const theCase = useMemo(() => caseById(caseId), [caseId]);
@@ -464,6 +479,17 @@ export default function Tool() {
             {es ? 'Abrir este escenario a pantalla completa, con DEM en vivo' : 'Open this scenario full screen, with live DEM'}
           </span>
         </Link>
+        {/* The rail shows ONE section at a time. Measured at 1280x800 the rail is 566px tall while its
+            stacked cards were 801px, so 235px of controls sat below the fold on first paint and a user
+            had to scroll a navigation panel before touching anything. A container that cannot show its
+            own controls is a sizing failure: size the container, then split the content to fit it. */}
+        <div className="cc-railnav" role="tablist" aria-label={es ? 'secciones del panel' : 'panel sections'}>
+          <button role="tab" aria-selected={railSection === 'case'} className={railSection === 'case' ? 'on' : ''}
+                  onClick={() => setRailSection('case')}>{es ? 'Caso' : 'Case'}</button>
+          <button role="tab" aria-selected={railSection === 'mill'} className={railSection === 'mill' ? 'on' : ''}
+                  onClick={() => setRailSection('mill')}>{es ? 'Molino' : 'Mill'}</button>
+        </div>
+        <div className={`cc-railsec ${railSection === 'case' ? '' : 'hide'}`}>
         <div className="cc-card">
           <div className="cc-card-t">{es ? 'Fuente' : 'Source'}</div>
           <div className="cc-chips">
@@ -477,16 +503,20 @@ export default function Tool() {
         {source === 'synthetic' ? (
         <div className="cc-card">
           <div className="cc-card-t">{es ? 'Caso' : 'Case'}</div>
-          {CATS.map((cat) => (
-            <div key={cat} className="cc-catgroup">
-              <div className="cc-catlabel">{(es ? CAT_ES[cat] : cat).split(' (')[0]}</div>
-              <div className="cc-chips">
+          {/* One grouped dropdown, not four blocks of chips. Eleven cases across four categories used
+              about twelve vertical rows of the rail, which is what forced the rail to scroll before a
+              user had touched a single control. A select with optgroups says the same thing in one row
+              and keeps the category structure. */}
+          <select className="cc-select" value={caseId} onChange={(e) => setCaseId(e.target.value)}
+                  aria-label={es ? 'seleccionar caso' : 'select case'}>
+            {CATS.map((cat) => (
+              <optgroup key={cat} label={(es ? CAT_ES[cat] : cat).split(' (')[0]}>
                 {CASES.filter((cc) => cc.category === cat).map((cc) => (
-                  <button key={cc.id} className={`chip ${caseId === cc.id ? 'on' : ''}`} title={cc.name} onClick={() => setCaseId(cc.id)}>{cc.id}</button>
+                  <option key={cc.id} value={cc.id}>{cc.id} - {cc.name}</option>
                 ))}
-              </div>
-            </div>
-          ))}
+              </optgroup>
+            ))}
+          </select>
           <div className="cc-cap">{theCase.name}</div>
           <div className="cc-cap cc-muted">{theCase.realOrSynthetic} · {theCase.expectedBand}</div>
         </div>
@@ -506,6 +536,8 @@ export default function Tool() {
           <div className="cc-cap cc-muted">{realMill.note}</div>
         </div>
         )}
+        </div>
+        <div className={`cc-railsec ${railSection === 'mill' ? '' : 'hide'}`}>
         {source === 'synthetic' && <div className="cc-card">
           <div className="cc-card-t">{es ? 'Tipo de molino (preset)' : 'Mill type (preset)'}</div>
           <div className="cc-chips">
@@ -533,9 +565,21 @@ export default function Tool() {
             ? 'el pill clasifica por bandas de φc (banda centrifuging desde ~0.9); el inicio exacto es φc = 1, ver "% centrifugando"'
             : 'the pill classifies by φc band (centrifuging band from ~0.9); the exact onset is φc = 1, see "% centrifuging"'}</div>
         </div>}
+        </div>
       </aside>
       <main className="cc-main">
-        <Tabs tabs={tabs.map((t) => ({ ...t, content: <PanelBoundary key={`${source}-${caseId}-${realMillId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))} ariaLabel={es ? 'vistas del molino' : 'mill views'} />
+        <div className="cc-groupbar" role="tablist" aria-label={es ? 'grupos de vistas' : 'view groups'}>
+          {TAB_GROUPS.filter((g) => tabs.some((t) => g.members.includes(t.id))).map((g) => (
+            <button key={g.id} role="tab" aria-selected={tabGroup === g.id}
+                    className={`cc-group ${tabGroup === g.id ? 'on' : ''}`}
+                    onClick={() => setTabGroup(g.id)}>{es ? g.es : g.en}</button>
+          ))}
+        </div>
+        <Tabs key={tabGroup}
+              tabs={tabs
+                .filter((t) => (TAB_GROUPS.find((g) => g.id === tabGroup)?.members ?? []).includes(t.id))
+                .map((t) => ({ ...t, content: <PanelBoundary key={`${source}-${caseId}-${realMillId}-${t.id}`} lang={es ? 'es' : 'en'}>{t.content}</PanelBoundary> }))}
+              ariaLabel={es ? 'vistas del molino' : 'mill views'} />
       </main>
     </div>
   );
