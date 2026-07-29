@@ -36,10 +36,20 @@ if (caseIds.length === 0) {
   process.exit(1);
 }
 
-const routes = [...PAGES, ...caseIds.map((id) => `focus/${id}`)];
+// Real surveyed mills are focusable scenarios too (Focus resolves the route id against BOTH registries),
+// so they need shareable 200-status deep links exactly as the synthetic cases do. Omitting them made
+// every real-mill focus URL a 404 on a hard refresh or a shared link.
+const millsSrc = readFileSync(resolve(here, 'src/mill/realmills.ts'), 'utf8');
+const millIds = [...millsSrc.matchAll(/^\s*\{\s*id:\s*'([a-z0-9-]+)'/gm)].map((m) => m[1]);
+if (millIds.length === 0) {
+  console.error('[prerender] no real-mill ids parsed from src/mill/realmills.ts; refusing to emit a partial route set');
+  process.exit(1);
+}
+
+const routes = [...PAGES, ...caseIds.map((id) => `focus/${id}`), ...millIds.map((id) => `focus/${id}`)];
 for (const route of routes) {
   const dir = resolve(dist, route);
   mkdirSync(dir, { recursive: true });
   copyFileSync(index, resolve(dir, 'index.html'));
 }
-console.log(`[prerender] materialized ${routes.length} routes (${PAGES.length} pages + ${caseIds.length} focus scenarios) -> HTTP 200 deep links`);
+console.log(`[prerender] materialized ${routes.length} routes (${PAGES.length} pages + ${caseIds.length} synthetic + ${millIds.length} real-mill focus scenarios) -> HTTP 200 deep links`);

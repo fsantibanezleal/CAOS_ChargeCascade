@@ -149,7 +149,7 @@ export default function Tool() {
       content: (
         <div className="cc-vizstack">
           <div className="cc-plot-t">{es ? 'El molino girando con la carga, en tres modelos. DEM horneado: dinámica de partículas real calculada offline (milldem, contacto+fricción+cadenas de fuerza), la losa se replica a lo largo del eje; existe solo en los casos sintéticos. DEM en vivo: el mismo tipo de física resuelta aquí para ESTE molino, así un molino real medido también tiene contactos. Davis: la vista cinemática analítica, sin contactos. Arrastrar para orbitar.' : 'The rotating mill with the charge, under three models. Baked DEM: real particle dynamics computed offline (milldem, contact+friction+force chains), the slab tiled along the axis; it exists for the synthetic cases only. Live DEM: the same class of physics solved here for THIS mill, so a real surveyed mill has contacts too. Davis: the analytic kinematic view, no contacts at all. Drag to orbit.'}</div>
-          <Mill3D op={op} caseId={caseId} demEnabled={demOn} liveCfg={liveCfg} />
+          <Mill3D op={op} caseId={caseId} demEnabled={demOn} liveCfg={liveCfg} height={0} />
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
             <Kpi label="φc" value={op.phiC.toFixed(2)} />
@@ -535,7 +535,9 @@ export default function Tool() {
   return (
     <div className="page-body cc-layout">
       <aside className="cc-side">
-        <Link className="cc-focus-enter" to={`/focus/${caseId}`}>
+        {/* The entry carries the SELECTED scenario. It used to hardcode the synthetic caseId, so on
+            the real-mill source "Focus mode" opened a synthetic case that the user had not picked. */}
+        <Link className="cc-focus-enter" to={`/focus/${source === 'real' ? realMillId : caseId}`}>
           <span className="cc-focus-enter-t">{es ? 'Modo enfoque' : 'Focus mode'}</span>
           <span className="cc-focus-enter-d">
             {es ? 'Abrir este escenario a pantalla completa, con DEM en vivo' : 'Open this scenario full screen, with live DEM'}
