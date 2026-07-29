@@ -88,7 +88,7 @@ export function LiveMill2D({
       // lifter bars, drawn at the shell's current angle so the charge is visibly keyed by them
       if (cfg.lifterCount > 0 && cfg.lifterHeightM > 0) {
         ctx.strokeStyle = '#2ea043';
-        ctx.lineWidth = Math.max(2, 3 * scale * cfg.particleRadiusM);
+        ctx.lineWidth = Math.max(2, 3 * scale * dem.a);
         for (let k = 0; k < cfg.lifterCount; k++) {
           const ang = dem.shellAngle + (k * 2 * Math.PI) / cfg.lifterCount;
           const r0 = R - cfg.lifterHeightM;
@@ -100,7 +100,9 @@ export function LiveMill2D({
       }
 
       // particles
-      const pr = Math.max(1.2, cfg.particleRadiusM * scale);
+      // effective radius: the solver coarse-grains when the count is capped, and the charge must be
+      // drawn at the size actually simulated or the filling looks wrong (see livedem.ts).
+      const pr = Math.max(1.2, dem.a * scale);
       let vmax = 1e-6;
       if (colour === 'speed') {
         for (let i = 0; i < dem.n; i++) {

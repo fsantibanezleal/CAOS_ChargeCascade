@@ -3,6 +3,45 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.32.000], 2026-07-29
+
+### A real mill now gets a real DEM
+
+Selecting the Real mill source showed balls on analytic Davis trajectories with no contacts at all, and
+the Charge shape (DEM) view disappeared entirely. Both followed from the same cause: the DEM lane is
+BAKED and indexed by synthetic case id, so a surveyed mill from `realmills.ts` had no bake and silently
+fell back to single-particle kinematics. The one source where a measured charge is worth comparing
+against was the one source that could not show one.
+
+- **`Mill3D` gains a third lane, `live`.** The 2D cross-section solver already in `mill/livedem.ts`
+  (Hooke normal spring + viscous damping, Coulomb friction) is integrated per frame for the CURRENT
+  mill's parameters, so real mills and edited operating points both have genuine contacts. Three
+  independent solvers (different seeds) are distributed along the axis; the axial dimension is not
+  simulated and the caption says so.
+- **The live lane is the DEFAULT wherever no bake exists**, and a missing bake now falls back to the live
+  solve rather than to Davis. The lane switch is shown whenever more than one lane exists; it used to be
+  gated on the synthetic source, so a real mill was offered no choice at all.
+- **Charge shape (DEM) is available for EVERY mill.** Baked outline when one exists, otherwise a live
+  solve on request. New `mill/liveoutline.ts` ports the offline baker's binning and angle convention
+  (circular-mean unwrap, 5th/95th percentile of the outer shell) exactly, so the DEM and analytic
+  toe/shoulder readouts stay directly comparable.
+
+### Coarse-graining: the filling is preserved, not the ball count
+
+A 12 m SAG at 125 mm balls wants ~24000 particles in the cross-section against a cap of a few hundred.
+Capping the COUNT alone dropped the effective filling to a few percent, and a J = 0.33 charge rendered as
+a sprinkle of specks against the wall. `LiveDem` now grows the particle radius so the affordable count
+occupies the correct AREA, preserving the quantity that governs charge shape and spending the error on
+the one that does not. The effective radius is exposed as `LiveDem.a` and the renderers draw it;
+`coarseGrainRatio` is stated in the UI whenever it is above 1.
+
+### Verification
+
+`tools/visual-verify/_cc-realmill-dem.mjs` (CAOS_MANAGE), 10/10: it drives both sources, asserts the
+lane switch and default, and proves the canvas MOVES rather than merely exists. Motion is measured by
+element screenshot, not `canvas.drawImage`: a WebGL context without `preserveDrawingBuffer` reads back
+empty outside its own frame and reports 0% change for a canvas that is animating correctly.
+
 ## [0.31.000], 2026-07-28
 
 ### Fixed (the focus view appeared to show the same mill whatever you selected)

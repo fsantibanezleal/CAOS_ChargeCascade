@@ -4,8 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { usePausedViz, useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
 import { criticalSpeedRpm, omegaRadS, type Operating } from '../mill/index.ts';
 import { fetchDemFrames, type DemFrames } from '../lib/demframes.ts';
+import { LiveDem, type LiveDemConfig } from '../mill/livedem.ts';
 
-// The interactive 3D tumbling mill. Two sources, toggled live:
+// The interactive 3D tumbling mill. THREE sources, toggled live:
 //  - 'davis'  : the KINEMATIC analytic view. Each ball rides the shell until the Davis departure azimuth
 //               (cos a = omega^2 r/g per radial shell), then flies the parabolic free-flight and lands at the toe.
 //               Single-particle physics, computed live in TS, reacts to every slider. NOT a DEM solve.
@@ -14,6 +15,18 @@ import { fetchDemFrames, type DemFrames } from '../lib/demframes.ts';
 //               per-frame positions on the InstancedMesh. A browser cannot run DEM time-integration (Govender 2015:
 //               4 M particles = 1.16 h per simulated second on a GPU). The slab is tiled along the axis to fill the
 //               mill length (exact under the periodic-axial boundary), each tile at a different time-phase.
+//  - 'live'   : REAL DEM, solved HERE, right now. The 2D cross-section solver in mill/livedem.ts (Hooke normal
+//               spring + viscous damping + Coulomb friction) integrated per frame for THIS mill's parameters,
+//               so it exists for mills that have no bake: real surveyed mills, and any edited operating point.
+//               Several independent solvers (different seeds) are placed along the axis so the length is not a
+//               single cross-section stamped repeatedly. The axial dimension is NOT simulated and the caption
+//               says so; a 2D disc is not size-consistent in power, which is why the baked thin-3D slab stays
+//               the power validation reference rather than this.
+//
+// WHY 'live' EXISTS. The bake is keyed by SYNTHETIC case id, so selecting a real mill produced the Davis
+// kinematic view: balls on analytic trajectories with no contacts at all. A real surveyed mill is precisely
+// where a real charge shape is worth seeing, and it was the one place the app could not show one.
+//
 // Balls are low-poly instanced spheres coloured by speed; the camera fits + centers the mill and the POV PERSISTS
 // across option changes (only Reset view re-fits). Autoplays SLOWLY; the rAF halts on a hidden tab (ADR-0059).
 const G = 9.81;
@@ -39,16 +52,21 @@ function fitCamera(cam: THREE.PerspectiveCamera, controls: OrbitControls, box: T
   controls.update();
 }
 
-type Mode = 'davis' | 'dem';
+type Mode = 'davis' | 'dem' | 'live';
 
-export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0.05 }:
-  { op: Operating; caseId?: string; demEnabled?: boolean; height?: number; speed?: number }) {
+export function Mill3D({ op, caseId, demEnabled = false, liveCfg, height = 380, speed = 0.05 }:
+  { op: Operating; caseId?: string; demEnabled?: boolean; liveCfg?: LiveDemConfig; height?: number; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const theme = useThemeStore((s) => s.theme);
   const es = useShellLang() === 'es';
 
-  const [mode, setMode] = useState<Mode>(demEnabled ? 'dem' : 'davis');
+  // Default to the strongest lane available for THIS mill: the bake if one exists, otherwise the live
+  // solve. Falling back to Davis is now a last resort, not the default for every unbaked mill.
+  const [mode, setMode] = useState<Mode>(demEnabled ? 'dem' : (liveCfg ? 'live' : 'davis'));
   const [dem, setDem] = useState<DemFrames | null>(null);
+  // How much the live solver had to coarse-grain to afford the particle count. Surfaced because a
+  // charge drawn at 3x ball size is a real modelling choice, not a rendering detail.
+  const [coarse, setCoarse] = useState(1);
   const [demMiss, setDemMiss] = useState(false);
   const [frameIdx, setFrameIdx] = useState(0);      // scrub position (dem mode)
   const frameRef = useRef(0); frameRef.current = frameIdx;
@@ -64,7 +82,10 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
   const resetViewRef = useRef<() => void>(() => {});
   const scrubRef = useRef<(f: number) => void>(() => {});
 
-  // fetch the baked DEM frames for the case (synthetic canonical point). Missing bake -> fall back to davis.
+  // fetch the baked DEM frames for the case (synthetic canonical point). A missing bake now falls back to
+  // the LIVE solve rather than to Davis: no bake is a reason to compute the contacts here, not a reason to
+  // drop to single-particle kinematics.
+  const noBake = liveCfg ? 'live' : 'davis';
   useEffect(() => {
     if (!demEnabled || !caseId) { setDem(null); setDemMiss(false); return; }
     let cancel = false;
@@ -72,10 +93,14 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
     fetchDemFrames(caseId, base).then((d) => {
       if (cancel) return;
       if (d) { setDem(d); setDemMiss(false); }
-      else { setDem(null); setDemMiss(true); setMode('davis'); }
-    }).catch(() => { if (!cancel) { setDem(null); setDemMiss(true); setMode('davis'); } });
+      else { setDem(null); setDemMiss(true); setMode(noBake); }
+    }).catch(() => { if (!cancel) { setDem(null); setDemMiss(true); setMode(noBake); } });
     return () => { cancel = true; };
-  }, [caseId, demEnabled]);
+  }, [caseId, demEnabled, noBake]);
+
+  // Switching the SOURCE (synthetic <-> real mill) changes which lanes exist, so the selected lane has to
+  // be re-resolved. Without this, choosing a real mill kept whatever lane the synthetic case was showing.
+  useEffect(() => { setMode(demEnabled ? 'dem' : (liveCfg ? 'live' : 'davis')); }, [demEnabled]);
 
   const stepRef = useRef<((dtSec: number) => void) | null>(null);
   const viz = usePausedViz(() => { stepRef.current?.(0.05 * speedRef.current); }, { loop: true, autoStart: true });
@@ -90,6 +115,7 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
     const H = height > 0 ? height : Math.max(1, ref.current?.clientHeight ?? 0);
     const dark = theme === 'dark';
     const useDem = mode === 'dem' && dem != null;
+    const useLive = !useDem && mode === 'live' && liveCfg != null;
 
     const R = op.diameterM / 2; // m
     const L = op.lengthM; // m
@@ -141,7 +167,7 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
       disposables.push(liftGeo, liftMat);
     }
 
-    const ballGeo = useDem ? new THREE.IcosahedronGeometry(1, 0) : new THREE.IcosahedronGeometry(1, 1);
+    const ballGeo = (useDem || useLive) ? new THREE.IcosahedronGeometry(1, 0) : new THREE.IcosahedronGeometry(1, 1);
     disposables.push(ballGeo);
     const ballMat = new THREE.MeshStandardMaterial({ metalness: 0.55, roughness: 0.4, flatShading: true }); disposables.push(ballMat);
     const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _sc = new THREE.Vector3();
@@ -200,6 +226,74 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
       };
       scrubRef.current = (fi: number) => { f = ((fi % F) + F) % F; writeFrame(f); renderer.render(scene, cam); };
       renderStatic = () => { writeFrame(frameRef.current); renderer.render(scene, cam); };
+    } else if (useLive) {
+      // ---- LIVE DEM: the 2D cross-section solver, integrated here, for THIS mill ----
+      //
+      // K independent solvers (different seeds) are distributed along the axis. One solver stamped
+      // repeatedly would draw as a lattice of identical discs, which reads as a texture rather than as a
+      // charge. Independent seeds give the axial variety a 2D model cannot itself produce, WITHOUT
+      // claiming to have simulated the axial dimension: the caption states the model is a cross-section.
+      const cfg = liveCfg!;
+      const K = 3;
+      const perSolver = Math.max(140, Math.floor((cfg.maxParticles ?? 1050) / K));
+      const solvers: LiveDem[] = [];
+      for (let k = 0; k < K; k++) {
+        solvers.push(new LiveDem({ ...cfg, maxParticles: perSolver, seed: (cfg.seed ?? 42) + k * 101 }));
+      }
+      const nPer = Math.min(...solvers.map((s) => s.n));
+      // Draw the EFFECTIVE radius the solver integrates, not the configured ball size. On a large mill
+      // the count is capped and the radius grown so the filling stays right (see livedem.ts); drawing
+      // the true ball size there would paint a J = 0.33 charge as a sprinkle of specks on the wall.
+      const aEff = solvers[0].a;
+      setCoarse(solvers[0].coarseGrainRatio);
+      const slices = Math.max(1, Math.min(14, Math.round(L / Math.max(0.06, aEff * 3))));
+      const N = nPer * slices;
+      const balls = new THREE.InstancedMesh(ballGeo, ballMat, N);
+      balls.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      // An InstancedMesh is frustum-culled by the bounding sphere of its BASE geometry, which sits at the
+      // origin at unit radius and knows nothing about where the instances are. Leaving culling on makes
+      // the whole charge vanish at some camera angles while the shell keeps drawing.
+      balls.frustumCulled = false;
+      scene.add(balls); disposables.push(balls);
+      const ballR = Math.max(2.5, aEff * S);
+      const sliceZ = (j: number) => ((j + 0.5) * (L / slices) - L / 2) * S;
+      const vRef = omega * R + 1.5;
+
+      const writeLive = () => {
+        let inst = 0;
+        for (let j = 0; j < slices; j++) {
+          const sv = solvers[j % K];
+          const z = sliceZ(j);
+          for (let i = 0; i < nPer; i++) {
+            const sp = Math.hypot(sv.vx[i], sv.vy[i]);
+            _sc.setScalar(ballR * ballSizeRef.current);
+            _m.compose(_v.set(sv.x[i] * S, sv.y[i] * S, z), _q.identity(), _sc);
+            balls.setMatrixAt(inst, _m);
+            balls.setColorAt(inst, viridis(0.12 + 0.88 * Math.min(1, sp / vRef)));
+            inst++;
+          }
+        }
+        balls.instanceMatrix.needsUpdate = true;
+        if (balls.instanceColor) balls.instanceColor.needsUpdate = true;
+      };
+
+      // The caller's dt is a fixed tick already scaled by the speed slider, so the simulated step is
+      // derived from the slider directly rather than from it.
+      step = (_d: number) => {
+        // The speed slider scales SIMULATED time. Clamped at both ends: too large and an explicit
+        // integrator goes unstable, too small and the charge never develops.
+        const simDt = Math.min(1 / 40, Math.max(1 / 400, (1 / 60) * (0.5 + 6 * speedRef.current)));
+        for (const sv of solvers) sv.step(simDt);
+        millGroup.rotation.z = solvers[0].shellAngle;   // lifters keyed to the solver, not to a free spin
+        writeLive();
+        controls.update();
+        renderer.render(scene, cam);
+      };
+      // Give the bed a moment to settle before the first paint, or the opening frame is the seed lattice.
+      for (let s = 0; s < 40; s++) for (const sv of solvers) sv.step(1 / 60);
+      writeLive();
+      scrubRef.current = () => {};
+      renderStatic = () => { writeLive(); renderer.render(scene, cam); };
     } else {
       // ---- Davis kinematic (single-particle analytic) ----
       const N = 1100;
@@ -300,25 +394,33 @@ export function Mill3D({ op, caseId, demEnabled = false, height = 380, speed = 0
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };
-  }, [op, theme, height, mode, dem]);
+  }, [op, theme, height, mode, dem, liveCfg]);
 
   const isDem = mode === 'dem' && dem != null;
+  const isLive = !isDem && mode === 'live' && liveCfg != null;
   return (
     <div className="cc-canvas-wrap">
       <div ref={ref} style={{ width: '100%', height: height > 0 ? height : '100%' }} />
       <div className="cc-canvas-banner">
         <button type="button" className="btn" onClick={() => (viz.playing ? viz.pause() : viz.play())}>{viz.playing ? (es ? 'Pausar' : 'Pause') : (es ? 'Reproducir' : 'Play')}</button>
-        {demEnabled && (
+        {/* The lane selector is shown whenever MORE THAN ONE lane exists. It used to be gated on
+            `demEnabled`, so a real mill (no bake) offered no choice at all and silently sat on Davis. */}
+        {(demEnabled || liveCfg) && (
           <span className="cc-seg" role="group" aria-label={es ? 'fuente de la carga' : 'charge source'}>
-            <button type="button" className={`chip ${mode === 'dem' ? 'on' : ''}`} disabled={!dem} onClick={() => setMode('dem')}>DEM</button>
+            {demEnabled && <button type="button" className={`chip ${mode === 'dem' ? 'on' : ''}`} disabled={!dem} onClick={() => setMode('dem')}>{es ? 'DEM horneado' : 'Baked DEM'}</button>}
+            {liveCfg && <button type="button" className={`chip ${mode === 'live' ? 'on' : ''}`} onClick={() => setMode('live')}>{es ? 'DEM en vivo' : 'Live DEM'}</button>}
             <button type="button" className={`chip ${mode === 'davis' ? 'on' : ''}`} onClick={() => setMode('davis')}>{es ? 'Davis (cinemática)' : 'Davis (kinematic)'}</button>
           </span>
         )}
         <span>{isDem
           ? (es ? `DEM real horneado (milldem), ${dem!.header.N * dem!.header.tiles} partículas replicadas, arrastrar para orbitar` : `Real baked DEM (milldem), ${dem!.header.N * dem!.header.tiles} replayed particles, drag to orbit`)
-          : (es ? 'Carga cinemática (trayectorias de Davis), no es un solve DEM' : 'Kinematic charge (Davis trajectories), not a DEM solve')}</span>
+          : isLive
+            ? (es ? `DEM real resuelto en vivo para este molino: contacto de Hooke + fricción de Coulomb sobre la sección transversal 2D, distribuida a lo largo del eje. El eje no se simula.${coarse > 1.05 ? ` Bolas engrosadas ${coarse.toFixed(1)}x para mantener el llenado J con el número de partículas que el navegador puede integrar.` : ''}` : `Real DEM solved live for this mill: Hooke contact + Coulomb friction on the 2D cross-section, distributed along the axis. The axial dimension is not simulated.${coarse > 1.05 ? ` Balls coarse-grained ${coarse.toFixed(1)}x so the filling J is preserved at the particle count a browser can integrate.` : ''}`)
+            : (es ? 'Carga cinemática (trayectorias de Davis), no es un solve DEM' : 'Kinematic charge (Davis trajectories), not a DEM solve')}</span>
       </div>
-      {demMiss && demEnabled && <div className="cc-cap cc-muted" style={{ padding: '0 0.6rem' }}>{es ? 'DEM horneado no disponible para este caso; mostrando la vista cinemática de Davis.' : 'No baked DEM for this case; showing the Davis kinematic view.'}</div>}
+      {demMiss && demEnabled && <div className="cc-cap cc-muted" style={{ padding: '0 0.6rem' }}>{es
+        ? (liveCfg ? 'No hay DEM horneado para este caso; se resuelve el DEM en vivo para estos parámetros.' : 'DEM horneado no disponible para este caso; mostrando la vista cinemática de Davis.')
+        : (liveCfg ? 'No baked DEM for this case; solving the DEM live for these parameters instead.' : 'No baked DEM for this case; showing the Davis kinematic view.')}</div>}
       <div className="cc-viz-controls">
         <label>{es ? 'velocidad' : 'speed'}
           <input type="range" min={0.05} max={4} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
