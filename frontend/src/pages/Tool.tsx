@@ -102,6 +102,40 @@ export default function Tool() {
   );
 
   // sensitivity sweep: vary one control about the operating point
+  // The LIVE DEM configuration for the CURRENT mill, whatever its source. This is what lets a real
+  // surveyed mill have real contact dynamics: the baked lane is keyed by synthetic case id, so before
+  // this a real mill could only be shown through the Davis single-particle view, with no contacts at all.
+  const liveCfg = useMemo(() => ({
+    millRadiusM: op.diameterM / 2,
+    particleRadiusM: Math.max(0.02, op.ballTopMm / 1000 / 2),
+    fill: op.fill,
+    omega: r.omega,
+    restitution: op.restitutionE ?? 0.30,
+    friction: op.frictionMu ?? 0.75,
+    lifterCount: op.lifterCount ?? 16,
+    lifterHeightM: op.lifterHeightM ?? 0.05,
+    particleDensity: op.ballDensity ?? 7.8,
+    maxParticles: 1050,
+    seed: 42,
+  }), [op.diameterM, op.ballTopMm, op.fill, r.omega, op.restitutionE, op.frictionMu,
+       op.lifterCount, op.lifterHeightM, op.ballDensity]);
+
+  // Charge shape for mills with no bake, computed from the same live solver. Deferred behind a request
+  // rather than run on mount: it integrates 4 s of DEM synchronously, which is not something to spend on
+  // a tab the user may not open. See mill/liveoutline.ts.
+  const [liveOutline, setLiveOutline] = useState<DemOutline | null>(null);
+  const [liveOutlineBusy, setLiveOutlineBusy] = useState(false);
+  useEffect(() => { setLiveOutline(null); }, [liveCfg]);
+  const computeShape = () => {
+    setLiveOutlineBusy(true);
+    // yield a frame so the button's busy state paints before the solver blocks the thread
+    setTimeout(() => {
+      import('../mill/liveoutline.ts')
+        .then((m) => setLiveOutline(m.computeLiveOutline(liveCfg)))
+        .finally(() => setLiveOutlineBusy(false));
+    }, 30);
+  };
+
   const sweep = (k: keyof Operating, lo: number, hi: number) =>
     [lo, (lo + hi) / 2, hi].map((v) => ({ v, p: evaluate({ ...op, [k]: v }) }));
 
@@ -114,8 +148,8 @@ export default function Tool() {
       id: 'charge3d', label: es ? 'Carga 3D' : '3D charge',
       content: (
         <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'El molino girando con la carga. DEM: dinámica de partículas real horneada (milldem, contacto+fricción+cadenas de fuerza), la losa se replica a lo largo del eje. Davis: la vista cinemática analítica en vivo. Arrastrar para orbitar.' : 'The rotating mill with the charge. DEM: real baked particle dynamics (milldem, contact+friction+force chains), the slab is tiled along the axis. Davis: the live analytic kinematic view. Drag to orbit.'}</div>
-          <Mill3D op={op} caseId={caseId} demEnabled={demOn} />
+          <div className="cc-plot-t">{es ? 'El molino girando con la carga, en tres modelos. DEM horneado: dinámica de partículas real calculada offline (milldem, contacto+fricción+cadenas de fuerza), la losa se replica a lo largo del eje; existe solo en los casos sintéticos. DEM en vivo: el mismo tipo de física resuelta aquí para ESTE molino, así un molino real medido también tiene contactos. Davis: la vista cinemática analítica, sin contactos. Arrastrar para orbitar.' : 'The rotating mill with the charge, under three models. Baked DEM: real particle dynamics computed offline (milldem, contact+friction+force chains), the slab tiled along the axis; it exists for the synthetic cases only. Live DEM: the same class of physics solved here for THIS mill, so a real surveyed mill has contacts too. Davis: the analytic kinematic view, no contacts at all. Drag to orbit.'}</div>
+          <Mill3D op={op} caseId={caseId} demEnabled={demOn} liveCfg={liveCfg} />
           <div className="cc-kpis">
             <Kpi label={es ? 'régimen' : 'regime'} value={r.regime} />
             <Kpi label="φc" value={op.phiC.toFixed(2)} />
@@ -129,21 +163,41 @@ export default function Tool() {
         </div>
       ),
     },
-    ...(demOn ? [{
+    // Charge shape is available for EVERY mill, not only baked synthetic cases. It used to vanish on the
+    // real-mill source, which removed the measured-charge comparison from the one source where a real
+    // survey exists to compare against. Baked outline when there is one, live solve on request otherwise.
+    {
       id: 'chargeshape', label: es ? 'Forma de carga (DEM)' : 'Charge shape (DEM)',
-      content: (
-        <div className="cc-vizstack">
-          <div className="cc-plot-t">{es ? 'Sección transversal: la ocupación media del DEM horneado (densidad viridis en (r, θ)) con los ángulos analíticos de pie/hombro marcados. Donde el cuerpo DEM y la teoría de una partícula divergen es donde el DEM aporta.' : 'Cross-section: the time-averaged occupancy of the baked DEM (viridis density in (r, θ)) with the analytic toe/shoulder angles marked. Where the DEM body and single-particle theory diverge is where DEM earns its keep.'}</div>
-          <ChargeShapeOverlay outline={demOutline} analyticToeDeg={r.toeDeg} analyticShoulderDeg={r.shoulderDeg} />
-          <div className="cc-kpis">
-            <Kpi label={es ? 'hombro DEM' : 'DEM shoulder'} value={demOutline ? `${demOutline.shoulder_deg.toFixed(0)}°` : 'n/a'} />
-            <Kpi label={es ? 'pie DEM' : 'DEM toe'} value={demOutline ? `${demOutline.toe_deg.toFixed(0)}°` : 'n/a'} />
-            <Kpi label={es ? 'hombro (analítico)' : 'shoulder (analytic)'} value={`${r.shoulderDeg.toFixed(0)}°`} />
-            <Kpi label={es ? 'pie (analítico)' : 'toe (analytic)'} value={`${r.toeDeg.toFixed(0)}°`} />
+      content: (() => {
+        const shape = demOutline ?? liveOutline;
+        const isLiveShape = !demOutline && liveOutline != null;
+        return (
+          <div className="cc-vizstack">
+            <div className="cc-plot-t">{es ? 'Sección transversal: la ocupación media del DEM (densidad viridis en (r, θ)) con los ángulos analíticos de pie/hombro marcados. Donde el cuerpo DEM y la teoría de una partícula divergen es donde el DEM aporta.' : 'Cross-section: the time-averaged DEM occupancy (viridis density in (r, θ)) with the analytic toe/shoulder angles marked. Where the DEM body and single-particle theory diverge is where DEM earns its keep.'}</div>
+            {!shape && (
+              <div className="cc-card">
+                <p className="cc-note">{es
+                  ? 'Este molino no tiene un DEM horneado: el horneado offline está indexado por caso sintético. La forma de carga se puede resolver en vivo para estos parámetros con el mismo solver de contacto (Hooke + Coulomb). Toma unos segundos y ocupa el hilo principal, por eso no se lanza solo.'
+                  : 'This mill has no baked DEM: the offline bake is indexed by synthetic case. The charge shape can be solved live for these parameters with the same contact solver (Hooke + Coulomb). It takes a few seconds and holds the main thread, which is why it is not started for you.'}</p>
+                <button type="button" className="btn" disabled={liveOutlineBusy} onClick={computeShape}>
+                  {liveOutlineBusy ? (es ? 'Resolviendo DEM...' : 'Solving DEM...') : (es ? 'Resolver forma de carga en vivo' : 'Solve charge shape live')}
+                </button>
+              </div>
+            )}
+            <ChargeShapeOverlay outline={shape} analyticToeDeg={r.toeDeg} analyticShoulderDeg={r.shoulderDeg} />
+            <div className="cc-kpis">
+              <Kpi label={es ? 'hombro DEM' : 'DEM shoulder'} value={shape ? `${shape.shoulder_deg.toFixed(0)}°` : 'n/a'} />
+              <Kpi label={es ? 'pie DEM' : 'DEM toe'} value={shape ? `${shape.toe_deg.toFixed(0)}°` : 'n/a'} />
+              <Kpi label={es ? 'hombro (analítico)' : 'shoulder (analytic)'} value={`${r.shoulderDeg.toFixed(0)}°`} />
+              <Kpi label={es ? 'pie (analítico)' : 'toe (analytic)'} value={`${r.toeDeg.toFixed(0)}°`} />
+            </div>
+            {isLiveShape && <p className="cc-note">{es
+              ? 'Resuelto en vivo: DEM 2D de sección transversal para estos parámetros, promediado en el tiempo. No es el horneado de losa 3D delgada: un disco 2D no es consistente en potencia con el tamaño, así que el horneado sigue siendo la referencia de validación de potencia.'
+              : 'Solved live: 2D cross-section DEM for these parameters, time-averaged. It is NOT the thin-3D-slab bake: a 2D disc is not size-consistent in power, so the bake remains the power validation reference.'}</p>}
           </div>
-        </div>
-      ),
-    }] : []),
+        );
+      })(),
+    },
     {
       id: 'traj', label: es ? 'Trayectorias' : 'Trajectories',
       content: (

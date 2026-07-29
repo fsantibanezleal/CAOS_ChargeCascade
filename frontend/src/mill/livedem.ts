@@ -98,6 +98,13 @@ export class LiveDem {
   readonly cfg: Required<LiveDemConfig>;
   x: Float64Array; y: Float64Array; vx: Float64Array; vy: Float64Array;
   n = 0;
+  /** EFFECTIVE particle radius [m] actually simulated. Equals cfg.particleRadiusM unless the particle
+   *  count had to be capped, in which case it is grown so the affordable count still reproduces the
+   *  target filling J. Renderers must draw THIS radius, not the configured one. */
+  readonly a: number;
+  /** effective / true radius. 1 means the real ball size is being simulated; above 1 the charge is
+   *  coarse-grained and any per-ball reading (impact energy of ONE ball) is not a plant value. */
+  readonly coarseGrainRatio: number;
   private m = 0;          // particle mass [kg]
   private kn = 0;         // normal stiffness [N/m]
   private cn = 0;         // normal damping [N s/m]
@@ -118,13 +125,27 @@ export class LiveDem {
     const maxParticles = cfg.maxParticles ?? 2400;
     this.cfg = { ...cfg, maxParticles, seed: cfg.seed ?? 42,
                  wearConstant: cfg.wearConstant ?? 1e-7 } as Required<LiveDemConfig>;
-    const R = cfg.millRadiusM, a = cfg.particleRadiusM;
+    const R = cfg.millRadiusM;
 
     // Particle count from the areal filling, capped. A 2D cross-section fills by AREA, so
     // n = J * pi R^2 / (pi a^2 / packing) with a 2D random-close-packing fraction of ~0.82.
     const packing2D = 0.82;
-    const wanted = Math.floor((cfg.fill * Math.PI * R * R * packing2D) / (Math.PI * a * a));
+    const wanted = Math.floor((cfg.fill * Math.PI * R * R * packing2D) / (Math.PI * cfg.particleRadiusM ** 2));
     this.n = Math.max(1, Math.min(wanted, maxParticles));
+
+    // COARSE-GRAINING. A large mill at true ball size needs far more particles than a browser can
+    // integrate: a 12 m SAG at 125 mm balls wants ~24000 in the cross-section against a cap of a few
+    // hundred. Capping the COUNT alone silently drops the filling to a few percent, and the charge
+    // renders as a sprinkle of specks against the wall instead of the J = 0.33 bed the mill actually
+    // holds. Growing the particle radius so the affordable count still occupies the correct AREA keeps
+    // the quantity that governs charge shape (the filling) exact, and spends the error on the quantity
+    // that does not (individual ball size). This is the standard DEM coarse-graining trade and it is
+    // stated in the UI wherever the ratio is above 1.
+    this.a = wanted > this.n
+      ? R * Math.sqrt((cfg.fill * packing2D) / this.n)
+      : cfg.particleRadiusM;
+    this.coarseGrainRatio = this.a / cfg.particleRadiusM;
+    const a = this.a;
 
     this.x = new Float64Array(this.n); this.y = new Float64Array(this.n);
     this.vx = new Float64Array(this.n); this.vy = new Float64Array(this.n);
@@ -158,7 +179,7 @@ export class LiveDem {
 
   /** Fill the bottom of the mill with a jittered lattice, the way a real charge is loaded at rest. */
   private seedCharge() {
-    const { millRadiusM: R, particleRadiusM: a } = this.cfg;
+    const { millRadiusM: R } = this.cfg; const a = this.a;
     const rnd = mulberry32(this.cfg.seed);
     // Lattice pitch and jitter are coupled: the clearance (step - 2a) must exceed the worst-case
     // approach from jitter on BOTH neighbours, or the charge is seeded already overlapped. A stiff
@@ -221,7 +242,7 @@ export class LiveDem {
    * response is damped against the bar's material velocity like any other wall.
    */
   private lifterContact(px: number, py: number): { nx: number; ny: number; pen: number; bar: number } | null {
-    const { lifterCount: L, lifterHeightM: h, millRadiusM: R, particleRadiusM: a } = this.cfg;
+    const { lifterCount: L, lifterHeightM: h, millRadiusM: R } = this.cfg; const a = this.a;
     if (L <= 0 || h <= 0) return null;
     const r = Math.hypot(px, py);
     if (r < R - h - a || r < 1e-9) return null;      // deeper than the bars reach
@@ -263,7 +284,7 @@ export class LiveDem {
   }
 
   private substep() {
-    const { millRadiusM: R, particleRadiusM: a, omega, friction: mu } = this.cfg;
+    const { millRadiusM: R, omega, friction: mu } = this.cfg; const a = this.a;
     const dt = this.dt, g = 9.81;
     const fx = new Float64Array(this.n), fy = new Float64Array(this.n);
     this.lastImpacts = [];
