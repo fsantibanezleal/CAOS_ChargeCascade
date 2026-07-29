@@ -368,3 +368,46 @@ html, body { overflow-x: hidden; }
    paragraph from the chrome) and wrong for a viewport-filling app, where it is simply 48px of dead
    space between the content and the footer. Measured: exactly the 48px gap. */
 .app-shell .site-footer { margin-top: 0; }
+
+/* INSTRUMENT FILLS THE PANEL (ADR-0071 rule 6).
+   Measured 33% of the viewport on the 3D charge tab: the canvas carried a fixed 380px height inside a
+   panel that had room to spare, so a third of the screen did the work and the rest was margin. The
+   container is given the size and the instrument fills it, not the reverse. The caption, KPI row and
+   note keep their natural height; only the canvas takes the slack. */
+.cc-tabpanel > .cc-vizstack { min-height: 100%; }
+.cc-tabpanel > .cc-vizstack > .cc-canvas-wrap { flex: 1 1 auto; min-height: 380px;
+  display: flex; flex-direction: column; }
+.cc-tabpanel > .cc-vizstack > .cc-canvas-wrap > div:first-child { flex: 1 1 auto; min-height: 0; }
+.cc-tabpanel > .cc-vizstack > .cc-canvas-wrap canvas { height: 100%; }
+
+/* ONE CHROME ROW AROUND THE INSTRUMENT (ADR-0071 rule 4, applied to viz chrome rather than to tabs).
+   The 3D view carried TWO stacked chrome rows under the canvas: the lane banner (40px) and the slider
+   row (51px), plus the gap between them. Measured, that is 105px taken from the instrument on every
+   render, on a panel where the canvas had 404px. They are the same kind of thing (controls for this
+   canvas) and belong on one row; the lane caption wraps underneath, where prose belongs. */
+/* The banner is an OVERLAY by default. Once it also carries the sliders it is 76px tall, and an opaque
+   76px band across the top of the canvas hides the top of the mill: chrome eating the instrument, which
+   is the same defect as the instrument eating its own controls, just inverted. In the App it goes back
+   IN FLOW as a single non-wrapping row, so the canvas keeps every pixel it is given and nothing is
+   covered. The lane caption truncates with the full text on hover; the tab caption above already
+   explains all three lanes in full. */
+.cc-tabpanel .cc-canvas-wrap .cc-canvas-banner { position: relative; inset: auto; flex: 0 0 auto;
+  flex-wrap: nowrap; row-gap: 0; width: 100%; align-items: center; }
+.cc-tabpanel .cc-canvas-wrap .cc-canvas-cap { flex: 1 1 auto; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+/* Inside the banner the controls are no longer a panel of their own: they lose the border, background
+   and padding that made them a second card, and they must not wrap (wrapping is what kept the chrome at
+   64px and took the space back off the canvas). */
+.cc-tabpanel .cc-canvas-wrap .cc-viz-controls { margin: 0; padding: 0; border: none; background: none;
+  flex-wrap: nowrap; gap: 0.7rem; flex: 0 0 auto; }
+.cc-tabpanel .cc-canvas-wrap .cc-viz-controls label { white-space: nowrap; }
+.cc-tabpanel .cc-canvas-wrap .cc-viz-controls input[type="range"] { width: 74px; }
+.cc-tabpanel .cc-canvas-wrap .cc-viz-controls b { min-width: 2rem; }
+.cc-tabpanel .cc-vizstack { gap: 0.55rem; }
+
+/* Provenance for a REAL scenario in focus mode. A surveyed mill carries a measured power and a citation;
+   showing the simulation without them would present a plant measurement as if it were the model's own
+   output. Distinct from .cc-focus-note, which explains the MODEL rather than the source. */
+.cc-focus-survey { margin-top: 0.6rem; padding: 0.5rem 0.6rem; border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent); border-radius: 0 8px 8px 0;
+  background: var(--color-surface); font-size: 0.7rem; line-height: 1.45; color: var(--color-fg-subtle); }

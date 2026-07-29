@@ -383,7 +383,14 @@ export function Mill3D({ op, caseId, demEnabled = false, liveCfg, height = 380, 
     renderStatic();
     controls.addEventListener('change', () => { viewRef.current = { pos: cam.position.clone(), target: controls.target.clone() }; renderer.render(scene, cam); });
 
-    const ro = new ResizeObserver(() => { const w = el.clientWidth || W; renderer.setSize(w, H); cam.aspect = w / H; cam.updateProjectionMatrix(); renderer.render(scene, cam); });
+    // height = 0 means fill the parent, so the parent's HEIGHT can change after mount (a tab panel lays
+    // out late, the window resizes). Tracking width only left the canvas at whatever height it happened
+    // to measure on the first frame, which is how a filling canvas ends up a letterbox.
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth || W;
+      const h = height > 0 ? H : Math.max(1, el.clientHeight || H);
+      renderer.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); renderer.render(scene, cam);
+    });
     ro.observe(el);
 
     return () => {
@@ -412,15 +419,17 @@ export function Mill3D({ op, caseId, demEnabled = false, liveCfg, height = 380, 
             <button type="button" className={`chip ${mode === 'davis' ? 'on' : ''}`} onClick={() => setMode('davis')}>{es ? 'Davis (cinemática)' : 'Davis (kinematic)'}</button>
           </span>
         )}
-        <span>{isDem
-          ? (es ? `DEM real horneado (milldem), ${dem!.header.N * dem!.header.tiles} partículas replicadas, arrastrar para orbitar` : `Real baked DEM (milldem), ${dem!.header.N * dem!.header.tiles} replayed particles, drag to orbit`)
+        <span className="cc-canvas-cap" title={isDem
+          ? (es ? 'DEM real horneado por el motor offline milldem (contacto, friccion, cadenas de fuerza). La losa 3D delgada se replica a lo largo del eje.' : 'Real DEM baked by the offline milldem engine (contact, friction, force chains). The thin-3D slab is tiled along the axis.')
           : isLive
-            ? (es ? `DEM real resuelto en vivo para este molino: contacto de Hooke + fricción de Coulomb sobre la sección transversal 2D, distribuida a lo largo del eje. El eje no se simula.${coarse > 1.05 ? ` Bolas engrosadas ${coarse.toFixed(1)}x para mantener el llenado J con el número de partículas que el navegador puede integrar.` : ''}` : `Real DEM solved live for this mill: Hooke contact + Coulomb friction on the 2D cross-section, distributed along the axis. The axial dimension is not simulated.${coarse > 1.05 ? ` Balls coarse-grained ${coarse.toFixed(1)}x so the filling J is preserved at the particle count a browser can integrate.` : ''}`)
-            : (es ? 'Carga cinemática (trayectorias de Davis), no es un solve DEM' : 'Kinematic charge (Davis trajectories), not a DEM solve')}</span>
-      </div>
-      {demMiss && demEnabled && <div className="cc-cap cc-muted" style={{ padding: '0 0.6rem' }}>{es
-        ? (liveCfg ? 'No hay DEM horneado para este caso; se resuelve el DEM en vivo para estos parámetros.' : 'DEM horneado no disponible para este caso; mostrando la vista cinemática de Davis.')
-        : (liveCfg ? 'No baked DEM for this case; solving the DEM live for these parameters instead.' : 'No baked DEM for this case; showing the Davis kinematic view.')}</div>}
+            ? (es ? 'DEM real resuelto en vivo para este molino: contacto de Hooke + friccion de Coulomb sobre la seccion transversal 2D, distribuida a lo largo del eje. El eje no se simula.' : 'Real DEM solved live for this mill: Hooke contact + Coulomb friction on the 2D cross-section, distributed along the axis. The axial dimension is not simulated.')
+            : (es ? 'Carga cinematica de una particula (trayectorias de Davis). No hay contactos: no es un solve DEM.' : 'Single-particle kinematic charge (Davis trajectories). There are no contacts: this is not a DEM solve.')}>
+          {isDem
+            ? (es ? `DEM horneado (milldem) · ${dem!.header.N * dem!.header.tiles} particulas` : `Baked DEM (milldem) · ${dem!.header.N * dem!.header.tiles} particles`)
+            : isLive
+              ? (es ? `DEM en vivo · seccion 2D, el eje no se simula${coarse > 1.05 ? ` · bolas ${coarse.toFixed(1)}x` : ''}` : `Live DEM · 2D cross-section, axis not simulated${coarse > 1.05 ? ` · balls ${coarse.toFixed(1)}x` : ''}`)
+              : (es ? 'Davis cinematico · sin contactos, no es DEM' : 'Davis kinematic · no contacts, not a DEM solve')}
+        </span>
       <div className="cc-viz-controls">
         <label>{es ? 'velocidad' : 'speed'}
           <input type="range" min={0.05} max={4} step={0.05} value={animSpeed} onChange={(e) => setAnimSpeed(+e.target.value)} />
@@ -439,6 +448,10 @@ export function Mill3D({ op, caseId, demEnabled = false, liveCfg, height = 380, 
         )}
         <button type="button" className="btn" onClick={() => resetViewRef.current()}>{es ? 'Restablecer vista' : 'Reset view'}</button>
       </div>
+      </div>
+      {demMiss && demEnabled && <div className="cc-cap cc-muted" style={{ padding: '0 0.6rem' }}>{es
+        ? (liveCfg ? 'No hay DEM horneado para este caso; se resuelve el DEM en vivo para estos parámetros.' : 'DEM horneado no disponible para este caso; mostrando la vista cinemática de Davis.')
+        : (liveCfg ? 'No baked DEM for this case; solving the DEM live for these parameters instead.' : 'No baked DEM for this case; showing the Davis kinematic view.')}</div>}
     </div>
   );
 }
