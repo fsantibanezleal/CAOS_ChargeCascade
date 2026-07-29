@@ -3,6 +3,49 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.33.000], 2026-07-29
+
+### Focus mode opens the mill you actually selected
+
+On the Real mill source the focus entry hardcoded the synthetic `caseId`, so "Focus mode" opened
+`/focus/K-BALL`: a synthetic case the user had not picked. Focus resolves the route id against BOTH
+registries now, so a surveyed mill is a first-class focusable scenario.
+
+- The entry carries the selected scenario, real or synthetic.
+- The scenario chips list the registry the CURRENT scenario belongs to. Offering synthetic case ids while
+  focused on a surveyed mill gave no way back to the other mills and read as if the real mill were one of
+  the synthetic cases.
+- A real scenario shows its provenance (measured power, basis, citation) rather than presenting the
+  simulation as if the plant measurement were the model's own output.
+- The focus 3D view now offers the same DEM lanes the App does, instead of Davis only.
+- `prerender-routes.mjs` emits a 200-status deep link per REAL mill as well: 37 routes, up from 15. Every
+  real-mill focus URL was a 404 on hard refresh or when shared.
+
+### The instrument gets the space the panel has
+
+The 3D view measured 33% of the viewport against the ADR-0071 floor, with a 380px fixed-height canvas
+inside a panel that had room to spare, and TWO stacked chrome rows beneath it (lane banner, then slider
+row) costing 105px on every render.
+
+- The canvas fills its panel; `Mill3D` now re-measures HEIGHT on resize, not width only, so a panel that
+  lays out late no longer leaves it at whatever height the first frame happened to see.
+- One chrome row instead of two, in flow rather than overlaying. Folding the sliders into the banner while
+  it stayed an overlay made a 76px opaque band across the top of the mill: chrome eating the instrument,
+  the same defect as an instrument eating its own controls.
+- The lane caption is compact with the full explanation on hover, so the honesty is kept without spending
+  a row on it.
+
+Measured: canvas 404px -> 521px tall, instrument share 33% -> 45%. It does not reach 50% on the App page,
+and that is a layout ceiling, not an oversight: with a 362px control rail, a KPI row and a provenance
+note, roughly 45% is what this page can give. The >=80% requirement is met by focus mode, which measures
+80% exactly.
+
+### Verification
+
+`_cc-realmill-dem.mjs` 12/12 and `_cc-focus-real.mjs`. The caption checks assert the FACTS (lane named,
+axial limitation stated, coarse-graining ratio declared, full text reachable on hover) rather than one
+phrasing, so a wording change cannot fail the gate and a dropped fact cannot pass it.
+
 ## [0.32.000], 2026-07-29
 
 ### A real mill now gets a real DEM

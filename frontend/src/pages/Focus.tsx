@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useShellLang } from '@fasl-work/caos-app-shell';
 import { CASES, caseById, evaluate, recommendPhiCForRegime, type Operating, type Regime } from '../mill/index.ts';
+import { REAL_MILLS, realMillToOperating } from '../mill/realmills.ts';
 import { Mill3D } from '../viz/Mill3D.tsx';
 import { LiveMill2D, type ColourMode } from '../viz/LiveMill2D.tsx';
 import type { LiveDemStats } from '../mill/index.ts';
@@ -185,7 +186,17 @@ export default function Focus() {
   const { caseId } = useParams();
   const lang = useShellLang();
   const es = lang === 'es';
-  const theCase = useMemo(() => caseById(caseId ?? CASES[0].id), [caseId]);
+
+  // The route id is resolved against BOTH registries. Focus mode is "the SELECTED scenario, full page",
+  // and on the real-mill source the selected scenario is a surveyed mill, not a synthetic case. Resolving
+  // only against CASES sent every real-mill user to a synthetic case that was not the thing they picked.
+  const theCase = useMemo(() => {
+    const id = caseId ?? CASES[0].id;
+    const rm = REAL_MILLS.find((m) => m.id === id);
+    if (rm) return { id: rm.id, name: rm.name, op: realMillToOperating(rm), real: rm };
+    const c = caseById(id) ?? CASES[0];
+    return { id: c.id, name: c.name, op: c.op, real: null };
+  }, [caseId]);
   const [op, setOp] = useState<Operating>(() => seedOp(theCase));
 
   // A scenario chip changes the ROUTE, which changes `theCase`. Without this, `op` keeps the state it was
@@ -254,7 +265,7 @@ export default function Focus() {
     <div className="cc-focus">
       <div className="cc-focus-stage">
         {lane === 'analytic'
-          ? <Mill3D op={op} caseId={theCase.id} height={0} />
+          ? <Mill3D op={op} caseId={theCase.id} demEnabled={!theCase.real} liveCfg={liveCfg} height={0} />
           : <LiveMill2D cfg={liveCfg} running={running} colour={colour} showTrails={trails} onStats={setLiveStats} />}
         {/* HUD is rendered after the canvas so it stacks above it; it is positioned against the
             canvas region (see .cc-focus-canvasarea) so a wrapping banner can never overlap it. */}
@@ -357,11 +368,20 @@ export default function Focus() {
             : 'The shoulder uses the lifter-bar sliding model (Vermeulen 1985): an element does NOT depart where the forces balance, it slides down the bar face and leaves at the edge. Charge density is derived from Jc, Jb and the two densities (Hogg & Fuerstenau 1972).'}
         </div>
 
+        {/* The chips list the registry the CURRENT scenario belongs to. Showing synthetic case ids while
+            focused on a surveyed mill offers no way back to the other mills, and reads as if the real
+            mill were one of the synthetic cases. */}
         <div className="cc-focus-scenarios">
-          {CASES.slice(0, 9).map((c) => (
+          {(theCase.real ? REAL_MILLS.slice(0, 12) : CASES.slice(0, 9)).map((c) => (
             <Link key={c.id} to={`/focus/${c.id}`} className={c.id === theCase.id ? 'on' : ''}>{c.id}</Link>
           ))}
         </div>
+        {theCase.real && (
+          <div className="cc-focus-survey">
+            {theCase.real.name}: {es ? 'potencia medida' : 'measured power'} {(theCase.real.measuredKw / 1000).toFixed(1)} MW
+            {' '}({theCase.real.basis}). {theCase.real.citation}
+          </div>
+        )}
       </aside>
     </div>
   );
