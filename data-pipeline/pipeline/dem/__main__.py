@@ -1,4 +1,4 @@
-"""CLI entry for the DEM bake lane. See cclab.dem module docstring."""
+"""CLI entry for the DEM bake lane. See pipeline.dem module docstring."""
 from __future__ import annotations
 
 import argparse
@@ -10,7 +10,7 @@ from .validate import validate_all
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(prog="cclab.dem")
+    ap = argparse.ArgumentParser(prog="pipeline.dem")
     ap.add_argument("case", nargs="?", default=None, help="a case id (default: all)")
     ap.add_argument("--grid", action="store_true", help="bake only the (phiC, J) power grid")
     ap.add_argument("--no-grid", action="store_true", help="skip the power grid")

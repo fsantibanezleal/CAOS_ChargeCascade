@@ -10,7 +10,7 @@ import { LiveDem, type LiveDemConfig } from '../mill/livedem.ts';
 //  - 'davis'  : the KINEMATIC analytic view. Each ball rides the shell until the Davis departure azimuth
 //               (cos a = omega^2 r/g per radial shell), then flies the parabolic free-flight and lands at the toe.
 //               Single-particle physics, computed live in TS, reacts to every slider. NOT a DEM solve.
-//  - 'dem'    : REAL baked DEM. The milldem thin-3D-slab engine (data-pipeline/cclab/dem) computed the full
+//  - 'dem'    : REAL baked DEM. The milldem thin-3D-slab engine (data-pipeline/pipeline/dem) computed the full
 //               particle dynamics OFFLINE (contact forces, friction, force chains); here we only replay the baked
 //               per-frame positions on the InstancedMesh. A browser cannot run DEM time-integration (Govender 2015:
 //               4 M particles = 1.16 h per simulated second on a GPU). The slab is tiled along the axis to fill the

@@ -4,7 +4,7 @@
 critical speed, the Davis per-shell departure, the regime bands and the power draw are all closed-form; only the
 training-data sampler in `science/gen_train.mjs` draws random scenarios, and it does so from a seeded generator). Same
 inputs ⇒ byte-identical artifact: the committed `data/derived/case-results.json` **is** the TS engine's real output, and
-re-running `python -m cclab.pipeline all` (the numpy/stdlib light lane) reproduces the traces + manifests byte-for-byte
+re-running `python data-pipeline/run.py all` (the numpy/stdlib light lane) reproduces the traces + manifests byte-for-byte
 (verified). This is what makes the committed artifact a trustworthy source-of-truth the SPA merely replays
 (ADR-0052 / ADR-0054).
 

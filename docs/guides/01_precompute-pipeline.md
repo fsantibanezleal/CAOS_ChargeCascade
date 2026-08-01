@@ -1,6 +1,6 @@
 # Guide, run the precompute / retrain pipeline
 
-ChargeCascade has **two pipeline lanes**, both driven by `python -m cclab.pipeline`:
+ChargeCascade has **two pipeline lanes**, both driven by `python data-pipeline/run.py`:
 
 - **Default lane (numpy-light, no torch / no node).** Rebuilds the per-case replay traces + manifests + index from
   the *committed* `data/derived/case-results.json` (which is the TS engine's real bake) and `cc-learned.json`. It is
@@ -15,7 +15,7 @@ ChargeCascade has **two pipeline lanes**, both driven by `python -m cclab.pipeli
 PowerShell (primary):
 
 ```powershell
-.\scripts\setup.ps1                       # builds .venv-pipeline + .venv, installs deps + the editable cclab package
+.\scripts\setup.ps1                       # builds .venv-pipeline + .venv, installs deps + the editable pipeline package
 .\scripts\precompute.ps1                  # all 10 cases  (or:  .\scripts\precompute.ps1 K-BALL --seed 7)
 .venv-pipeline\Scripts\python.exe -m pytest
 .\scripts\smoke.ps1                       # CONTRACT 2 check  (wraps scripts/check_artifacts.py)
@@ -24,7 +24,7 @@ PowerShell (primary):
 bash:
 
 ```bash
-./scripts/setup.sh                        # .venv-pipeline + .venv, editable cclab
+./scripts/setup.sh                        # .venv-pipeline + .venv, editable pipeline
 ./scripts/precompute.sh                   # all cases   (or:  ./scripts/precompute.sh K-BALL --seed 7)
 .venv-pipeline/bin/python -m pytest
 ./scripts/smoke.sh                        # CONTRACT 2 check
@@ -46,7 +46,7 @@ PowerShell:
 python -m venv .venv-precompute
 .venv-precompute\Scripts\python.exe -m pip install -r data-pipeline\requirements-precompute.txt `
     --extra-index-url https://download.pytorch.org/whl/cpu
-python -m cclab.pipeline all --retrain
+python data-pipeline/run.py all --retrain
 ```
 
 bash:
@@ -55,14 +55,14 @@ bash:
 python -m venv .venv-precompute
 .venv-precompute/Scripts/python -m pip install -r data-pipeline/requirements-precompute.txt \
     --extra-index-url https://download.pytorch.org/whl/cpu
-python -m cclab.pipeline all --retrain
+python data-pipeline/run.py all --retrain
 ```
 
 `requirements-precompute.txt` is pinned to the verified CPU install on Python 3.12: `torch==2.12.1` (the `+cpu`
 wheel via the extra index), `onnx==1.22.0`, `onnxscript==0.7.0`, `numpy==2.1.3`. There are `scripts/precompute.ps1`
 and `scripts/precompute.sh` wrappers for the default lane; the `--retrain` flag is what flips on the heavy steps.
 
-What `--retrain` does, in order (see `cclab/pipeline.py::retrain` and `cclab/science/`):
+What `--retrain` does, in order (see `pipeline/pipeline.py::retrain` and `pipeline/science/`):
 
 1. **`bake_cases.mjs`**, re-bakes `data/derived/case-results.json` by running the same TypeScript mill engine
    (`frontend/src/mill/`) over the 10 cases through `tsx`.

@@ -5,9 +5,9 @@ ChargeCascade ships as a **static deploy**. The live lane is the **browser**, th
 **onnxruntime-web**. There is **no server** by default, and there does not need to be one: the physics is
 sub-millisecond client-side and the artifacts are committed.
 
-The `app/` FastAPI scaffold and `data-pipeline/cclab/live.py` are therefore **DORMANT**:
+The `app/` FastAPI scaffold and `data-pipeline/pipeline/live.py` are therefore **DORMANT**:
 
-- `cclab/live.py` is an intentional no-op that documents the absence of a Python live lane (no in-browser Python
+- `pipeline/live.py` is an intentional no-op that documents the absence of a Python live lane (no in-browser Python
   runtime). The mill physics live entirely in TypeScript.
 - `app/` (`main.py`, `routers/`, `services/`, `models/`) and `requirements-api.txt` are an unactivated scaffold , 
   the commented placeholder requirements file makes that explicit.

@@ -3,14 +3,14 @@
 Two honest learned models, trained offline and run live. The exact analytic engine is always the authority; these are
 a fast **surrogate** of it + an out-of-envelope **flag**.
 
-## Training (`data-pipeline/cclab/science/train_mill.py`, torch, `.venv-precompute`)
+## Training (`data-pipeline/pipeline/science/train_mill.py`, torch, `.venv-precompute`)
 
 | Model | Architecture | Trained on | Scored against | Export |
 |---|---|---|---|---|
 | `power-surrogate` | MLP 6 → 64 → 64 → 2; standardisation of the features and the targets folded into the export wrapper | operating points evaluated by the exact engine (`gen_train.mjs`, a sampled SAG / ball / rod envelope) | the exact engine, downstream (`eval_mill.mjs`) | `power-surrogate.onnx` (x → y = [power_kw, frac_centrifuging]) |
 | `scenario-ood` | autoencoder 6 → 8 → 3 → 8 → 6 | in-distribution feature vectors | reconstruction MSE separates off-envelope | `scenario-ood.onnx` (x → xr = the anomaly score) |
 
-The 6 features (`frontend/src/lib/learned.ts` :: `MILL_FEATURES`, mirrored in `cclab/model/learned.py`) are
+The 6 features (`frontend/src/lib/learned.ts` :: `MILL_FEATURES`, mirrored in `pipeline/model/learned.py`) are
 `diameter_m, length_m, fill, phi_c, ball_top_mm, charge_density`. The surrogate's standardisation (mean/std of the
 features and the targets) is folded into the export wrapper, so the ONNX takes raw features and returns raw
 `[power_kw, frac_centrifuging]`. The OOD autoencoder's wrapper returns the **standardized-space reconstruction MSE**

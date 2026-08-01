@@ -2,8 +2,8 @@
 phiC>=1 / high-fill / large-ball case is flagged (accepted); the committed example passes."""
 from pathlib import Path
 
-from cclab.io.contract import validate_mill, validate_records
-from cclab.io.formats import read_csv_rows
+from pipeline.io.contract import validate_mill, validate_records
+from pipeline.io.formats import read_csv_rows
 
 
 def _row(**over):

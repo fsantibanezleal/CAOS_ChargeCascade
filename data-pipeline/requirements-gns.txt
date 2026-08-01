@@ -4,9 +4,9 @@
 # baked and replayed, never run live). Install into .venv-precompute.
 #
 #   python -m pip install -r requirements-gns.txt
-#   python -m cclab.gns.gen_dem_corpus      # build the corpus from the baked DEM frames
-#   python -m cclab.gns.train_gns           # train (RTX 4070 if a CUDA torch is installed, else CPU)
-#   python -m cclab.gns.bake_rollouts       # bake the rollouts into demframes/v1 (Mill3D mode 'gns')
+#   python -m pipeline.gns.gen_dem_corpus      # build the corpus from the baked DEM frames
+#   python -m pipeline.gns.train_gns           # train (RTX 4070 if a CUDA torch is installed, else CPU)
+#   python -m pipeline.gns.bake_rollouts       # bake the rollouts into demframes/v1 (Mill3D mode 'gns')
 
 # CPU torch is enough for this small didactic model on a ~9-rollout corpus. For the GPU path, install the CUDA
 # wheel instead:  pip install torch --index-url https://download.pytorch.org/whl/cu126

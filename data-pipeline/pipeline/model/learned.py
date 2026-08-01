@@ -1,5 +1,5 @@
 """Feature contracts for ChargeCascade's two learned models (the SINGLE SOURCE OF TRUTH shared by the offline trainer
-cclab/science/train_mill.py and the in-browser inference). Trained OFFLINE (torch -> ONNX), run LIVE (onnxruntime-web).
+pipeline/science/train_mill.py and the in-browser inference). Trained OFFLINE (torch -> ONNX), run LIVE (onnxruntime-web).
 The analytic mill engine is the interpretable AUTHORITY; the surrogate emulates it for instant sweeps and is measured
 DOWNSTREAM against it. (Stub until commit 4b.)
 

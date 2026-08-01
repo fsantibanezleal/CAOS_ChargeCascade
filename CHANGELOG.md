@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this product. Format: `X.XX.XXX` (display), see `cclab.__version__`. Keep `0.x`
+All notable changes to this product. Format: `X.XX.XXX` (display), see `pipeline.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
 ## [0.33.002] · 2026-07-31
@@ -26,7 +26,7 @@ asserted are TRUE BECAUSE the shell clips. A page that hides what did not fit sa
 
 ### Fixed
 - **Version coherence.** `conventions/versioning.md` requires `VERSION`, the manifests, the CHANGELOG and
-  the git tag to move together on every release; they had drifted apart here (frontend 0.33.000 against cclab 0.13.0). A line-wide sweep on
+  the git tag to move together on every release; they had drifted apart here (frontend 0.33.000 against pipeline 0.13.0). A line-wide sweep on
   2026-07-30 found 79 tags across 9 CAOS repos pointing at commits that declare a different version, the
   result of releases being tagged and deployed without a bump. The user-visible cost is that the app footer
   reads its version from a manifest, so a deployed app reported a version older than the release it was
@@ -395,7 +395,7 @@ viewport, and the tab bar from two rows to one (48px).
 ## [0.26.000], 2026-07-20
 
 ### Added (SOTA-ladder Units 6-8: the real DEM charge-motion lane)
-- **The DEM lane, baked with milldem** (Unit 6). New `data-pipeline/cclab/dem/` bakes real discrete-element
+- **The DEM lane, baked with milldem** (Unit 6). New `data-pipeline/pipeline/dem/` bakes real discrete-element
   charge motion with the cross-platform **milldem** engine (PyPI `milldem` 0.2.0, MIT,
   `fsantibanezleal/CAOS_MillDEM`; numpy core + numba JIT, no C++/WSL). Per canonical case it exports the
   `chargecascade.demframes/v1` frame set (thin-3D slab, Uint16-quantized positions), the net DEM power +
@@ -798,7 +798,7 @@ and tested offline, and the guide documented BYO, but the browser had no live do
 
 ### Added
 - **`mill/contract.ts`**, CONTRACT-1 ported to TS (`validateMill`), in lock-step with the reference
-  `data-pipeline/cclab/io/contract.py`: a descriptor is ACCEPTED iff it passes; ill-formed ones are REJECTED with a
+  `data-pipeline/pipeline/io/contract.py`: a descriptor is ACCEPTED iff it passes; ill-formed ones are REJECTED with a
   reason (never coerced, bad mill type, non-positive D/L/ρ, fill ∉ [0, 0.6], φc ∉ (0, 1.5], ball ≥ diameter); and
   plausible-but-honesty-relevant ones are FLAGGED (φc ≥ 1 centrifuging, φc > 0.85 over-speed, fill > 45 % crowding,
   fill < 15 % ball-on-liner, large ball/diameter ratio).
@@ -978,7 +978,7 @@ look fake: a no-op mill-type selector. This release kills that.
 ## [0.03.000], 2026-06-21
 
 ### Added
-- **The Python core (`cclab`).** The two data contracts (mill operating-point ingestion + the artifact), the
+- **The Python core (`pipeline`).** The two data contracts (mill operating-point ingestion + the artifact), the
   staged numpy-light pipeline, the lane gate (`LIVE_RUNTIMES = {ts-mill, onnxruntime-web}`), the manifest/trace
   (`chargecascade.manifest/v2`, `chargecascade.trace/v1`), the cases-by-category registry, and the `--retrain`
   orchestration. Tests for both contracts + pipeline determinism.

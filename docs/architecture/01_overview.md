@@ -16,8 +16,8 @@ fill, speed or top ball size, and the 3D animates the same trajectories the engi
 | Lane | Where | Deps | Notes |
 |---|---|---|---|
 | **Live (client-side)** | `frontend/src/mill/` (critical speed + Davis charge + regime + power) + onnxruntime-web (the surrogate + OOD-AE) | web npm | the interactive core; recomputes on every control change, sub-ms |
-| **Offline (precompute)** | `cclab/science/`, Node bake of the same TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
-| **Replay (light)** | `cclab.pipeline` (numpy) | `data-pipeline/requirements.txt` | reshapes the committed bake → per-case traces + manifests |
+| **Offline (precompute)** | `pipeline/science/`, Node bake of the same TS engine (`tsx`) + torch training | `data-pipeline/requirements-precompute.txt` | bakes `case-results.json` + the ONNX |
+| **Replay (light)** | `pipeline.pipeline` (numpy) | `data-pipeline/requirements.txt` | reshapes the committed bake → per-case traces + manifests |
 | **API (backend)** | `app/` (FastAPI) | `requirements-api.txt` | DORMANT; activate only on an ADR-0002 trigger |
 
 A measured **[gate](03_the-gate.md)** records the live-vs-replay verdict per case (at this scale the TS engine is

@@ -8,26 +8,26 @@ core was filled for ChargeCascade so the pattern is reproducible.
 
 What was specialised on top of the frozen base:
 
-1. **Rename the example package → `cclab`.** The package folder, all imports, `pyproject.toml`
-   (`[tool.setuptools]` name + packages), the scripts' `-m cclab.pipeline`, and the docs all use `cclab`
+1. **Rename the example package → `pipeline`.** The package folder, all imports, `pyproject.toml`
+   (`[tool.setuptools]` name + packages), the scripts' `data-pipeline/run.py`, and the docs all use `pipeline`
    (ChargeCascade Lab, version `0.03.000`).
 
 2. **Replace the example engine with the TS mill engine.** ChargeCascade's physics is a native **TypeScript**
    engine, `frontend/src/mill/` (`criticalspeed` · `charge` · `regime` · `power` · `engine` · `cases`), exposing
    `evaluate(op: Operating) → MillResult`. It runs **in the browser** (live, on every control change) and **in the
    Node bake** (via `tsx`) so the offline artifacts are produced by the *same* engine the user sees. There is **no
-   in-browser Python runtime and no Python live engine**, `cclab/live.py` is intentionally dormant (it just documents this).
+   in-browser Python runtime and no Python live engine**, `pipeline/live.py` is intentionally dormant (it just documents this).
 
 3. **Write the two data contracts.**
-   - **CONTRACT 1, ingestion** (`cclab/io/contract.py`): what a valid mill operating point is , 
+   - **CONTRACT 1, ingestion** (`pipeline/io/contract.py`): what a valid mill operating point is , 
      `REQUIRED_COLUMNS = mill_id, mill_type, diameter_m, length_m, fill, phi_c, ball_top_mm, charge_density`, the
      range guards (`fill ∈ [0,0.6]`, `phi_c ∈ (0,1.5]`, `ball_top_mm < diameter`), and the honesty flags
      (centrifuging at `φc ≥ 1`, over-speed, high/low fill, large ball/diameter ratio). See
      [guide 02](02_bring-your-own-data.md).
-   - **CONTRACT 2, artifact** (`cclab/core/manifest.py` + `core/trace.py`): the compact per-case trace + manifest +
+   - **CONTRACT 2, artifact** (`pipeline/core/manifest.py` + `core/trace.py`): the compact per-case trace + manifest +
      flat index the SPA replays. Validated on disk by `scripts/check_artifacts.py`.
 
-4. **Define the 10 cases-by-category** (`cclab/cases/mill_cases.py` + `registry.py`), kept in lock-step with
+4. **Define the 10 cases-by-category** (`pipeline/cases/mill_cases.py` + `registry.py`), kept in lock-step with
    `frontend/src/mill/cases.ts`: mill **type** (`K-BALL`, `K-SAG`, `K-ROD`), **speed sweep**
    (`S-CASCADE`, `S-CATARACT`, `S-CENTRIFUGE`), **fill regime** (`D-LOWFILL`, `D-HIGHFILL`), and two **analytic
    controls** (`C-CRITICAL` at φc = 1, `C-EMPTY` at J = 0). Documented in `docs/cases/`.
@@ -35,7 +35,7 @@ What was specialised on top of the frozen base:
 5. **Build the 6 pages** (App · Introduction · Methodology · Implementation · Experiments · Benchmark) on the React
    SPA in `frontend/`, with the 3D mill + the workbench visualizations.
 
-6. **Write the 2 learned models** (`cclab/science/train_mill.py` → `power-surrogate.onnx` + `scenario-ood.onnx`) , 
+6. **Write the 2 learned models** (`pipeline/science/train_mill.py` → `power-surrogate.onnx` + `scenario-ood.onnx`) , 
    a power/centrifuging surrogate MLP and an OOD autoencoder. See [guide 01](01_precompute-pipeline.md) and
    [guide 03](03_gpu-lane.md).
 
