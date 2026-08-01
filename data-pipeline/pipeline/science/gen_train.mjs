@@ -1,7 +1,7 @@
 // Generate the learned-model training data by running the SAME TypeScript mill engine the browser runs, so the power
 // surrogate trains on EXACTLY the analytic Hogg-Fuerstenau/Morrell engine the App uses, and is benchmarked against it.
 // Writes to data/raw/ (git-ignored, regenerable). Invoked by pipeline.retrain before train_mill.py. Run from frontend/
-// so tsx resolves:  node --import tsx ../data-pipeline/cclab/science/gen_train.mjs
+// so tsx resolves:  node --import tsx ../data-pipeline/pipeline/science/gen_train.mjs
 //
 // 1. mill-train.json: N in-envelope operating points, each EVALUATED by the exact engine -> the (6-feature vector ->
 //    [net power kW, fraction centrifuging]) labels for the surrogate, + the in-distribution feature vectors for the OOD
@@ -56,7 +56,7 @@ function sample(env) {
 function opOf(v) {
   return { ...FIXED, diameterM: v.diameter_m, lengthM: v.length_m, fill: v.fill, phiC: v.phi_c, ballTopMm: v.ball_top_mm, chargeDensity: v.charge_density };
 }
-// feature vector in the SOURCE-OF-TRUTH order (cclab/model/learned.py :: MILL_FEATURES)
+// feature vector in the SOURCE-OF-TRUTH order (pipeline/model/learned.py :: MILL_FEATURES)
 function featureVec(v) { return MILL_FEATURES.map((k) => r6(v[k])); }
 
 // --- 1. training set (the engine label for every in-envelope point) ---
