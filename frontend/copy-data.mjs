@@ -11,7 +11,7 @@ const PUB = join(HERE, 'public');
 const derived = join(ROOT, 'data', 'derived');
 
 if (!existsSync(derived)) {
-  console.warn('[copy-data] no data/derived, run `npm run bake` (or `python -m cclab.pipeline all`) first');
+  console.warn('[copy-data] no data/derived, run `npm run bake` (or `python data-pipeline/run.py all`) first');
 } else {
   mkdirSync(join(PUB, 'data'), { recursive: true });
   cpSync(derived, join(PUB, 'data'), { recursive: true });
@@ -23,7 +23,7 @@ if (!existsSync(derived)) {
 }
 
 // the baked DEM lane (milldem frames + power + outlines + the (phiC,J) grid) lives in ../data/dem; overlay it into
-// public/data/dem so the SPA fetches data/dem/<case>.demframes.bin etc. (bake with `python -m cclab.dem`).
+// public/data/dem so the SPA fetches data/dem/<case>.demframes.bin etc. (bake with `python -m pipeline.dem`).
 const demDir = join(ROOT, 'data', 'dem');
 if (existsSync(demDir)) {
   cpSync(demDir, join(PUB, 'data', 'dem'), { recursive: true });

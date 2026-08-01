@@ -2,7 +2,7 @@
 // is COMPUTED from the same engine the App runs (shoulder/toe angles, the per-shell Davis departure fan clipped
 // inside the shell, the regime + power), so the doc figure is accurate to that case, not decorative. Theme-aware:
 // a prefers-color-scheme style block plus both-safe fallback colours (GitHub may strip the style; the fallback
-// still reads on light + dark). Run: node --import tsx data-pipeline/cclab/science/gen_case_svgs.mjs
+// still reads on light + dark). Run: node --import tsx data-pipeline/pipeline/science/gen_case_svgs.mjs
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
