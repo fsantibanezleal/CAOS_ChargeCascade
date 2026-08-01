@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cclab"
 # PEP 440 form of the display version X.XX.XXX (see CHANGELOG.md + cclab.__version__).
-version = "0.33.1"
+version = "0.33.2"
 description = "ChargeCascade, tumbling-mill (SAG/ball/rod) charge-motion + power pipeline: two data contracts + staged replay + torch->ONNX retrain lane."
 readme = "README.md"
 requires-python = ">=3.11"
