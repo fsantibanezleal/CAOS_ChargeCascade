@@ -3,7 +3,7 @@
 // into per-case replay traces + manifests (CONTRACT 2). No Python re-port of the physics. The operating point + the
 // scalar results + the power-vs-phiC curve are committed (compact); the 3D charge trajectories are regenerated LIVE in
 // the browser from the operating point (no raster/particle blobs). Run (from frontend/ so tsx resolves):
-//   node --import tsx ../data-pipeline/cclab/science/bake_cases.mjs
+//   node --import tsx ../data-pipeline/pipeline/science/bake_cases.mjs
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

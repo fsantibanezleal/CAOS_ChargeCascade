@@ -2,7 +2,7 @@
 // in-distribution operating point the surrogate predicts [power, frac-centrifuging]; we compare its power to the EXACT
 // analytic engine's power (the authority). The relative power error is the honest skill number. Then we assemble the
 // final data/derived/cc-learned.json by merging the OOD-AE AUC + honesty that train_mill.py wrote to learned-partial.json.
-//   node --import tsx ../data-pipeline/cclab/science/eval_mill.mjs   (run from frontend/ so onnxruntime-web resolves)
+//   node --import tsx ../data-pipeline/pipeline/science/eval_mill.mjs   (run from frontend/ so onnxruntime-web resolves)
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
