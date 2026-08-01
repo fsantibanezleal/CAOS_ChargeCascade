@@ -40,7 +40,7 @@ C_n  = 2 * beta * sqrt( k_n * m_eff )
 with `m_eff` the reduced contact mass. Tangential friction is Coulomb-truncated (`|F_t| <= mu * F_n`), giving the
 charge its shear strength (the ability to lift as a body). This is the Cundall and Strack (1979) soft-sphere
 formulation, the same family the LAMMPS `gran/hooke` pair style implements. The calibrated values (in the Govender
-2015 mill-DEM range) are recorded in `data-pipeline/cclab/dem/calibration.json`: `e = 0.5`, `mu = 0.25`,
+2015 mill-DEM range) are recorded in `data-pipeline/pipeline/dem/calibration.json`: `e = 0.5`, `mu = 0.25`,
 `mu_rolling = 0.05`, `k_t/k_n = 2/7`, with the normal stiffness auto-scaled (density-scaled) for numerical stability.
 
 ### The thin-3D slab (why the power is size-consistent)
@@ -93,7 +93,7 @@ paused on a hidden tab (ADR-0059). The Davis kinematic view stays available as t
 
 ## Validation (Unit 6 acceptance)
 
-`data-pipeline/cclab/dem/validate.py`, per baked case: the DEM net power lands within a band of the analytic
+`data-pipeline/pipeline/dem/validate.py`, per baked case: the DEM net power lands within a band of the analytic
 Hogg-Fuerstenau power (same charge mass; `C-EMPTY` must be ~0); the charge holds a lifted body (shoulder above toe);
 the decoded particles stay inside the shell and the charge is not fluidized (bounded frame-to-frame speed). The
 bake runs at an accelerated timestep (`~28` substeps per contact vs milldem's conservative `~50`), halving the step
@@ -115,8 +115,8 @@ pass/fail per case.
 
 ```
 python -m pip install -r data-pipeline/requirements-dem.txt   # milldem[jit] + numpy, into .venv-precompute
-python -m cclab.dem                                           # bake all cases + the (phiC, J) grid, then validate
-python -m cclab.dem --validate                                # re-check existing bakes
+python -m pipeline.dem                                           # bake all cases + the (phiC, J) grid, then validate
+python -m pipeline.dem --validate                                # re-check existing bakes
 ```
 
 ## Sources

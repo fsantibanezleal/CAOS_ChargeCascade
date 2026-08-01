@@ -1,6 +1,6 @@
 # Cases + categories
 
-Each case (`frontend/src/mill/cases.ts`, the source of truth; mirrored by `data-pipeline/cclab/cases/mill_cases.py`
+Each case (`frontend/src/mill/cases.ts`, the source of truth; mirrored by `data-pipeline/pipeline/cases/mill_cases.py`
 and baked to `data/derived/case-results.json` by `science/bake_cases.mjs` running the same engine) declares a
 **CATEGORY**, an **operating point** (D × L, J, φc, top-ball), an **expected band** (what a domain reader should see),
 a **validation anchor** (a property the result must satisfy), and a **synthetic | analytic-control** flag. The

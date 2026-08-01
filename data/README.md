@@ -16,7 +16,7 @@ operating points.
 
 ## CONTRACT 1, ingestion (mill descriptor → pipeline), the *bring-your-own-mill* gate
 
-Defined in `data-pipeline/cclab/io/contract.py` (mirrored live in TS by `frontend/src/mill/contract.ts`, the
+Defined in `data-pipeline/pipeline/io/contract.py` (mirrored live in TS by `frontend/src/mill/contract.ts`, the
 Custom-mill tab). A mill row is **accepted** iff it satisfies the schema; **rejected** with a reason otherwise
 (never silently coerced); plausible-but-honesty-relevant rows are **flagged** (accepted; the flag travels into
 the manifest).

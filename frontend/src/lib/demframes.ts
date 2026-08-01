@@ -1,5 +1,5 @@
 // Decoder for the `chargecascade.demframes/v1` baked DEM charge-motion artifact (Unit 7). Real DEM is computed
-// OFFLINE by the milldem thin-3D-slab engine (data-pipeline/cclab/dem) and only the per-frame particle positions are
+// OFFLINE by the milldem thin-3D-slab engine (data-pipeline/pipeline/dem) and only the per-frame particle positions are
 // shipped and replayed here; a browser cannot run DEM time-integration (Govender 2015: 4 M particles = 1.16 h per
 // simulated second on a GPU). See the viz dossier and docs/frameworks/02_viz.md.
 //

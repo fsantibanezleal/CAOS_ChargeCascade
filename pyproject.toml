@@ -1,24 +1,9 @@
-# Product-repo template, the offline engine package (ADR-0057). Rename `cclab` -> `<slug>lab` per product.
+# Repo-local tool configuration ONLY. This product declares NO package: per
+# conventions/no-internal-packages.md, a package means a separate repo with a valid PyPI
+# project, consumed as a dependency. The data-pipeline/ folder is scripts, invoked by path.
+# Product-repo template, the offline engine package (ADR-0057). Rename `pipeline` -> `<slug>lab` per product.
 # The EXAMPLE engine is numpy-only on purpose (an instantly-installable, no-hang reference); a real product pins
 # its research-chosen SOTA engines in data-pipeline/requirements.txt and documents them in docs/frameworks/.
-[build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "cclab"
-# PEP 440 form of the display version X.XX.XXX (see CHANGELOG.md + cclab.__version__).
-version = "0.33.2"
-description = "ChargeCascade, tumbling-mill (SAG/ball/rod) charge-motion + power pipeline: two data contracts + staged replay + torch->ONNX retrain lane."
-readme = "README.md"
-requires-python = ">=3.11"
-license = { text = "MIT" }
-authors = [{ name = "Felipe Santibáñez-Leal" }]
-dependencies = ["numpy>=1.26"]
-
-[tool.setuptools.packages.find]
-where = ["data-pipeline"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

@@ -1,7 +1,7 @@
 """HEAVY lane (local-only), train ChargeCascade's two learned models and export them to ONNX. Run inside the
 .venv-precompute (torch) AFTER gen_train.mjs has written data/raw/{mill-train,mill-eval}.json:
 
-    python data-pipeline/cclab/science/train_mill.py
+    python data-pipeline/pipeline/science/train_mill.py
 
 1. power-surrogate, an MLP regressor (6 standardized mill features -> [net power kW, fraction centrifuging]). A fast
    emulation of the analytic Hogg-Fuerstenau/Morrell engine for instant Monte-Carlo / operating-envelope sweeps (the

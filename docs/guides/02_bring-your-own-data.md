@@ -2,7 +2,7 @@
 
 ChargeCascade is a **tool**, not a fixed demo: it evaluates *your* mill, not only the 10 baked cases. There are two
 doors, the **live App** (instant, in the browser) and the **pipeline** (a committed, replayable artifact). Both go
-through the same physics and the same gate, **CONTRACT 1** (`data-pipeline/cclab/io/contract.py`).
+through the same physics and the same gate, **CONTRACT 1** (`data-pipeline/pipeline/io/contract.py`).
 
 ## Door 1, the live App (no install, no precompute)
 

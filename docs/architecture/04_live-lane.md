@@ -26,7 +26,7 @@ process energy cross-check, not the charge power; it has no `φc` or `J`, so it 
 The **power surrogate** and the **scenario OOD autoencoder** run client-side via onnxruntime-web (the WASM execution
 provider, `numThreads = 1`, `wasmPaths` pinned to the same CDN version 1.27 as the npm package). The feature vector is
 the 6-tuple `(diameter_m, length_m, fill, phi_c, ball_top_mm, charge_density)`, the order in the TS feature builder,
-mirroring `cclab/model/learned.py`'s `MILL_FEATURES`. Because both models query the runtime together every frame, all
+mirroring `pipeline/model/learned.py`'s `MILL_FEATURES`. Because both models query the runtime together every frame, all
 WASM work (session creation **and** every `run`) goes through **one global serialization chain**, the single-threaded
 runtime is not re-entrant, and without this the two models race and throw `Session already started`.
 

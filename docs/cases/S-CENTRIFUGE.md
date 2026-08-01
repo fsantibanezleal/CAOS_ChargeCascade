@@ -2,7 +2,7 @@
 
 ![S-CENTRIFUGE charge cross-section, computed from the engine](assets/S-CENTRIFUGE.svg)
 
-*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/cclab/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
+*The charge cross-section for this case, generated from the same engine the App runs (`data-pipeline/pipeline/science/gen_case_svgs.mjs`): the Davis departure fan (clipped inside the shell), the shoulder angle, and the regime + net power.*
 
 **Category:** speed sweep (the regime transition) · **Source of truth:** [`frontend/src/mill/cases.ts`](../../frontend/src/mill/cases.ts) (`S-CENTRIFUGE` = the base `K-BALL` mill at φc 1.02) · **synthetic but physically realistic**
 

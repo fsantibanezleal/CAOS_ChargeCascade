@@ -17,8 +17,8 @@ Message passing is implemented WITHOUT torch-geometric (a self-contained radius 
 this GNS is BAKED and replayed, never exported to ONNX (PyG-to-ONNX scatter export is immature; see the
 beyond-SOTA dossier). Runs on the RTX 4070 if available, CPU otherwise.
 
-    python -m cclab.gns.train_gns --epochs 40           # train on the corpus, save data/gns/gns.pt
-    python -m cclab.gns.train_gns --smoke               # 1-step forward/backward sanity check (CPU, seconds)
+    python -m pipeline.gns.train_gns --epochs 40           # train on the corpus, save data/gns/gns.pt
+    python -m pipeline.gns.train_gns --smoke               # 1-step forward/backward sanity check (CPU, seconds)
 """
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ class Corpus:
                                   "phi_c": float(m.get("phi_c", 0.0)), "fill": float(m.get("fill", 0.0))})
             self.case_ids.append(m["case_id"])
         if not self.rollouts:
-            raise SystemExit(f"corpus has no rollouts for split={split!r}; rebuild with `python -m cclab.gns.gen_dem_corpus`")
+            raise SystemExit(f"corpus has no rollouts for split={split!r}; rebuild with `python -m pipeline.gns.gen_dem_corpus`")
         self.acc_mean = np.array(self.norm["acc_mean"], dtype=np.float32)
         self.acc_std = np.array(self.norm["acc_std"], dtype=np.float32)
 
@@ -290,7 +290,7 @@ def smoke() -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(prog="cclab.gns.train_gns")
+    ap = argparse.ArgumentParser(prog="pipeline.gns.train_gns")
     ap.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
     ap.add_argument("--steps", type=int, default=400)
     ap.add_argument("--smoke", action="store_true")
