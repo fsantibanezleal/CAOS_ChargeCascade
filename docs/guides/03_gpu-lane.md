@@ -8,7 +8,7 @@ onnxruntime-web in the browser).
 
 ## How tiny the models are
 
-`cclab/science/train_mill.py` trains:
+`pipeline/science/train_mill.py` trains:
 
 - **power-surrogate**, a `6 → 64 → 64 → 2` MLP (6 standardized mill features → `[net power kW, fraction
   centrifuging]`), 160 epochs, batch 128.
@@ -24,7 +24,7 @@ Only if you **scale up** well beyond the shipped envelope, e.g.:
 
 - the training/eval sweep grows to **millions** of points (a much finer operating-envelope sample), or
 - the models grow substantially (deeper nets, a larger feature set), or
-- you scale the real **DEM** charge-motion bake (already shipped via milldem, `cclab/dem/`) to many more cases,
+- you scale the real **DEM** charge-motion bake (already shipped via milldem, `pipeline/dem/`) to many more cases,
   finer slabs or a GNS surrogate trained on the DEM corpus, *that* is a genuinely GPU-shaped compute, not the
   surrogate training. milldem's `[train]` lane installs the CUDA torch wheel for that path.
 

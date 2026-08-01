@@ -2,7 +2,7 @@
 
 Operational guides for ChargeCascade, the interactive 3D tumbling-mill (SAG / ball / rod) charge-motion + power
 workbench. The live physics is the TypeScript mill engine (`frontend/src/mill/`); the offline side is the Python
-package `cclab` (the two data contracts + the staged replay pipeline + the torch→ONNX retrain lane).
+package `pipeline` (the two data contracts + the staged replay pipeline + the torch→ONNX retrain lane).
 
 - [00, how this product was instantiated from the archetype](guides/00_instantiate.md)
 - [01, run the precompute / retrain pipeline](guides/01_precompute-pipeline.md)

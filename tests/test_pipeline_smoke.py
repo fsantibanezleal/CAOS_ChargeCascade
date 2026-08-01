@@ -2,7 +2,7 @@
 registry matches the committed bake, and run_all writes the flat index."""
 import json
 
-from cclab import pipeline, registry
+from pipeline import pipeline, registry
 
 
 def test_case_deterministic_same_seed():

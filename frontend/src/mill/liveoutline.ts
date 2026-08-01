@@ -1,7 +1,7 @@
 // Time-averaged charge occupancy computed from the LIVE 2D DEM, in the same schema the offline baker
 // emits, so the charge-shape overlay renders a real mill exactly as it renders a baked synthetic case.
 //
-// WHY. The baked DEM lane (data-pipeline/cclab/dem/bake.py) is keyed by SYNTHETIC case id. A real mill
+// WHY. The baked DEM lane (data-pipeline/pipeline/dem/bake.py) is keyed by SYNTHETIC case id. A real mill
 // from realmills.ts has no bake, so the charge-shape view simply did not exist for it and the 3D view
 // fell back to the Davis kinematic lane. The measured charge shape is the whole point of comparing
 // against a real survey, so the one source where it mattered most was the one source without it.

@@ -90,7 +90,7 @@ The torch → ONNX retrain lane is separate and local-only: see
 | Path | What |
 |---|---|
 | `frontend/` | the web app (React + Vite + Three.js); `src/mill/` = the exact engine; `src/pages/` = the six pages |
-| `data-pipeline/` | `cclab`: the two data contracts, staged pipeline, lane gate, learned-model training |
+| `data-pipeline/` | `pipeline`: the two data contracts, staged pipeline, lane gate, learned-model training |
 | `data/derived/` | committed baked traces, manifests, learned models + lineage |
 | `docs/` | the navigable wiki: [architecture](docs/architecture.md) · [frameworks](docs/frameworks.md) · [cases](docs/cases.md) · [guides](docs/guides.md) |
 | `tests/` | Python tests (contracts, manifest, pipeline smoke) |

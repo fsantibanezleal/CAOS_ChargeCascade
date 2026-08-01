@@ -1,7 +1,7 @@
 // ChargeCascade cases by category. The App shows one selected case; Experiments/Benchmark show cross-case summaries.
 // The operating points are synthetic but physically realistic (typical SAG/ball/rod mill geometries + speeds), clearly
 // labelled; the controls (C-) are exact analytic anchors. This is the source of truth for the cases; the Node bake
-// (science/bake_cases.mjs) runs the same engine over it, and data-pipeline/cclab/cases/mill_cases.py mirrors the ids.
+// (science/bake_cases.mjs) runs the same engine over it, and data-pipeline/pipeline/cases/mill_cases.py mirrors the ids.
 
 import type { MillType, Operating } from './types.ts';
 

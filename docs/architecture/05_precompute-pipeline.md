@@ -4,7 +4,7 @@ ChargeCascade's offline lane is **two-language** (like FragmentIQ / CoreLog / Pi
 TypeScript engine the browser runs, driven from Node via `tsx`; Python only orchestrates + reshapes + trains. This
 avoids ever re-implementing the mill physics in Python.
 
-## The named stages (`cclab/stages/`)
+## The named stages (`pipeline/stages/`)
 
 | Stage | What (heavy lane) |
 |---|---|
@@ -18,11 +18,11 @@ avoids ever re-implementing the mill physics in Python.
 The `preprocess` / `feature_extraction` / `train` / `infer` / `evaluate` Python stage bodies are docstring stubs that
 defer to the two-language `science/` scripts; `export` is the real light-lane work.
 
-## The two lanes of `cclab.pipeline`
+## The two lanes of `pipeline.pipeline`
 
 ```bash
-python -m cclab.pipeline all              # LIGHT (numpy): reshape the committed case-results.json -> traces + manifests
-python -m cclab.pipeline all --retrain    # HEAVY: bake -> gen_train -> train_mill -> eval_mill, then reshape
+python data-pipeline/run.py all              # LIGHT (numpy): reshape the committed case-results.json -> traces + manifests
+python data-pipeline/run.py all --retrain    # HEAVY: bake -> gen_train -> train_mill -> eval_mill, then reshape
 ```
 
 The **default is light**: the committed `data/derived/case-results.json` + `cc-learned.json` + the two `.onnx` ARE the

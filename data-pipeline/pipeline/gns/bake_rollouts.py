@@ -7,7 +7,7 @@ node (the honest accuracy readout: a learned surrogate replay, not a validated p
 The GNS is BAKED and replayed, never run live (PyG-style scatter to ONNX is immature and rollout latency is
 prohibitive on WASM; see the beyond-SOTA + viz dossiers).
 
-    python -m cclab.gns.bake_rollouts            # bake a rollout per corpus case, write data/dem/<case>.gns.bin
+    python -m pipeline.gns.bake_rollouts            # bake a rollout per corpus case, write data/dem/<case>.gns.bin
 """
 from __future__ import annotations
 

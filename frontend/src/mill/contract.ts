@@ -1,5 +1,5 @@
 // CONTRACT 1 (ingestion) ported to TS for the live bring-your-own-mill form. Mirrors EXACTLY the reference policy in
-// data-pipeline/cclab/io/contract.py (validate_records / validate_mill): a descriptor is ACCEPTED iff it passes;
+// data-pipeline/pipeline/io/contract.py (validate_records / validate_mill): a descriptor is ACCEPTED iff it passes;
 // ill-formed ones are REJECTED with a reason (never silently coerced); plausible-but-honesty-relevant ones are
 // FLAGGED (accepted, the flag travels with it). Keep this in lock-step with the Python, both are the same gate.
 import type { MillType } from './types.ts';

@@ -126,7 +126,7 @@ test('recommendPhiCForRegime returns the band and marks centrifuging non-operati
   assert.ok(cas.phiCRec! < cat.phiCRec!, 'cascading below cataracting');
 });
 
-// --- T8: the bring-your-own-mill CONTRACT-1 gate (validateMill mirrors data-pipeline/cclab/io/contract.py) ---
+// --- T8: the bring-your-own-mill CONTRACT-1 gate (validateMill mirrors data-pipeline/pipeline/io/contract.py) ---
 test('validateMill accepts a clean descriptor with no flags', async () => {
   const { validateMill } = await import('../src/mill/contract.ts');
   const r = validateMill({ mill_type: 'ball', diameter_m: 5, length_m: 7, fill: 0.32, phi_c: 0.74, ball_top_mm: 75, charge_density: 4.6 });

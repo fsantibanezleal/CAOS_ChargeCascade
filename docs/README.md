@@ -18,7 +18,7 @@ The physics engine is the **TypeScript code** in [`frontend/src/mill/`](../front
 slumping → cascading → cataracting → centrifuging regime bands, and Hogg & Fuerstenau net power as the torque-arm of
 the charge centre of mass (with Morrell's C-model form and the Bond energy cross-check). It runs *live in the browser*
 (the App recomputes charge motion + regime + power as you drag diameter / length / fill / speed / ball size) **and** in
-the offline Node bake via `tsx` (no Python re-port). The Python package [`cclab`](../data-pipeline/cclab/) is the two
+the offline Node bake via `tsx` (no Python re-port). The Python package [`pipeline`](../data-pipeline/pipeline/) is the two
 data contracts + the staged pipeline + the lane gate; its default lane is numpy-light, and a `--retrain` lane re-bakes
 the cases and trains the **power surrogate** + the **scenario OOD-AE** (torch → ONNX). The `.onnx` run live via
 onnxruntime-web.

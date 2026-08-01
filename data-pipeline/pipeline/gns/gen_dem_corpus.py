@@ -11,7 +11,7 @@ becomes one rollout `positions [T, N, 2]` (metres) + `particle_type [N]` (the si
 trainer builds the connectivity-radius graph and the velocity history on the fly; here we only assemble the
 trajectories and the corpus-wide normalization statistics the GNS needs (velocity + acceleration mean/std).
 
-    python -m cclab.gns.gen_dem_corpus            # build the corpus from every baked case
+    python -m pipeline.gns.gen_dem_corpus            # build the corpus from every baked case
 """
 from __future__ import annotations
 
@@ -71,7 +71,7 @@ def _operating_point(case_id: str) -> tuple[float, float] | None:
     """Recover (phi_c, fill) for a case id.
 
     Two families of baked cases feed the corpus. The 9 CANONICAL cases carry their operating point in
-    `cclab.cases.mill_cases.CASES`. The parametric GRID cases baked by `cclab.gns.bake_grid` are not in
+    `pipeline.cases.mill_cases.CASES`. The parametric GRID cases baked by `pipeline.gns.bake_grid` are not in
     CASES by design (they are training fodder, not published cases) and encode their operating point in
     the id itself, `G-p<phiC>-J<fill>`. Returning (0.0, 0.0) for an unknown id would silently poison the
     corpus: the operating point is a conditioning input, so a whole family of rollouts labelled phiC=0
@@ -159,7 +159,7 @@ def build_corpus() -> dict:
         meta.append({k: r[k] for k in ("case_id", "split", "phi_c", "fill", "radius_m", "ball_diameter_m", "fps", "n", "T")})
         print(f"[gns-corpus] {case_id}: T={r['T']} n={r['n']} phiC={r['phi_c']} J={r['fill']} [{r['split']}]", flush=True)
     if not rollouts:
-        raise SystemExit("no baked DEM frames found; run `python -m cclab.dem` first")
+        raise SystemExit("no baked DEM frames found; run `python -m pipeline.dem` first")
     train_rollouts = [r for r in rollouts if r["split"] == "train"]
     hold_rollouts = [r for r in rollouts if r["split"] == "holdout"]
     if not train_rollouts or not hold_rollouts:

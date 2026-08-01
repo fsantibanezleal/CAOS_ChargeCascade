@@ -1,10 +1,10 @@
 """ChargeCascade DEM lane: bake real charge-motion frames, net power, and charge outlines with the cross-platform
 milldem thin-3D-slab engine (PyPI `milldem`, MIT), plus the (phiC, J) DEM power grid for the field heatmap.
 
-    python -m cclab.dem            # bake all canonical cases + the power grid, then validate
-    python -m cclab.dem K-SAG      # bake one case
-    python -m cclab.dem --grid     # bake only the power grid
-    python -m cclab.dem --validate # re-validate existing bakes (no recompute)
+    python -m pipeline.dem            # bake all canonical cases + the power grid, then validate
+    python -m pipeline.dem K-SAG      # bake one case
+    python -m pipeline.dem --grid     # bake only the power grid
+    python -m pipeline.dem --validate # re-validate existing bakes (no recompute)
 """
 from __future__ import annotations
 
