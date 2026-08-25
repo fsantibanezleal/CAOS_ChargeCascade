@@ -3,6 +3,15 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `pipeline.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.33.003] · 2026-08-25
+
+### Fixed
+
+- Cap the App-route notes and the caption blocks the paragraph rule could not reach
+- Cap the reading measure on the content routes
+- fix: remove the last lab-name residue from scripts and docs
+- refactor: a product declares no package of its own
+
 ## [0.33.002] · 2026-07-31
 
 ### Fixed - the docs routes were clipping content with no way to reach it
