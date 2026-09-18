@@ -2,7 +2,7 @@
 """Regenerate the figures for the ChargeCascade mill charge-motion + power report from the COMMITTED artifacts.
 Two figures:
 
-  fig-power.pdf   - the honest power-model spread: net power per case from two closed-form models (Hogg-Fuerstenau
+  fig-power.pdf   - the power-model spread: net power per case from two closed-form models (Hogg-Fuerstenau
                     and Morrell) and from the baked DEM, showing that standard mill-power models disagree by ~20-30%
                     and DEM gives a third estimate around them.
   fig-regimes.pdf - the Davis charge-motion kinematics: shoulder and toe angles and the centrifuging fraction
@@ -59,7 +59,7 @@ def fig_power():
     ax.bar(x + w, de, w, color="#3fa34d", edgecolor=INK, linewidth=0.5, label="DEM (baked, ~5-10k particles)")
     ax.set_yscale("log")
     ax.set_xticks(x); ax.set_xticklabels([f"{i}\n$\\phi_c${c['phi_c']:.2f}" for i, c in zip(ids, cases)],
-                                         fontsize=6.6)
+                                         fontsize=6.6, rotation=30, ha="right", rotation_mode="anchor")
     ax.set_ylabel("net power (kW, log)")
     ax.set_title("Mill power: two closed-form models disagree by ~23%,\nDEM gives a third estimate around them",
                  fontsize=9.0)
@@ -82,8 +82,16 @@ def fig_regimes():
     cent = [100 * c["frac_cent"] for c in cases]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
 
-    a1.plot(phi, sh, "o-", color="#1b6ca8", linewidth=1.6, markersize=5, label="shoulder angle")
-    a1.plot(phi, toe, "s-", color="#e07a3f", linewidth=1.6, markersize=5, label="toe angle")
+    # lines join only the sub-critical cases; no case lies between phi_c 0.78 and 1.00 and the regime changes at
+    # phi_c = 1, so the centrifuging cases are drawn as markers without a connecting ramp
+    sub = [i for i, p in enumerate(phi) if p < 1.0]
+    sup = [i for i, p in enumerate(phi) if p >= 1.0]
+    a1.plot([phi[i] for i in sub], [sh[i] for i in sub], "o-", color="#1b6ca8", linewidth=1.6, markersize=5,
+            label="shoulder angle")
+    a1.plot([phi[i] for i in sub], [toe[i] for i in sub], "s-", color="#e07a3f", linewidth=1.6, markersize=5,
+            label="toe angle")
+    a1.plot([phi[i] for i in sup], [sh[i] for i in sup], "o", color="#1b6ca8", markersize=5)
+    a1.plot([phi[i] for i in sup], [toe[i] for i in sup], "s", color="#e07a3f", markersize=5)
     for x, lo, hi, lab in [(0.6, 0, 200, "cascading"), (0.77, 0, 200, "cataracting"), (1.0, 0, 200, "centrifuging")]:
         a1.axvline(x, color="#ccc", linewidth=0.8, linestyle=":")
     a1.set_xlabel("fraction of critical speed $\\phi_c$")
@@ -95,7 +103,9 @@ def fig_regimes():
     for s in ("top", "right"):
         a1.spines[s].set_visible(False)
 
-    a2.plot(phi, cent, "^-", color="#b23a48", linewidth=1.7, markersize=6)
+    # markers only: no case lies between phi_c 0.78 and 1.00, and Davis kinematics puts the onset exactly at
+    # phi_c = 1, so a line joining the samples would draw a ramp the model does not have
+    a2.plot(phi, cent, "^", color="#b23a48", markersize=6, linestyle="none")
     a2.axvline(1.0, color="#555", linewidth=1.0, linestyle="--", label="$\\phi_c=1$ (centrifuging onset)")
     a2.set_xlabel("fraction of critical speed $\\phi_c$")
     a2.set_ylabel("centrifuging fraction (%)")
