@@ -121,7 +121,7 @@ function ImpactSpectrum({ energies, es }: { energies: number[]; es: boolean }) {
   const bw = (W - 2 * pad) / BINS;
   return (
     <div className="cc-focus-plot">
-      <div className="cc-focus-plot-t">{es ? 'Espectro de energia de impacto (log)' : 'Impact-energy spectrum (log)'}</div>
+      <div className="cc-focus-plot-t">{es ? 'Espectro de energía de impacto (log)' : 'Impact-energy spectrum (log)'}</div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
            aria-label={es ? 'espectro de impacto' : 'impact spectrum'}>
         {bins.map((c, i) => (
