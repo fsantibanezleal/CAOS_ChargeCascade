@@ -3,6 +3,15 @@
 All notable changes to this product. Format: `X.XX.XXX` (display), see `pipeline.__version__`. Keep `0.x`
 while on synthetic/calibrated data. Tag every release.
 
+## [0.33.004] · 2026-09-26
+
+### Fixed
+
+- The Focus page's Spanish spectrum title reads "energía" (the last unaccented word the July accent
+  pass had targeted; the rest of that pass had reached `main` through later rewrites).
+- No em-dash in the files the content guard does not scan: `.gitignore`, the dormant deploy templates
+  and the shell scripts.
+
 ## [0.33.003] · 2026-08-25
 
 ### Fixed
